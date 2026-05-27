@@ -164,7 +164,7 @@ void UI_DrawMainMenu(int currentSelection) {
 
     DrawGames();
    
-    DrawSelect();
+    DrawSelect()
 }
 
 void UI_DrawDiagnostics(void) {
