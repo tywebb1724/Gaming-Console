@@ -1,7 +1,10 @@
 #include "ui.h"
 #include "raylib.h"
+#include "raymath.h"
 #include "games.h"
 #include <string.h>
+#include <math.h>
+#include "states.h"
 
 Texture2D img;
 Texture2D btnA;
@@ -10,18 +13,99 @@ char *title;
 int title_X, title_Y, title_Size;
 int img_X, img_Y, img_W, img_H;
 
-void UI_LoadTextures() {
-    btnA = LoadTexture("./assets/AButton.png");
-    btnX = LoadTexture("./assets/XButton.png");
+enum Scroll scroll = SCROLL_NO;
+
+float alpha;
+
+void UI_ChangeAlpa(float offRate, float onRate) {
+    if (scroll == SCROLL_NO) {
+        if (alpha <= 1.0f) {
+            alpha += onRate;
+        } 
+        else {
+            alpha = 1.0f;
+        }
+    }
+    else {
+        if (alpha <= 0.0f) {
+            alpha = 0.0f;
+        }
+        else {
+            alpha -= offRate;
+        }
+    }
 }
 
-//Function to center a text to a certain X position
-int CenterText(char *text, int fontSize, int position) {
-    int width = MeasureText(text, fontSize);
-    return (position - (width / 2));
+void UI_ResetDisplayCoords_Games() {
+
+    gamesDisplayed[0].x = LEFT3_IMG_X;
+    gamesDisplayed[1].x = LEFT2_IMG_X;
+    gamesDisplayed[2].x = LEFT1_IMG_X;
+    gamesDisplayed[3].x = CENTER_IMG_X;
+    gamesDisplayed[4].x = RIGHT1_IMG_X;
+    gamesDisplayed[5].x = RIGHT2_IMG_X;
+    gamesDisplayed[6].x = RIGHT3_IMG_X;
+
+    gamesDisplayed[0].y = SIDE3_IMG_Y;
+    gamesDisplayed[1].y = SIDE2_IMG_Y;
+    gamesDisplayed[2].y = SIDE1_IMG_Y;
+    gamesDisplayed[3].y = CENTER_IMG_Y;
+    gamesDisplayed[4].y = SIDE1_IMG_Y;
+    gamesDisplayed[5].y = SIDE2_IMG_Y;
+    gamesDisplayed[6].y = SIDE3_IMG_Y;
+
+    gamesDisplayed[0].w = SIDE3_IMG_W;
+    gamesDisplayed[1].w = SIDE2_IMG_W;
+    gamesDisplayed[2].w = SIDE1_IMG_W;
+    gamesDisplayed[3].w = CENTER_IMG_W;
+    gamesDisplayed[4].w = SIDE1_IMG_W;
+    gamesDisplayed[5].w = SIDE2_IMG_W;
+    gamesDisplayed[6].w = SIDE3_IMG_W;
+
+    gamesDisplayed[0].h = SIDE3_IMG_H;
+    gamesDisplayed[1].h = SIDE2_IMG_H;
+    gamesDisplayed[2].h = SIDE1_IMG_H;
+    gamesDisplayed[3].h = CENTER_IMG_H;
+    gamesDisplayed[4].h = SIDE1_IMG_H;
+    gamesDisplayed[5].h = SIDE2_IMG_H;
+    gamesDisplayed[6].h = SIDE3_IMG_H;
+ 
 }
 
-void DrawImage() {
+void UI_ResetDisplayCoords_Consoles() {
+    return;
+}
+
+void UI_DrawArrow(int xPos, int yPos, int direction) {
+    int radius = BTN_RADIUS;
+
+    Vector2 centerA = { xPos, yPos };
+    DrawCircleV(centerA, radius, WHITE);
+
+    if (direction == LEFT) {
+        Vector2 v1 = {xPos + (2.0f / 3) * (radius), yPos};
+        Vector2 v2 = {xPos - (1.0f / 4) * (radius), yPos};
+        DrawLineEx(v1, v2, 4.0f, GRAY);
+    
+        Vector2 triangleTip   = { xPos - (3.0f / 4) * (radius), yPos };
+        Vector2 bottomRight   = { xPos - (1.0f / 4) * (radius), yPos + (1.0f / 2) * (radius) };
+        Vector2 topRight      = { xPos - (1.0f / 4) * (radius), yPos - (1.0f / 2) * (radius) };
+        DrawTriangle(triangleTip, bottomRight, topRight, GRAY);
+    }
+    else if (direction == RIGHT) {
+        Vector2 v1 = {xPos - (2.0f / 3) * (radius), yPos};
+        Vector2 v2 = {xPos + (1.0f / 4) * (radius), yPos};
+
+        DrawLineEx(v1, v2, 4.0f, GRAY);
+    
+        Vector2 triangleTip   = { xPos + (3.0f / 4) * (radius), yPos };
+        Vector2 bottomRight   = { xPos + (1.0f / 4) * (radius), yPos - (1.0f / 2) * (radius) };
+        Vector2 topRight      = { xPos + (1.0f / 4) * (radius), yPos + (1.0f / 2) * (radius) };
+        DrawTriangle(triangleTip, bottomRight, topRight, GRAY);
+    }
+}
+
+void UI_DrawImage() {
     if (img.id > 0) {
             Rectangle sourceRect = {0.0f, 0.0f, (float)img.width, (float)img.height};
             Rectangle destRect = {(float)img_X, img_Y, img_W, img_H};
@@ -35,118 +119,181 @@ void DrawImage() {
         }
 }
 
-void DrawGames() {
-     img_Y = SIDE2_IMG_Y;
-    img_W = SIDE2_IMG_W;
-    img_H = SIDE2_IMG_H;
-    for (int i = 0; i < MAX_GAMES; i ++) {
-        if (strcmp(gameLeft2.title, gameLibrary[i].title) == 0) {
-            img = gameLibrary[i].cover;
-            img_X = LEFT2_IMG_X;
-            DrawImage();
-            DrawRectangleLinesEx(
-                (Rectangle){
-                    img_X - THICKNESS_OTHER,
-                    img_Y - THICKNESS_OTHER,
-                    img_W + (2 * THICKNESS_OTHER),
-                    img_H + (2 * THICKNESS_OTHER)
-                },
-                THICKNESS_OTHER, 
-                GRAY
-            );
-        }
-        else if (strcmp(gameRight2.title, gameLibrary[i].title) == 0) {
-            img = gameLibrary[i].cover;
-            img_X = RIGHT2_IMG_X;
-            DrawImage();
-            DrawRectangleLinesEx(
-                (Rectangle){
-                    img_X - THICKNESS_OTHER,
-                    img_Y - THICKNESS_OTHER,
-                    img_W + (2 * THICKNESS_OTHER),
-                    img_H + (2 * THICKNESS_OTHER)
-                },
-                THICKNESS_OTHER, 
-                GRAY
-            );
-        }
-    }
+void UI_DrawGame(int i) {
+    img_Y = gamesDisplayed[i].y;
+    img_W = gamesDisplayed[i].w;
+    img_H = gamesDisplayed[i].h;
+    img = gameLibrary[gamesDisplayed[i].index].cover;
+    img_X = gamesDisplayed[i].x;
+    UI_DrawImage();
+    DrawRectangleLinesEx(
+        (Rectangle){
+            img_X - THICKNESS_OTHER,
+            img_Y - THICKNESS_OTHER,
+            img_W + (2 * THICKNESS_OTHER),
+            img_H + (2 * THICKNESS_OTHER)
+        },
+        THICKNESS_OTHER, 
+        GRAY
+    );
+}
 
-    img_Y = SIDE1_IMG_Y;
-    img_W = SIDE1_IMG_W;
-    img_H = SIDE1_IMG_H; 
-    for (int i = 0; i < MAX_GAMES; i++) {
-        if (strcmp(gameLeft1.title, gameLibrary[i].title) == 0) {
-            img = gameLibrary[i].cover;
-            img_X = LEFT1_IMG_X;
-            DrawImage();
-            DrawRectangleLinesEx(
-                (Rectangle){
-                    img_X - THICKNESS_OTHER,
-                    img_Y - THICKNESS_OTHER,
-                    img_W + (2 * THICKNESS_OTHER),
-                    img_H + (2 * THICKNESS_OTHER)
-                },
-                THICKNESS_OTHER, 
-                GRAY
-            );
+void UI_DrawGamesNormal() {
+    UI_DrawGame(1);
+    UI_DrawGame(5);
+    UI_DrawGame(2);
+    UI_DrawGame(4); 
+    UI_DrawGame(3);
+}
+
+void UI_DrawGamesLeft() {
+    UI_DrawGame(6);
+    UI_DrawGame(1);
+    UI_DrawGame(5);
+    UI_DrawGame(2);
+    UI_DrawGame(3);
+    UI_DrawGame(4);
+}
+
+void UI_DrawGamesRight() {
+    UI_DrawGame(0);
+    UI_DrawGame(1);
+    UI_DrawGame(5);
+    UI_DrawGame(4);
+    UI_DrawGame(3);
+    UI_DrawGame(2);
+}
+
+void UI_DrawScroll() {
+
+    if (scroll == SCROLL_LEFT) {
+        UI_DrawGamesLeft();
+        if (fabsf(gamesDisplayed[4].x - CENTER_IMG_X) <= SCROLL_THRESHOLD) {
+            scroll = SCROLL_NO;
+            Games_ScrollLeft();
+            UI_ResetDisplayCoords_Games();
+            return;
         }
-        else if (strcmp(gameRight1.title, gameLibrary[i].title) == 0) {
-            img = gameLibrary[i].cover;
-            img_X = RIGHT1_IMG_X;
-            DrawImage();
-            DrawRectangleLinesEx(
-                (Rectangle){
-                    img_X - THICKNESS_OTHER,
-                    img_Y - THICKNESS_OTHER,
-                    img_W + (2 * THICKNESS_OTHER),
-                    img_H + (2 * THICKNESS_OTHER)
-                },
-                THICKNESS_OTHER, 
-                GRAY
-            );
+
+        gamesDisplayed[1].x = Lerp(gamesDisplayed[1].x, LEFT3_IMG_X, 0.075f);
+        gamesDisplayed[2].x = Lerp(gamesDisplayed[2].x, LEFT2_IMG_X, 0.1f);
+        gamesDisplayed[3].x = Lerp(gamesDisplayed[3].x, LEFT1_IMG_X, 0.1f);
+        gamesDisplayed[4].x = Lerp(gamesDisplayed[4].x, CENTER_IMG_X, 0.1f);
+        gamesDisplayed[5].x = Lerp(gamesDisplayed[5].x, RIGHT1_IMG_X, 0.1f); 
+        gamesDisplayed[6].x = Lerp(gamesDisplayed[6].x, RIGHT2_IMG_X, 0.1f); 
+
+        gamesDisplayed[1].y = Lerp(gamesDisplayed[1].y, SIDE3_IMG_Y, 0.075f);
+        gamesDisplayed[2].y = Lerp(gamesDisplayed[2].y, SIDE2_IMG_Y, 0.1f);
+        gamesDisplayed[3].y = Lerp(gamesDisplayed[3].y, SIDE1_IMG_Y, 0.1f);
+        gamesDisplayed[4].y = Lerp(gamesDisplayed[4].y, CENTER_IMG_Y, 0.1f);
+        gamesDisplayed[5].y = Lerp(gamesDisplayed[5].y, SIDE1_IMG_Y, 0.1f);
+        gamesDisplayed[6].y = Lerp(gamesDisplayed[6].y, SIDE2_IMG_Y, 0.1f);   
+
+        gamesDisplayed[1].w = Lerp(gamesDisplayed[1].w, SIDE3_IMG_W, 0.075f);
+        gamesDisplayed[2].w = Lerp(gamesDisplayed[2].w, SIDE2_IMG_W, 0.1f);
+        gamesDisplayed[3].w = Lerp(gamesDisplayed[3].w, SIDE1_IMG_W, 0.1f);
+        gamesDisplayed[4].w = Lerp(gamesDisplayed[4].w, CENTER_IMG_W, 0.1f);
+        gamesDisplayed[5].w = Lerp(gamesDisplayed[5].w, SIDE1_IMG_W, 0.1f); 
+        gamesDisplayed[6].w = Lerp(gamesDisplayed[6].w, SIDE2_IMG_W, 0.1f);
+
+        gamesDisplayed[1].h = Lerp(gamesDisplayed[1].h, SIDE3_IMG_W, 0.075f);
+        gamesDisplayed[2].h = Lerp(gamesDisplayed[2].h, SIDE2_IMG_H, 0.1f);
+        gamesDisplayed[3].h = Lerp(gamesDisplayed[3].h, SIDE1_IMG_H, 0.1f);
+        gamesDisplayed[4].h = Lerp(gamesDisplayed[4].h, CENTER_IMG_H, 0.1f);
+        gamesDisplayed[5].h = Lerp(gamesDisplayed[5].h, SIDE1_IMG_H, 0.1f);  
+        gamesDisplayed[6].h = Lerp(gamesDisplayed[6].h, SIDE2_IMG_H, 0.1f);
+    }
+    
+    else if (scroll == SCROLL_RIGHT) {
+        UI_DrawGamesRight();
+        if (fabsf(gamesDisplayed[2].x - CENTER_IMG_X) <= SCROLL_THRESHOLD) {
+            scroll = SCROLL_NO;
+            Games_ScrollRight();
+            UI_ResetDisplayCoords_Games();
+            return;
         }
         
-    }
+        gamesDisplayed[0].x = Lerp(gamesDisplayed[0].x, LEFT2_IMG_X, 0.1f);
+        gamesDisplayed[1].x = Lerp(gamesDisplayed[1].x, LEFT1_IMG_X, 0.1f);
+        gamesDisplayed[2].x = Lerp(gamesDisplayed[2].x, CENTER_IMG_X, 0.1f);
+        gamesDisplayed[3].x = Lerp(gamesDisplayed[3].x, RIGHT1_IMG_X, 0.1f);
+        gamesDisplayed[4].x = Lerp(gamesDisplayed[4].x, RIGHT2_IMG_X, 0.1f);
+        gamesDisplayed[5].x = Lerp(gamesDisplayed[5].x, RIGHT3_IMG_X, 0.1f); 
 
-    img_Y = CENTER_IMG_Y;
-    img_W = CENTER_IMG_W;
-    img_H = CENTER_IMG_H;
-    img_X = CENTER_IMG_X;
-    for (int i = 0; i < MAX_GAMES; i++) {
-        if (strcmp(gameCenter.title, gameLibrary[i].title) == 0) {
-            img = gameLibrary[i].cover;
-            DrawImage();
-            DrawRectangleLinesEx(
-                (Rectangle){
-                    img_X - THICKNESS_SELECT,
-                    img_Y - THICKNESS_SELECT,
-                    img_W + (2 * THICKNESS_SELECT),
-                    img_H + (2 * THICKNESS_SELECT)
-                },
-                THICKNESS_SELECT, 
-                BLUE
-            );
-        }
+        gamesDisplayed[0].y = Lerp(gamesDisplayed[0].y, SIDE2_IMG_Y, 0.1f);
+        gamesDisplayed[1].y = Lerp(gamesDisplayed[1].y, SIDE1_IMG_Y, 0.1f);
+        gamesDisplayed[2].y = Lerp(gamesDisplayed[2].y, CENTER_IMG_Y, 0.1f);
+        gamesDisplayed[3].y = Lerp(gamesDisplayed[3].y, SIDE1_IMG_Y, 0.1f);
+        gamesDisplayed[4].y = Lerp(gamesDisplayed[4].y, SIDE2_IMG_Y, 0.1f); 
+        gamesDisplayed[5].y = Lerp(gamesDisplayed[5].y, SIDE3_IMG_Y, 0.1f); 
+
+        gamesDisplayed[0].w = Lerp(gamesDisplayed[0].w, SIDE2_IMG_W, 0.1f);
+        gamesDisplayed[1].w = Lerp(gamesDisplayed[1].w, SIDE1_IMG_W, 0.1f);
+        gamesDisplayed[2].w = Lerp(gamesDisplayed[2].w, CENTER_IMG_W, 0.1f);
+        gamesDisplayed[3].w = Lerp(gamesDisplayed[3].w, SIDE1_IMG_W, 0.1f);
+        gamesDisplayed[4].w = Lerp(gamesDisplayed[4].w, SIDE2_IMG_W, 0.1f);
+        gamesDisplayed[5].w = Lerp(gamesDisplayed[5].w, SIDE3_IMG_W, 0.1f);
+
+        gamesDisplayed[0].h = Lerp(gamesDisplayed[0].h, SIDE2_IMG_H, 0.1f);
+        gamesDisplayed[1].h = Lerp(gamesDisplayed[1].h, SIDE1_IMG_H, 0.1f);
+        gamesDisplayed[2].h = Lerp(gamesDisplayed[2].h, CENTER_IMG_H, 0.1f);
+        gamesDisplayed[3].h = Lerp(gamesDisplayed[3].h, SIDE1_IMG_H, 0.1f);
+        gamesDisplayed[4].h = Lerp(gamesDisplayed[4].h, SIDE2_IMG_H, 0.1f);
+        gamesDisplayed[5].h = Lerp(gamesDisplayed[5].h, SIDE3_IMG_H, 0.1f);
     }
 }
 
-void DrawSelect() {
-    DrawText(SELECT_TEXT1, SELECT_TEXT1_X, SELECT_Y, SELECT_TEXT_SIZE, BLUE);
-    img = btnA;
-    img_X = A_BTN_X;
-    img_Y = SELECT_Y;
-    img_W = BTN_SIZE;
-    img_H = BTN_SIZE;
-    DrawImage();
-    DrawImage(SELECT_TEXT2, SELECT_TEXT2_X, SELECT_Y, SELECT_TEXT_SIZE, BLUE);
-    img = btnX;
-    img_X = X_BTN_X;
-    img_Y = SELECT_Y;
-    img_W = BTN_SIZE;
-    img_H = BTN_SIZE;
-    DrawImage();
-    DrawText(SELECT_TEXT3, SELECT_TEXT3_X, SELECT_Y, SELECT_TEXT_SIZE, BLUE);
+//Function to center a text to a certain X position
+int UI_CenterText(char *text, int fontSize, int position) {
+    int width = MeasureText(text, fontSize);
+    return (position - (width / 2));
+}
+
+void UI_DrawControls_Right() {
+
+    /*DrawText (BACK_TXT, BACK_TXT_X, BACK_TXT_Y, SELECT_TXT_SIZE, BLUE);
+
+    Vector2 centerB = { XBOX_B_X, BTN_B_O_Y };
+    DrawCircleV(centerB, BTN_RADIUS, RED);
+    DrawText("B", XBOX_B_TXT_X, BTN_B_O_TXT_Y, SELECT_TXT_SIZE, WHITE);
+
+
+    Vector2 centerO = { PS_O_X, BTN_B_O_Y };
+    DrawCircleV(centerO, BTN_RADIUS, BLACK);
+    DrawText("O", PS_O_TXT_X, BTN_B_O_TXT_Y, SELECT_TXT_SIZE, RED);*/
+
+
+    UI_DrawArrow(LEFT_ARROW_X, ARROW_Y, LEFT);
+    UI_DrawArrow(RIGHT_ARROW_X, ARROW_Y, RIGHT);
+    DrawText(ARROW_TXT, ARROW_TXT_X, ARROW_TXT_Y, SELECT_TXT_SIZE, BLUE);  
+}
+
+void UI_DrawSelect() {
+    //"PRESS"
+    DrawText(SELECT_TXT1, SELECT_TXT1_X, SELECT_TXT_Y, SELECT_TXT_SIZE, Fade(BLUE, alpha));
+    //A button
+    Vector2 centerA = { XBOX_A_X, BTN_A_X_Y };
+    DrawCircleV(centerA, BTN_RADIUS, Fade(DARKGREEN, alpha));
+    DrawText("A", XBOX_A_TXT_X, SELECT_TXT_Y, SELECT_TXT_SIZE, Fade(WHITE, alpha));
+    //"/"
+    DrawText(SELECT_TXT2, SELECT_TXT2_X, SELECT_TXT_Y, SELECT_TXT_SIZE, Fade(BLUE, alpha));
+    //X button
+    Vector2 centerX = { PS_X_X, BTN_A_X_Y };
+    DrawCircleV(centerX, BTN_RADIUS, Fade(BLUE, alpha));
+    DrawText("X", PS_X_TXT_X, SELECT_TXT_Y, SELECT_TXT_SIZE, Fade(BLACK, alpha));
+    //"TO PLAY"
+    DrawText(SELECT_TXT3, SELECT_TXT3_X, SELECT_TXT_Y, SELECT_TXT_SIZE, Fade(BLUE, alpha));
+
+    DrawRectangleLinesEx(
+                (Rectangle){
+                    SELECT_TXT1_X - 2 * SELECT_PADDING_X,
+                    SELECT_TXT_Y - SELECT_PADDING_Y / 2,
+                    SELECT_LEN + 4 * SELECT_PADDING_X,
+                    SELECT_TXT_SIZE + SELECT_PADDING_Y
+                },
+                THICKNESS_SELECT, 
+                Fade(BLUE, alpha)
+            );
 }
 
 //Draw the boot screen
@@ -156,15 +303,50 @@ void UI_DrawBootScreen(void) {
     DrawText("Welcome", 250, 185, 75, BLUE);
 }
 
-//Draw the main menu
-void UI_DrawMainMenu(int currentSelection) {
-    ClearBackground(BACKGROUND_CLR);
-    DrawText(COMPANY_NAME, CenterText(COMPANY_NAME, COMPANY_TEXT_SIZE, CENTER), COMPANY_Y, COMPANY_TEXT_SIZE, BLUE);
-    DrawText(PICK_GAME_TEXT, CenterText(PICK_GAME_TEXT, PICK_GAME_TEXT_SIZE, CENTER), PICK_GAME_Y, PICK_GAME_TEXT_SIZE, BLUE);
+void UI_DrawHeading() {
+    DrawText(COMPANY_NAME, UI_CenterText(COMPANY_NAME, COMPANY_TEXT_SIZE, CENTER), COMPANY_Y, COMPANY_TEXT_SIZE, BLUE);
+    DrawText(PICK_GAME_TEXT, UI_CenterText(PICK_GAME_TEXT, PICK_GAME_TEXT_SIZE, CENTER), PICK_GAME_Y, PICK_GAME_TEXT_SIZE, BLUE);
+}
 
-    DrawGames();
-   
-    DrawSelect()
+void UI_DrawGames() {
+    if (scroll == SCROLL_NO) {
+        UI_DrawGamesNormal();
+    }
+    else {
+        UI_DrawScroll();
+    }
+
+    DrawRectangleLinesEx(
+        (Rectangle){
+            img_X - THICKNESS_SELECT_GAME,
+            img_Y - THICKNESS_SELECT_GAME,
+            img_W + (2 * THICKNESS_SELECT_GAME),
+            img_H + (2 * THICKNESS_SELECT_GAME)
+        },
+        THICKNESS_SELECT_GAME, 
+        Fade(BLUE, alpha)
+    );
+}
+
+//Draw the main menu
+void UI_DrawMainMenu() {
+    ClearBackground(BACKGROUND_CLR);
+    UI_DrawHeading();
+    UI_ChangeAlpa(0.25f, 0.25f);
+
+    switch (currentMenuState) {
+        case (CONSOLES):
+        //UI_DrawConsoles();
+        break;
+
+        case (GAMES):
+        UI_DrawGames();
+        break;
+
+    }
+
+    UI_DrawSelect();
+    UI_DrawControls_Right();
 }
 
 void UI_DrawDiagnostics(void) {

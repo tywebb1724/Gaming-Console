@@ -7,8 +7,8 @@
 int main(void)
 {
     // Initialize a window 800 pixels wide by 450 pixels high
-    InitWindow(800, 450, "Custom Console OS");
-    SetTargetFPS(60);
+    InitWindow(SCREEN_W, SCREEN_H, "Custom Console OS");
+    SetTargetFPS(FPS);
     
     //Initialize state machine
     Games_Init();

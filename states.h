@@ -8,6 +8,13 @@ typedef enum {
     STATE_DIAGNOSTICS
 } ConsoleState;
 
+typedef enum {
+    CONSOLES,
+    GAMES
+} MenuState;
+
+extern MenuState currentMenuState;
+
 //Initialize the states
 void State_Init(void);
 //Update states and variabels and draw the correct screen

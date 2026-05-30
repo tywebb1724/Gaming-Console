@@ -8,14 +8,15 @@
 
 static ConsoleState currentConsoleState = STATE_BOOT;
 
-static int menuSelection = 0;
 static float bootTimer = 0.0f;
+
+MenuState currentMenuState = GAMES;
 
 //Initialize the states
 void State_Init(void) {
     currentConsoleState = STATE_BOOT;
-    menuSelection = 0;
     bootTimer = 0.0f;
+    UI_ResetDisplayCoords_Games();
 }
 
 //Update states and variabels and draw the correct screen
@@ -29,14 +30,19 @@ void State_UpdateAndDraw(void) {
         //If the boot up time has passed, go to the main menu
         if (bootTimer >= BOOT_TIME) {
             Games_LoadTextures();
-            UI_LoadTextures();
             currentConsoleState = STATE_MAIN_MENU;
         }
         break;
 
         //Drawing the main menu
         case STATE_MAIN_MENU:
-        UI_DrawMainMenu(menuSelection);
+        UI_DrawMainMenu();
+        if (scroll == SCROLL_NO && IsKeyPressed(KEY_RIGHT)) {
+            scroll = SCROLL_RIGHT;
+        }
+        else if (scroll == SCROLL_NO && IsKeyPressed(KEY_LEFT)) {
+            scroll = SCROLL_LEFT;
+        }
         break;
 
         case STATE_APP_LAUNCHER:
