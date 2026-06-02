@@ -1,8 +1,8 @@
 #include "consoles.h"
 
-Console consoleLibrary[CONSOLES_ON_SCREEN];
+Console consoleLibrary[CONSOLES_LEN];
 
-Console consolesDisplayed[CONSOLES_ON_SCREEN];
+Console consolesDisplayed[CONSOLES_LEN];
 
 void Consoles_Init() {
 
@@ -45,25 +45,25 @@ void Consoles_Load_Textures() {
 }
 
 void Console_ScrollRight(void) {
-    for (int i = 0; i < CONSOLES_ON_SCREEN; i++) {
+    for (int i = 0; i < CONSOLES_LEN; i++) {
         consolesDisplayed[i].index -= 1;
         if (consolesDisplayed[i].index == -1) {
-            consolesDisplayed[i].index = CONSOLES_ON_SCREEN - 1;
+            consolesDisplayed[i].index = CONSOLES_LEN - 1;
         }
     }
-    for (int i = 0; i < CONSOLES_ON_SCREEN + 2; i++) {
+    for (int i = 0; i < CONSOLES_LEN; i++) {
         consolesDisplayed[i] = consoleLibrary[consolesDisplayed[i].index];
     }
 }
 
 void Consoles_ScrollLeft(void) {
-    for (int i = 0; i < CONSOLES_ON_SCREEN + 2; i++) {
+    for (int i = 0; i < CONSOLES_LEN; i++) {
         consolesDisplayed[i].index += 1;
-        if (consolesDisplayed[i].index == CONSOLES_ON_SCREEN) {
+        if (consolesDisplayed[i].index == CONSOLES_LEN) {
             consolesDisplayed[i].index = 0;
         }
     }
-    for (int i = 0; i < CONSOLES_ON_SCREEN + 2; i++) {
+    for (int i = 0; i < CONSOLES_LEN; i++) {
         consolesDisplayed[i] = consoleLibrary[consolesDisplayed[i].index];
     }
 }

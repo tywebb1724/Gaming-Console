@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include "ui.h"
 #include "games.h"
+#include "ui_config.h"
 
 //Time the boot up screen should display
 #define BOOT_TIME 2.0f

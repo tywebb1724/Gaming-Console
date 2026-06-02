@@ -3,7 +3,8 @@
 
 #include "raylib.h"
 
-#define CONSOLES_ON_SCREEN 5
+#define CONSOLES_ON_SCREEN 3
+#define CONSOLES_LEN 5
 
 typedef struct {
     char *name;

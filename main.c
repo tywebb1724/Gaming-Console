@@ -2,6 +2,7 @@
 #include "states.h"
 #include "ui.h"
 #include "games.h"
+#include "ui_config.h"
 
 
 int main(void)
