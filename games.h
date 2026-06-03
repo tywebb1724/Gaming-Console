@@ -28,12 +28,14 @@ extern Game gamesDisplayed[GAMES_ON_SCREEN + 2];
 extern int gamesLen;
 
 //Initialize game library
-void Games_Init(void);
-
-void Games_LoadTextures(void);
-void Games_ScrollRight(void);
-void Games_ScrollLeft(void);
-//Unload game textures
-void Games_Unload(void);
+void Games_Init();
+//Load game cover textures
+void Games_LoadTextures();
+//Shift the order of the games to the right
+void Games_ScrollRight();
+//Shift the order of the games to the left
+void Games_ScrollLeft();
+//Unload game cover textures
+void Games_Unload();
 
 #endif

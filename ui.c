@@ -7,6 +7,7 @@
 #include "states.h"
 #include "consoles.h"
 #include "ui_config.h"
+#include <stdio.h>
 
 Texture2D img;
 Texture2D btnA;
@@ -19,6 +20,7 @@ enum Scroll scroll = SCROLL_NO;
 
 float alpha;
 
+//Change the alpha value for fading the display
 void UI_ChangeAlpa(float offRate, float onRate) {
     if (scroll == SCROLL_NO) {
         if (alpha <= 1.0f) {
@@ -38,6 +40,7 @@ void UI_ChangeAlpa(float offRate, float onRate) {
     }
 }
 
+//Reset the coordinates for the displayed games
 void UI_ResetDisplayCoords_Games() {
 
     gamesDisplayed[0].x = LEFT3_GAME_X;
@@ -74,35 +77,37 @@ void UI_ResetDisplayCoords_Games() {
  
 }
 
+//Reset the coordinates for the displayed consoles
 void UI_ResetDisplayCoords_Consoles() {
     
-    gamesDisplayed[0].x = LEFT2_CONS_X;
-    gamesDisplayed[1].x = LEFT1_CONS_X;
-    gamesDisplayed[2].x = CENTER_CONS_X;
-    gamesDisplayed[3].x = RIGHT1_CONS_X;
-    gamesDisplayed[4].x = RIGHT2_CONS_X;
+    consolesDisplayed[0].x = LEFT2_CONS_X;
+    consolesDisplayed[1].x = LEFT1_CONS_X;
+    consolesDisplayed[2].x = CENTER_CONS_X;
+    consolesDisplayed[3].x = RIGHT1_CONS_X;
+    consolesDisplayed[4].x = RIGHT2_CONS_X;
 
-    gamesDisplayed[0].y = SIDE2_CONS_Y;
-    gamesDisplayed[1].y = SIDE1_CONS_Y;
-    gamesDisplayed[2].y = CENTER_CONS_Y;
-    gamesDisplayed[3].y = SIDE1_CONS_Y;
-    gamesDisplayed[4].y = SIDE2_CONS_Y;
+    consolesDisplayed[0].y = SIDE2_CONS_Y;
+    consolesDisplayed[1].y = SIDE1_CONS_Y;
+    consolesDisplayed[2].y = CENTER_CONS_Y;
+    consolesDisplayed[3].y = SIDE1_CONS_Y;
+    consolesDisplayed[4].y = SIDE2_CONS_Y;
 
-    gamesDisplayed[0].w = SIDE2_CONS_W;
-    gamesDisplayed[1].w = SIDE1_CONS_W;
-    gamesDisplayed[2].w = CENTER_CONS_W;
-    gamesDisplayed[3].w = SIDE1_CONS_W;
-    gamesDisplayed[4].w = SIDE2_CONS_W;
+    consolesDisplayed[0].w = SIDE2_CONS_W;
+    consolesDisplayed[1].w = SIDE1_CONS_W;
+    consolesDisplayed[2].w = CENTER_CONS_W;
+    consolesDisplayed[3].w = SIDE1_CONS_W;
+    consolesDisplayed[4].w = SIDE2_CONS_W;
 
-    gamesDisplayed[0].h = SIDE2_CONS_H;
-    gamesDisplayed[1].h = SIDE1_CONS_H;
-    gamesDisplayed[2].h = CENTER_CONS_H;
-    gamesDisplayed[3].h = SIDE1_CONS_H;
-    gamesDisplayed[4].h = SIDE2_CONS_H;
+    consolesDisplayed[0].h = SIDE2_CONS_H;
+    consolesDisplayed[1].h = SIDE1_CONS_H;
+    consolesDisplayed[2].h = CENTER_CONS_H;
+    consolesDisplayed[3].h = SIDE1_CONS_H;
+    consolesDisplayed[4].h = SIDE2_CONS_H;
 
     return;
 }
 
+//Function for drawing an arrow button
 void UI_DrawArrow(int xPos, int yPos, int direction) {
     int radius = BTN_RADIUS;
 
@@ -132,8 +137,9 @@ void UI_DrawArrow(int xPos, int yPos, int direction) {
     }
 }
 
+//Function for drawing an image
 void UI_DrawImage() {
-    if (img.id > 0) {
+    if (1) {
             Rectangle sourceRect = {0.0f, 0.0f, (float)img.width, (float)img.height};
             Rectangle destRect = {(float)img_X, img_Y, img_W, img_H};
             Vector2 origin = {0.0f, 0.0f};
@@ -146,6 +152,7 @@ void UI_DrawImage() {
         }
 }
 
+//Function for drawing a game cover
 void UI_DrawGame(int i) {
     img_Y = gamesDisplayed[i].y;
     img_W = gamesDisplayed[i].w;
@@ -165,6 +172,7 @@ void UI_DrawGame(int i) {
     );
 }
 
+//Function for drawing the games when in a static position
 void UI_DrawGamesNormal() {
     UI_DrawGame(1);
     UI_DrawGame(5);
@@ -173,7 +181,8 @@ void UI_DrawGamesNormal() {
     UI_DrawGame(3);
 }
 
-void UI_DrawGamesLeft() {
+//Function for drawing the games when scrolling to the left
+void UI_DrawGames_Left() {
     UI_DrawGame(6);
     UI_DrawGame(1);
     UI_DrawGame(5);
@@ -182,7 +191,8 @@ void UI_DrawGamesLeft() {
     UI_DrawGame(4);
 }
 
-void UI_DrawGamesRight() {
+//Function for drawing the games when scrolling to the right
+void UI_DrawGames_Right() {
     UI_DrawGame(0);
     UI_DrawGame(1);
     UI_DrawGame(5);
@@ -191,10 +201,11 @@ void UI_DrawGamesRight() {
     UI_DrawGame(2);
 }
 
+//Function for drawing the animation of scrolling games
 void UI_DrawScroll_Games() {
 
     if (scroll == SCROLL_LEFT) {
-        UI_DrawGamesLeft();
+        UI_DrawGames_Left();
         if (fabsf(gamesDisplayed[4].x - CENTER_GAME_X) <= SCROLL_THRESHOLD) {
             scroll = SCROLL_NO;
             Games_ScrollLeft();
@@ -232,7 +243,7 @@ void UI_DrawScroll_Games() {
     }
     
     else if (scroll == SCROLL_RIGHT) {
-        UI_DrawGamesRight();
+        UI_DrawGames_Right();
         if (fabsf(gamesDisplayed[2].x - CENTER_GAME_X) <= SCROLL_THRESHOLD) {
             scroll = SCROLL_NO;
             Games_ScrollRight();
@@ -270,38 +281,154 @@ void UI_DrawScroll_Games() {
     }
 }
 
+//Function for drawing a console cover
+void UI_DrawConsole(int i) {
+    img_Y = consolesDisplayed[i].y;
+    img_W = consolesDisplayed[i].w;
+    img_H = consolesDisplayed[i].h;
+    img = consoleLibrary[consolesDisplayed[i].index].cover;
+    img_X = consolesDisplayed[i].x;
+    UI_DrawImage();
+    DrawRectangleLinesEx(
+        (Rectangle){
+            img_X - THICKNESS_OTHER,
+            img_Y - THICKNESS_OTHER,
+            img_W + (2 * THICKNESS_OTHER),
+            img_H + (2 * THICKNESS_OTHER)
+        },
+        THICKNESS_OTHER, 
+        GRAY
+    );
+}
+
+//Function for drawing the consoles when in a static position
+void UI_DrawConsoles_Normal() {
+    UI_DrawConsole(1);
+    UI_DrawConsole(3);
+    UI_DrawConsole(2);
+}
+
+//Function for drawing the consoles when scrolling to the left
+void UI_DrawConsoles_Left() {
+    UI_DrawConsole(1);
+    UI_DrawConsole(4);
+    UI_DrawConsole(2);
+    UI_DrawConsole(3);
+}
+
+//Function for drawing the consoles when scrolling to the right
+void UI_DrawConsoles_Right() {
+    UI_DrawConsole(3);
+    UI_DrawConsole(0);
+    UI_DrawConsole(2);
+    UI_DrawConsole(1);
+}
+
+//Function for drawing the animation of scrolling consoles
+void UI_DrawScroll_Consoles() {
+    if (scroll == SCROLL_LEFT) {
+        UI_DrawConsoles_Left();
+        if (fabsf(consolesDisplayed[3].x - CENTER_CONS_X) <= SCROLL_THRESHOLD) {
+            scroll = SCROLL_NO;
+            Consoles_ScrollLeft();
+            UI_ResetDisplayCoords_Consoles();
+            return;
+        }
+
+        consolesDisplayed[1].x = Lerp(consolesDisplayed[1].x, LEFT2_CONS_X, 0.075f);
+        consolesDisplayed[2].x = Lerp(consolesDisplayed[2].x, LEFT1_CONS_X, 0.1f);
+        consolesDisplayed[3].x = Lerp(consolesDisplayed[3].x, CENTER_CONS_X, 0.1f);
+        consolesDisplayed[4].x = Lerp(consolesDisplayed[4].x, RIGHT1_CONS_X, 0.1f);
+
+        consolesDisplayed[1].y = Lerp(consolesDisplayed[1].y, SIDE2_CONS_Y, 0.075f);
+        consolesDisplayed[2].y = Lerp(consolesDisplayed[2].y, SIDE1_CONS_Y, 0.1f);
+        consolesDisplayed[3].y = Lerp(consolesDisplayed[3].y, CENTER_CONS_Y, 0.1f);
+        consolesDisplayed[4].y = Lerp(consolesDisplayed[4].y, SIDE1_CONS_Y, 0.1f);  
+
+        consolesDisplayed[1].w = Lerp(consolesDisplayed[1].w, SIDE2_CONS_W, 0.075f);
+        consolesDisplayed[2].w = Lerp(consolesDisplayed[2].w, SIDE1_CONS_W, 0.1f);
+        consolesDisplayed[3].w = Lerp(consolesDisplayed[3].w, CENTER_CONS_W, 0.1f);
+        consolesDisplayed[4].w = Lerp(consolesDisplayed[4].w, SIDE1_CONS_W, 0.1f);
+
+        consolesDisplayed[1].h = Lerp(consolesDisplayed[1].h, SIDE2_CONS_H, 0.075f);
+        consolesDisplayed[2].h = Lerp(consolesDisplayed[2].h, SIDE1_CONS_H, 0.1f);
+        consolesDisplayed[3].h = Lerp(consolesDisplayed[3].h, CENTER_CONS_H, 0.1f);
+        consolesDisplayed[4].h = Lerp(consolesDisplayed[4].h, SIDE1_CONS_H, 0.1f);
+    }
+    
+    else if (scroll == SCROLL_RIGHT) {
+        UI_DrawConsoles_Right();
+        if (fabsf(consolesDisplayed[1].x - CENTER_CONS_X) <= SCROLL_THRESHOLD) {
+            scroll = SCROLL_NO;
+            Consoles_ScrollRight();
+            UI_ResetDisplayCoords_Consoles();
+            return;
+        }
+        
+        consolesDisplayed[0].x = Lerp(consolesDisplayed[0].x, LEFT1_CONS_X, 0.1f);
+        consolesDisplayed[1].x = Lerp(consolesDisplayed[1].x, CENTER_CONS_X, 0.1f);
+        consolesDisplayed[2].x = Lerp(consolesDisplayed[2].x, RIGHT1_CONS_X, 0.1f);
+        consolesDisplayed[3].x = Lerp(consolesDisplayed[3].x, RIGHT2_CONS_X, 0.075f);
+
+
+        consolesDisplayed[0].y = Lerp(consolesDisplayed[0].y, SIDE1_CONS_Y, 0.1f);
+        consolesDisplayed[1].y = Lerp(consolesDisplayed[1].y, CENTER_CONS_Y, 0.1f);
+        consolesDisplayed[2].y = Lerp(consolesDisplayed[2].y, SIDE1_CONS_Y, 0.1f);
+        consolesDisplayed[3].y = Lerp(consolesDisplayed[3].y, SIDE2_CONS_Y, 0.075f);
+
+        consolesDisplayed[0].w = Lerp(consolesDisplayed[0].w, SIDE1_CONS_W, 0.1f);
+        consolesDisplayed[1].w = Lerp(consolesDisplayed[1].w, CENTER_CONS_W, 0.1f);
+        consolesDisplayed[2].w = Lerp(consolesDisplayed[2].w, SIDE1_CONS_W, 0.1f);
+        consolesDisplayed[3].w = Lerp(consolesDisplayed[3].w, SIDE2_CONS_W, 0.075f);
+
+        consolesDisplayed[0].h = Lerp(consolesDisplayed[0].h, SIDE1_CONS_H, 0.1f);
+        consolesDisplayed[1].h = Lerp(consolesDisplayed[1].h, CENTER_CONS_H, 0.1f);
+        consolesDisplayed[2].h = Lerp(consolesDisplayed[2].h, SIDE1_CONS_H, 0.1f);
+        consolesDisplayed[3].h = Lerp(consolesDisplayed[3].h, SIDE2_CONS_H, 0.075f);
+    }
+}
+
+//Function for centering an image on a certain X position
 float UI_CenterImg_X(float width, float position) {
     return (position - width / 2);
 }
 
+//Function for centering an image on a certain Y position
 float UI_CenterImg_Y(float height, float position) {
     return (position - height / 2.0f);
 }
-//Function to center a text to a certain X position
+
+//Function to center text on a certain X position
 float UI_CenterText_X(char *text, int fontSize, int position) {
     float width = MeasureText(text, fontSize);
     return (position - (width / 2));
 }
 
+//Function for drawing the controls at the top left corner
 void UI_DrawCtrls_L() {
-
-    /*DrawText (BACK_TXT, BACK_TXT_X, BACK_TXT_Y, SELECT_TXT_SIZE, BLUE);
-
-    Vector2 centerB = { XBOX_B_X, BTN_B_O_Y };
-    DrawCircleV(centerB, BTN_RADIUS, RED);
-    DrawText("B", XBOX_B_TXT_X, BTN_B_O_TXT_Y, SELECT_TXT_SIZE, WHITE);
-
-
-    Vector2 centerO = { PS_O_X, BTN_B_O_Y };
-    DrawCircleV(centerO, BTN_RADIUS, BLACK);
-    DrawText("O", PS_O_TXT_X, BTN_B_O_TXT_Y, SELECT_TXT_SIZE, RED);*/
-
-
     UI_DrawArrow(L_ARROW_X, ARROW_Y, LEFT);
     UI_DrawArrow(R_ARROW_X, ARROW_Y, RIGHT);
     DrawText(ARROW_TXT, ARROW_TXT_X, ARROW_TXT_Y, BTN_TXT_SIZE, BLUE);  
 }
 
+//Function for drawing the controls at the top right corner
+void UI_DrawCtrls_R() {
+
+    DrawText (BTN_BACK_TXT, BTN_BACK_TXT_X, BTN_BACK_TXT_Y, BTN_TXT_SIZE, BLUE);
+
+    Vector2 centerB = { XBOX_B_X, BTN_BACK_Y };
+    DrawCircleV(centerB, BTN_RADIUS, RED);
+    DrawText("B", XBOX_B_TXT_X, XBOX_B_TXT_Y, BTN_TXT_SIZE, WHITE);
+
+    DrawText ("/", BTN_BACK_SLASH_X, XBOX_B_TXT_Y, BTN_TXT_SIZE, BLUE);
+
+    Vector2 centerO = { PS_O_X, BTN_BACK_Y };
+    DrawCircleV(centerO, BTN_RADIUS, BLACK);
+    DrawText("O", PS_O_TXT_X, PS_O_TXT_Y, BTN_TXT_SIZE, RED);
+
+}
+
+//Function for drawing the select controls at the bottom
 void UI_DrawSelect() {
     //"PRESS"
     DrawText(SELECT_TXT1, SELECT_TXT1_X, SELECT_TXT_Y, BTN_TXT_SIZE, Fade(BLUE, alpha));
@@ -330,18 +457,20 @@ void UI_DrawSelect() {
             );
 }
 
-//Draw the boot screen
-void UI_DrawBootScreen(void) {
+//Function for drawing the boot screen
+void UI_DrawBootScreen() {
     ClearBackground(BACKGROUND_CLR);
     DrawCircle(400, 225, 200, RED);
     DrawText("Welcome", 250, 185, 75, BLUE);
 }
 
+//Function for drawing the heading at the top of the screen
 void UI_DrawHeading() {
     DrawText(COMPANY_NAME, UI_CenterText_X(COMPANY_NAME, COMPANY_TXT_SIZE, CENTER_X), COMPANY_Y, COMPANY_TXT_SIZE, BLUE);
     DrawText(PICK_GAME_TXT, UI_CenterText_X(PICK_GAME_TXT, PICK_GAME_TXT_SIZE, CENTER_X), PICK_GAME_Y, PICK_GAME_TXT_SIZE, BLUE);
 }
 
+//Function for drawing games depending on whether it is scrolling
 void UI_DrawGames() {
     if (scroll == SCROLL_NO) {
         UI_DrawGamesNormal();
@@ -362,7 +491,28 @@ void UI_DrawGames() {
     );
 }
 
-//Draw the main menu
+//Function for drawing consoles depending on whether it is scrolling
+void UI_DrawConsoles() {
+    if (scroll == SCROLL_NO) {
+        UI_DrawConsoles_Normal();
+    }
+    else {
+        UI_DrawScroll_Consoles();
+    }
+
+    DrawRectangleLinesEx(
+        (Rectangle){
+            img_X - THICKNESS_SELECT_GAME,
+            img_Y - THICKNESS_SELECT_GAME,
+            img_W + (2 * THICKNESS_SELECT_GAME),
+            img_H + (2 * THICKNESS_SELECT_GAME)
+        },
+        THICKNESS_SELECT_GAME, 
+        Fade(BLUE, alpha)
+    );
+}
+
+//Function for drawing the main menu
 void UI_DrawMainMenu() {
     ClearBackground(BACKGROUND_CLR);
     UI_DrawHeading();
@@ -370,7 +520,7 @@ void UI_DrawMainMenu() {
 
     switch (currentMenuState) {
         case (CONSOLES):
-        //UI_DrawConsoles();
+        UI_DrawConsoles();
         break;
 
         case (GAMES):
@@ -381,8 +531,10 @@ void UI_DrawMainMenu() {
 
     UI_DrawSelect();
     UI_DrawCtrls_L();
+    UI_DrawCtrls_R();
 }
 
-void UI_DrawDiagnostics(void) {
+//Function for drawing the diagnostics screen
+void UI_DrawDiagnostics() {
     return;
 }

@@ -16,8 +16,8 @@ typedef enum {
 extern MenuState currentMenuState;
 
 //Initialize the states
-void State_Init(void);
+void State_Init();
 //Update states and variabels and draw the correct screen
-void State_UpdateAndDraw(void);
+void State_UpdateAndDraw();
 
 #endif

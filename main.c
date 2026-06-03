@@ -3,6 +3,8 @@
 #include "ui.h"
 #include "games.h"
 #include "ui_config.h"
+#include "consoles.h"
+#include <stdio.h>
 
 
 int main(void)
@@ -13,8 +15,8 @@ int main(void)
     
     //Initialize state machine
     Games_Init();
+    Consoles_Init();
     State_Init();
-
     // Main game loop
     while (!WindowShouldClose()) {
         BeginDrawing();

@@ -11,7 +11,7 @@ int gamesLen = 8;
 static bool texturesLoaded = false;
 
 //Initialize game library
-void Games_Init(void) {
+void Games_Init() {
     //Set up game 1
     gameLibrary[0].title = "Super Mario Brothers";
     gameLibrary[0].filePath = "path";
@@ -64,7 +64,8 @@ void Games_Init(void) {
     texturesLoaded = false;
 }
 
-void Games_LoadTextures(void) {
+//Load game cover textures
+void Games_LoadTextures() {
     if (texturesLoaded) {
         return;
     }
@@ -80,7 +81,8 @@ void Games_LoadTextures(void) {
     texturesLoaded = true;
 }
 
-void Games_ScrollRight(void) {
+//Shift the order of the games to the right
+void Games_ScrollRight() {
     for (int i = 0; i < GAMES_ON_SCREEN + 2; i++) {
         gamesDisplayed[i].index -= 1;
         if (gamesDisplayed[i].index == -1) {
@@ -92,7 +94,8 @@ void Games_ScrollRight(void) {
     }
 }
 
-void Games_ScrollLeft(void) {
+//Shift the order of the gamees to the left
+void Games_ScrollLeft() {
     for (int i = 0; i < GAMES_ON_SCREEN + 2; i++) {
         gamesDisplayed[i].index += 1;
         if (gamesDisplayed[i].index == gamesLen) {
@@ -104,8 +107,8 @@ void Games_ScrollLeft(void) {
     }
 }
     
-//Unload game textures
-void Games_Unload(void) {
+//Unload game cover textures
+void Games_Unload() {
     for (int i = 0; i < gamesLen; i++) {
         UnloadTexture(gameLibrary[i].cover);
     }

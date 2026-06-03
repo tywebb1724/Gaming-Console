@@ -1,9 +1,11 @@
 #include "consoles.h"
+#include <stdio.h>
 
 Console consoleLibrary[CONSOLES_LEN];
 
 Console consolesDisplayed[CONSOLES_LEN];
 
+//Init function for the consoles
 void Consoles_Init() {
 
     consoleLibrary[0].name = "Nintendo";
@@ -26,17 +28,18 @@ void Consoles_Init() {
     consoleLibrary[4].cover.id = 0;
     consoleLibrary[4].index = 4;
 
-    for (int i = 0; i++; i < CONSOLES_ON_SCREEN) {
+    for (int i = 0; i < CONSOLES_LEN; i++) {
         consolesDisplayed[i].index = i;
     }
 
-    for (int i = 0; i++; i < CONSOLES_ON_SCREEN) {
+    for (int i = 0; i < CONSOLES_LEN; i++) {
         consolesDisplayed[i] = consoleLibrary[consolesDisplayed[i].index];
     }
 
 }
 
-void Consoles_Load_Textures() {
+//Load console cover textures
+void Consoles_LoadTextures() {
     consoleLibrary[0].cover = LoadTexture("./assets/Nintendo.png");
     consoleLibrary[1].cover = LoadTexture("./assets/Sega.png");
     consoleLibrary[2].cover = LoadTexture("./assets/Playstation.png");
@@ -44,7 +47,8 @@ void Consoles_Load_Textures() {
     consoleLibrary[4].cover = LoadTexture("./assets/OtherConsole.png");
 }
 
-void Console_ScrollRight(void) {
+//Shift the order of the consoles to the right
+void Consoles_ScrollRight() {
     for (int i = 0; i < CONSOLES_LEN; i++) {
         consolesDisplayed[i].index -= 1;
         if (consolesDisplayed[i].index == -1) {
@@ -56,7 +60,8 @@ void Console_ScrollRight(void) {
     }
 }
 
-void Consoles_ScrollLeft(void) {
+//Shift the order of the consoles to the left
+void Consoles_ScrollLeft() {
     for (int i = 0; i < CONSOLES_LEN; i++) {
         consolesDisplayed[i].index += 1;
         if (consolesDisplayed[i].index == CONSOLES_LEN) {
@@ -68,8 +73,8 @@ void Consoles_ScrollLeft(void) {
     }
 }
     
-//Unload game textures
-void Consoles_Unload(void) {
+//Unload console cover textures
+void Consoles_Unload() {
     for (int i = 0; i < CONSOLES_ON_SCREEN; i++) {
         UnloadTexture(consoleLibrary[i].cover);
     }

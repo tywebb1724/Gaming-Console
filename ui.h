@@ -2,23 +2,6 @@
 #define UI_H
 #include "games.h"
 
-
-#define XBOX_B_X (MIDDLE_ARROW_X)
-#define PS_O_X (XBOX_B_X + (2.0f * BTN_RADIUS) + SELECT_PADDING_X)
-#define BTN_B_O_Y (BTN_B_O_TXT_Y + SELECT_TXT_SIZE / 2.0f)
-#define BTN_B_O_TXT_Y (BACK_TXT_Y - SELECT_PADDING_Y)
-#define XBOX_B_TXT_X (XBOX_B_X - MeasureText("B", SELECT_TXT_SIZE) / 2.0f)
-#define PS_O_TXT_X (PS_O_X - MeasureText("O", SELECT_TXT_SIZE) / 2.0f)
-
-#define BACK_SLASH_X
-
-
-#define BACK_TXT "GO BACK"
-#define BACK_TXT_X (MIDDLE_ARROW_X - MeasureText(BACK_TXT, SELECT_TXT_SIZE) / 2)
-#define BACK_TXT_Y (ARROW_Y - 2 * BTN_RADIUS - SELECT_PADDING_Y / 2)
-
-
-
 enum Scroll {
     SCROLL_NO,
     SCROLL_LEFT,
@@ -27,22 +10,59 @@ enum Scroll {
 
 extern enum Scroll scroll;
 
+//Change the alpha value for fading the display
 void UI_ChangeAlpa(float offRate, float onRate);
+//Reset the coordinates for the displayed games
 void UI_ResetDisplayCoords_Games();
+//Reset the coordinates for the displayed consoles
+void UI_ResetDisplayCoords_Consoles();
+//Function for drawing an arrow button
 void UI_DrawArrow(int xPos, int yPos, int direction);
+//Function for drawing an image
 void UI_DrawImage();
+//Function for drawing a game cover
 void UI_DrawGame();
+//Function for drawing the games when in a static position
 void UI_DrawGames_Normal();
+//Function for drawing the games when scrolling to the left
 void UI_DrawGames_Left();
+//Function for drawing the games when scrolling to the right
 void UI_DrawGames_Right();
-void UI_DrawScroll();
+//Function for drawing the animation of scrolling games
+void UI_DrawScroll_Games();
+//Function for drawing a console cover
+void UI_DrawConsole(int i);
+//Function for drawing the consoles when in a static position
+void UI_DrawConsoles_Normal();
+//Function for drawing the consoles when scrolling to the left
+void UI_DrawConsoles_Left();
+//Function for drawing the consoles when scrolling to the right
+void UI_DrawConsoles_Right();
+//Function for drawing the animation of scrolling consoles
+void UI_DrawScroll_Consoles();
+//Function for centering an image on a certain X position
 float UI_CenterImg_X(float width, float position);
+//Function for centering an image on a certain Y position
 float UI_CenterImg_Y(float height, float position);
+//Function to center text on a certain X position
 float UI_CenterText_X(char *text, int fontSize, int position);
+//Function for drawing the controls at the top left corner
+void UI_DrawCtrls_L();
+//Function for drawing the controls at the top right corner
+void UI_DrawCtrls_R();
+//Function for drawing the select controls at the bottom
 void UI_DrawSelect();
 //Function for drawing the boot up screen
-void UI_DrawBootScreen(void);
+void UI_DrawBootScreen();
+//Function for drawing the heading at the top of the screen
+void UI_DrawHeading();
+//Function for drawing games depending on whether it is scrolling
+void UI_DrawGames();
+//Function for drawing consoles depending on whether it is scrolling
+void UI_DrawConsoles();
+//Function for drawing the main menu
 void UI_DrawMainMenu();
-void UI_DrawDiagnostics(void);
+//Function for drawing the diagnostics screen
+void UI_DrawDiagnostics();
 
 #endif

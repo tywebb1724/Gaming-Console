@@ -1,8 +1,7 @@
-#define FPS 60
-
 #pragma region UI_GENERAL
 //General setup definitions
-#define BACKGROUND_CLR (Color){ 30, 32, 36, 255 }
+#define FPS 60
+#define BACKGROUND_CLR (Color){ 60, 64, 72, 255 }
 #define SCREEN_W 800.0f
 #define SCREEN_H 450.0f
 #define CENTER_X (SCREEN_W / 2)
@@ -33,7 +32,22 @@
 #define ARROW_Y (SCREEN_W / 16.0f)
 #define ARROW_TXT "SCROLL"
 #define ARROW_TXT_X (UI_CenterText_X(ARROW_TXT, BTN_TXT_SIZE, MIDDLE_ARROW_X))
-#define ARROW_TXT_Y (ARROW_Y + (SELECT_PADDING_Y))
+#define ARROW_TXT_Y (ARROW_Y + (3.0f * SELECT_PADDING_Y / 4))
+#pragma endregion
+
+#pragma region UI_CTRLS_R
+#define BTN_BACK_Y (ARROW_Y)
+#define MIDDLE_BACK_X (SCREEN_W * (7 / 8.0f))
+#define XBOX_B_X (MIDDLE_BACK_X - MeasureText(SELECT_TXT2, BTN_TXT_SIZE) / 2 - BTN_RADIUS - SELECT_PADDING_X)
+#define XBOX_B_TXT_X (UI_CenterText_X("B", BTN_TXT_SIZE, XBOX_B_X))
+#define XBOX_B_TXT_Y (BTN_BACK_Y - BTN_TXT_SIZE * 0.5)
+#define PS_O_X (MIDDLE_BACK_X + MeasureText(SELECT_TXT2, BTN_TXT_SIZE) / 2 + BTN_RADIUS + SELECT_PADDING_X)
+#define PS_O_TXT_X (UI_CenterText_X("O", BTN_TXT_SIZE, PS_O_X) + 0.1f)
+#define PS_O_TXT_Y (BTN_BACK_Y - BTN_TXT_SIZE * 0.5)
+#define BTN_BACK_SLASH_X (UI_CenterText_X("/", BTN_TXT_SIZE, MIDDLE_BACK_X))
+#define BTN_BACK_TXT ("GO BACK")
+#define BTN_BACK_TXT_X (UI_CenterText_X(BTN_BACK_TXT, BTN_TXT_SIZE, MIDDLE_BACK_X))
+#define BTN_BACK_TXT_Y (ARROW_TXT_Y)
 #pragma endregion
 
 #pragma region UI_CONSOLE
@@ -43,8 +57,8 @@
 //Console screen constantes
 #define CONS_ASPECT_RATIO (2.0f / 1)
 //Center console coordinates
-#define CENTER_CONS_W (SCREEN_W * (3.0f / 8))
-#define CENTER_CONS_H ((1 / GAME_ASPECT_RATIO) * CENTER_CONS_W)
+#define CENTER_CONS_W (SCREEN_W * (1.0f / 3.0f))
+#define CENTER_CONS_H ((1 / CONS_ASPECT_RATIO) * CENTER_CONS_W)
 #define CENTER_CONS_Y (UI_CenterImg_Y(CENTER_CONS_H, MENU_IMG_Y_CENTER))
 #define CENTER_CONS_X (UI_CenterImg_X(CENTER_CONS_W, CENTER_X))
 //First side consoles coordiantes

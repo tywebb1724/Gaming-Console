@@ -3,6 +3,8 @@
 #include "ui.h"
 #include "games.h"
 #include "ui_config.h"
+#include "consoles.h"
+#include <stdio.h>
 
 //Time the boot up screen should display
 #define BOOT_TIME 2.0f
@@ -11,17 +13,23 @@ static ConsoleState currentConsoleState = STATE_BOOT;
 
 static float bootTimer = 0.0f;
 
-MenuState currentMenuState = GAMES;
+MenuState currentMenuState = CONSOLES;
 
 //Initialize the states
-void State_Init(void) {
+void State_Init() {
     currentConsoleState = STATE_BOOT;
     bootTimer = 0.0f;
     UI_ResetDisplayCoords_Games();
+    UI_ResetDisplayCoords_Consoles();
+
+    printf("%f\n", consolesDisplayed[2].y);
+    printf("%f\n", consolesDisplayed[2].h);
+    printf("%f\n", consolesDisplayed[2].w);
+    printf("%f\n", consolesDisplayed[2].x);
 }
 
 //Update states and variabels and draw the correct screen
-void State_UpdateAndDraw(void) {
+void State_UpdateAndDraw() {
     switch(currentConsoleState) {
         //Console boots up
         case STATE_BOOT:
@@ -31,6 +39,7 @@ void State_UpdateAndDraw(void) {
         //If the boot up time has passed, go to the main menu
         if (bootTimer >= BOOT_TIME) {
             Games_LoadTextures();
+            Consoles_LoadTextures();
             currentConsoleState = STATE_MAIN_MENU;
         }
         break;

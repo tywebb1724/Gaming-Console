@@ -20,6 +20,21 @@ typedef struct {
 
 extern Console consoleLibrary[MAX_CONSOLES];
 
-void Consoles_Init(void);
+extern Console consolesDisplayed[CONSOLES_LEN];
+
+//Init function for the consoles
+void Consoles_Init();
+
+//Load console cover textures
+void Consoles_LoadTextures();
+
+//Shift the order of the consoles to the right
+void Consoles_ScrollRight();
+
+//Unload console textures
+void Consoles_ScrollLeft();
+
+//Unload console cover textures
+void Consoles_UnloadTextures();
 
 #endif
