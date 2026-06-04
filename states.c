@@ -3,7 +3,7 @@
 #include "ui.h"
 #include "games.h"
 #include "ui_config.h"
-#include "consoles.h"
+#include "categories.h"
 #include <stdio.h>
 
 //Time the boot up screen should display
@@ -13,19 +13,11 @@ static ConsoleState currentConsoleState = STATE_BOOT;
 
 static float bootTimer = 0.0f;
 
-MenuState currentMenuState = CONSOLES;
-
 //Initialize the states
 void State_Init() {
     currentConsoleState = STATE_BOOT;
     bootTimer = 0.0f;
     UI_ResetDisplayCoords_Games();
-    UI_ResetDisplayCoords_Consoles();
-
-    printf("%f\n", consolesDisplayed[2].y);
-    printf("%f\n", consolesDisplayed[2].h);
-    printf("%f\n", consolesDisplayed[2].w);
-    printf("%f\n", consolesDisplayed[2].x);
 }
 
 //Update states and variabels and draw the correct screen
@@ -39,7 +31,6 @@ void State_UpdateAndDraw() {
         //If the boot up time has passed, go to the main menu
         if (bootTimer >= BOOT_TIME) {
             Games_LoadTextures();
-            Consoles_LoadTextures();
             currentConsoleState = STATE_MAIN_MENU;
         }
         break;
@@ -47,11 +38,11 @@ void State_UpdateAndDraw() {
         //Drawing the main menu
         case STATE_MAIN_MENU:
         UI_DrawMainMenu();
-        if (scroll == SCROLL_NO && IsKeyPressed(KEY_RIGHT)) {
-            scroll = SCROLL_RIGHT;
+        if (scrollGames == SCROLL_NO && IsKeyPressed(KEY_RIGHT)) {
+            scrollGames = SCROLL_RIGHT;
         }
-        else if (scroll == SCROLL_NO && IsKeyPressed(KEY_LEFT)) {
-            scroll = SCROLL_LEFT;
+        else if (scrollGames == SCROLL_NO && IsKeyPressed(KEY_LEFT)) {
+            scrollGames = SCROLL_LEFT;
         }
         break;
 

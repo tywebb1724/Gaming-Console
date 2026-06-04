@@ -8,12 +8,6 @@ typedef enum {
     STATE_DIAGNOSTICS
 } ConsoleState;
 
-typedef enum {
-    CONSOLES,
-    GAMES
-} MenuState;
-
-extern MenuState currentMenuState;
 
 //Initialize the states
 void State_Init();

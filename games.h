@@ -9,9 +9,20 @@
 
 #define GAMES_ON_SCREEN 5
 
+
+typedef enum {
+    ARCADE,
+    HANDHELD,
+    NINTENDO_3D,
+    NINTENDO_RETRO,
+    PC_INDIE,
+    SEGA,
+    PLAYSTATION
+} Categories;
+
 typedef struct {
     char *title;
-    char *filePath;
+    char *coverPath;
     Texture2D cover;
     int index;
     char *console;
@@ -19,6 +30,7 @@ typedef struct {
     float y;
     float w;
     float h;
+    Categories category;
 } Game;
 
 extern Game gameLibrary[];
@@ -31,11 +43,13 @@ extern int gamesLen;
 void Games_Init();
 //Load game cover textures
 void Games_LoadTextures();
+//Update the games displayed for the new category
+void Games_UpdateDisplayed(Categories categ);
 //Shift the order of the games to the right
 void Games_ScrollRight();
 //Shift the order of the games to the left
 void Games_ScrollLeft();
 //Unload game cover textures
-void Games_Unload();
+void Games_UnloadTextures();
 
 #endif

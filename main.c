@@ -3,7 +3,7 @@
 #include "ui.h"
 #include "games.h"
 #include "ui_config.h"
-#include "consoles.h"
+#include "categories.h"
 #include <stdio.h>
 
 
@@ -15,7 +15,7 @@ int main(void)
     
     //Initialize state machine
     Games_Init();
-    Consoles_Init();
+    Categories_Init();
     State_Init();
     // Main game loop
     while (!WindowShouldClose()) {
@@ -24,7 +24,7 @@ int main(void)
         EndDrawing();
     }
 
-    Games_Unload();
+    Games_UnloadTextures();
     CloseWindow();
     return 0;
 }
