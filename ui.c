@@ -21,6 +21,7 @@ enum Scroll scrollCategories = SCROLL_NO;
 
 float alpha;
 
+
 //Change the alpha value for fading the display
 void UI_ChangeAlpa(float offRate, float onRate) {
     if (scrollGames == SCROLL_NO) {
@@ -128,8 +129,9 @@ void UI_DrawGame(int i) {
     img_Y = gamesDisplayed[i].y;
     img_W = gamesDisplayed[i].w;
     img_H = gamesDisplayed[i].h;
-    img = gameLibrary[gamesDisplayed[i].index].cover;
+    img = gamesDisplayed[i].cover;
     img_X = gamesDisplayed[i].x;
+
     UI_DrawImage();
     DrawRectangleLinesEx(
         (Rectangle){
@@ -243,6 +245,43 @@ void UI_DrawScroll_Games() {
     }
 }
 
+//Function for drawing the cateogires when they are static
+void UI_DrawCategories_Normal() {
+    Font font = GetFontDefault();
+    float spacing = CENTER_CATEG_SIZE / 10;
+    Vector2 size = MeasureTextEx(font, categoriesDisplayed[2].name, CENTER_CATEG_SIZE, spacing);
+    //char categ_header[30];
+    printf("name: %s\n", categoriesDisplayed[2].name);
+    //sprintf(categ_header, "[%s]", categories[2].name);
+    //printf("draw: %s\n", categ_header);
+    DrawText(categoriesDisplayed[2].name, CENTER_CATEG_X, CATEG_Y, CENTER_CATEG_SIZE, BLUE);
+
+    spacing = SIDE1_CATEG_SIZE / 10;
+    size = MeasureTextEx(font, categoriesDisplayed[1].name, SIDE1_CATEG_SIZE, spacing);
+    //sprintf(categ_header, "[%s]", categories[1].name);
+    DrawText(categoriesDisplayed[1].name, LEFT1_CATEG_X, CATEG_Y, SIDE1_CATEG_SIZE, BLUE);
+
+    size = MeasureTextEx(font, categoriesDisplayed[3].name, SIDE1_CATEG_SIZE, spacing);
+    //sprintf(categ_header, "[%s]", categories[3].name);
+    DrawText(categoriesDisplayed[3].name, RIGHT1_CATEG_X, CATEG_Y, SIDE1_CATEG_SIZE, BLUE);
+}
+
+//Function for drawing the animation of scrolling categories
+void UI_DrawScroll_Categories() {
+    if (scrollCategories == SCROLL_RIGHT) {
+        Categories_ScrollRight();
+        UI_DrawCategories_Normal();
+        scrollCategories = SCROLL_NO;
+        UI_ResetDisplayCoords_Games();
+    }
+    else {
+        Categories_ScrollLeft();
+        UI_DrawCategories_Normal();
+        scrollCategories = SCROLL_NO;
+        UI_ResetDisplayCoords_Games();
+    }
+}
+
 //Function for centering an image on a certain X position
 float UI_CenterImg_X(float width, float position) {
     return (position - width / 2);
@@ -301,7 +340,7 @@ void UI_DrawBootScreen() {
     Texture2D spiderLogo = LoadTexture("./assets/SpiderLogo.png");
 
     Rectangle sourceRect = {0.0f, 0.0f, (float)spiderLogo.width, (float)spiderLogo.height};
-    Rectangle destRect = {UI_CenterImg_X(600, CENTER_X), UI_CenterImg_Y(600, SCREEN_H / 2), 600, 600};
+    Rectangle destRect = {UI_CenterImg_X(500, CENTER_X), UI_CenterImg_Y(500, SCREEN_H / 2), 500, 500};
     Vector2 origin = {0.0f, 0.0f};
     DrawTexturePro(spiderLogo, sourceRect, destRect, origin, 0.0f, WHITE);
 }
@@ -339,6 +378,16 @@ void UI_DrawGames() {
     );
 }
 
+//Function for drawing categories depending on whether it is scrolling
+void UI_DrawCategories() {
+    if (scrollCategories == SCROLL_NO) {
+        UI_DrawCategories_Normal();
+    }
+    else {
+        UI_DrawScroll_Categories();
+    }
+}
+
 //Function for drawing the main menu
 void UI_DrawMainMenu() {
     ClearBackground(BACKGROUND_CLR);
@@ -355,23 +404,4 @@ void UI_DrawMainMenu() {
 //Function for drawing the diagnostics screen
 void UI_DrawDiagnostics() {
     return;
-}
-
-
-void UI_DrawCategories() {
-    Font font = GetFontDefault();
-    float spacing = CENTER_CATEG_SIZE / 10;
-    Vector2 size = MeasureTextEx(font, categoriesDisplayed[2].name, CENTER_CATEG_SIZE, spacing);
-    char categ_header[30];
-    sprintf(categ_header, "[%s]", categories[2].name);
-    DrawText(categ_header, CENTER_CATEG_X, CATEG_Y, CENTER_CATEG_SIZE, BLUE);
-
-    spacing = SIDE1_CATEG_SIZE / 10;
-    size = MeasureTextEx(font, categoriesDisplayed[1].name, SIDE1_CATEG_SIZE, spacing);
-    sprintf(categ_header, "[%s]", categories[1].name);
-    DrawText(categ_header, LEFT1_CATEG_X, CATEG_Y, SIDE1_CATEG_SIZE, BLUE);
-
-    size = MeasureTextEx(font, categoriesDisplayed[3].name, SIDE1_CATEG_SIZE, spacing);
-    sprintf(categ_header, "[%s]", categories[3].name);
-    DrawText(categ_header, RIGHT1_CATEG_X, CATEG_Y, SIDE1_CATEG_SIZE, BLUE);
 }

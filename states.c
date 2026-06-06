@@ -44,6 +44,13 @@ void State_UpdateAndDraw() {
         else if (scrollGames == SCROLL_NO && IsKeyPressed(KEY_LEFT)) {
             scrollGames = SCROLL_LEFT;
         }
+
+        if (scrollCategories == SCROLL_NO && IsKeyPressed(KEY_D)) {
+            scrollCategories = SCROLL_RIGHT;
+        }
+        else if (scrollCategories == SCROLL_NO && IsKeyPressed(KEY_A)) {
+            scrollCategories = SCROLL_LEFT;
+        }
         break;
 
         case STATE_APP_LAUNCHER:

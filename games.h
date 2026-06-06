@@ -5,7 +5,7 @@
 #include "ui.h"
 
 //Max amount of games console can hold
-#define MAX_GAMES 10
+#define MAX_GAMES 60
 
 #define GAMES_ON_SCREEN 5
 
@@ -33,7 +33,7 @@ typedef struct {
     Categories category;
 } Game;
 
-extern Game gameLibrary[];
+extern Game gameLibrary[MAX_GAMES];
 
 extern Game gamesDisplayed[GAMES_ON_SCREEN + 2];
 
