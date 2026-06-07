@@ -1,6 +1,8 @@
 #ifndef STATES_H
 #define STATES_H
 
+extern int gamesLoaded;
+
 typedef enum {
     STATE_BOOT,
     STATE_MAIN_MENU,

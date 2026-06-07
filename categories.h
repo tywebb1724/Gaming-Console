@@ -9,7 +9,6 @@
 
 typedef struct {
     char *name;
-    int index;
     Categories id;
 } Category;
 

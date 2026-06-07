@@ -7,16 +7,19 @@
 #include <stdio.h>
 
 //Time the boot up screen should display
-#define BOOT_TIME 2.0f
+#define BOOT_TIME 10.0f
 
 static ConsoleState currentConsoleState = STATE_BOOT;
 
 static float bootTimer = 0.0f;
 
+int gamesLoaded;
+
 //Initialize the states
 void State_Init() {
     currentConsoleState = STATE_BOOT;
     bootTimer = 0.0f;
+    gamesLoaded = 0;
     UI_ResetDisplayCoords_Games();
 }
 
@@ -28,9 +31,12 @@ void State_UpdateAndDraw() {
         //Draw the boot up screen
         UI_DrawBootScreen();
         bootTimer += GetFrameTime();
+        Games_LoadTextures();
+        if (texturesLoaded == true) {
+            printf("time to load: %f\n", bootTimer);
+        }
         //If the boot up time has passed, go to the main menu
         if (bootTimer >= BOOT_TIME) {
-            Games_LoadTextures();
             currentConsoleState = STATE_MAIN_MENU;
         }
         break;
@@ -38,18 +44,20 @@ void State_UpdateAndDraw() {
         //Drawing the main menu
         case STATE_MAIN_MENU:
         UI_DrawMainMenu();
-        if (scrollGames == SCROLL_NO && IsKeyPressed(KEY_RIGHT)) {
+        if (scrollGames == SCROLL_NO && scrollCategories == SCROLL_NO && IsKeyPressed(KEY_RIGHT)) {
             scrollGames = SCROLL_RIGHT;
         }
-        else if (scrollGames == SCROLL_NO && IsKeyPressed(KEY_LEFT)) {
+        else if (scrollGames == SCROLL_NO && scrollCategories == SCROLL_NO && IsKeyPressed(KEY_LEFT)) {
             scrollGames = SCROLL_LEFT;
         }
 
         if (scrollCategories == SCROLL_NO && IsKeyPressed(KEY_D)) {
             scrollCategories = SCROLL_RIGHT;
+            scrollGames = SCROLL_NO;
         }
         else if (scrollCategories == SCROLL_NO && IsKeyPressed(KEY_A)) {
             scrollCategories = SCROLL_LEFT;
+            scrollGames = SCROLL_NO;
         }
         break;
 

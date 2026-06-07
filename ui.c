@@ -45,37 +45,37 @@ void UI_ChangeAlpa(float offRate, float onRate) {
 //Reset the coordinates for the displayed games
 void UI_ResetDisplayCoords_Games() {
 
-    gamesDisplayed[0].x = LEFT3_GAME_X;
-    gamesDisplayed[1].x = LEFT2_GAME_X;
-    gamesDisplayed[2].x = LEFT1_GAME_X;
-    gamesDisplayed[3].x = CENTER_GAME_X;
-    gamesDisplayed[4].x = RIGHT1_GAME_X;
-    gamesDisplayed[5].x = RIGHT2_GAME_X;
-    gamesDisplayed[6].x = RIGHT3_GAME_X;
+    gamesDisplayed[0]->x = LEFT3_GAME_X;
+    gamesDisplayed[1]->x = LEFT2_GAME_X;
+    gamesDisplayed[2]->x = LEFT1_GAME_X;
+    gamesDisplayed[3]->x = CENTER_GAME_X;
+    gamesDisplayed[4]->x = RIGHT1_GAME_X;
+    gamesDisplayed[5]->x = RIGHT2_GAME_X;
+    gamesDisplayed[6]->x = RIGHT3_GAME_X;
 
-    gamesDisplayed[0].y = SIDE3_GAME_Y;
-    gamesDisplayed[1].y = SIDE2_GAME_Y;
-    gamesDisplayed[2].y = SIDE1_GAME_Y;
-    gamesDisplayed[3].y = CENTER_GAME_Y;
-    gamesDisplayed[4].y = SIDE1_GAME_Y;
-    gamesDisplayed[5].y = SIDE2_GAME_Y;
-    gamesDisplayed[6].y = SIDE3_GAME_Y;
+    gamesDisplayed[0]->y = SIDE3_GAME_Y;
+    gamesDisplayed[1]->y = SIDE2_GAME_Y;
+    gamesDisplayed[2]->y = SIDE1_GAME_Y;
+    gamesDisplayed[3]->y = CENTER_GAME_Y;
+    gamesDisplayed[4]->y = SIDE1_GAME_Y;
+    gamesDisplayed[5]->y = SIDE2_GAME_Y;
+    gamesDisplayed[6]->y = SIDE3_GAME_Y;
 
-    gamesDisplayed[0].w = SIDE3_GAME_W;
-    gamesDisplayed[1].w = SIDE2_GAME_W;
-    gamesDisplayed[2].w = SIDE1_GAME_W;
-    gamesDisplayed[3].w = CENTER_GAME_W;
-    gamesDisplayed[4].w = SIDE1_GAME_W;
-    gamesDisplayed[5].w = SIDE2_GAME_W;
-    gamesDisplayed[6].w = SIDE3_GAME_W;
+    gamesDisplayed[0]->w = SIDE3_GAME_W;
+    gamesDisplayed[1]->w = SIDE2_GAME_W;
+    gamesDisplayed[2]->w = SIDE1_GAME_W;
+    gamesDisplayed[3]->w = CENTER_GAME_W;
+    gamesDisplayed[4]->w = SIDE1_GAME_W;
+    gamesDisplayed[5]->w = SIDE2_GAME_W;
+    gamesDisplayed[6]->w = SIDE3_GAME_W;
 
-    gamesDisplayed[0].h = SIDE3_GAME_H;
-    gamesDisplayed[1].h = SIDE2_GAME_H;
-    gamesDisplayed[2].h = SIDE1_GAME_H;
-    gamesDisplayed[3].h = CENTER_GAME_H;
-    gamesDisplayed[4].h = SIDE1_GAME_H;
-    gamesDisplayed[5].h = SIDE2_GAME_H;
-    gamesDisplayed[6].h = SIDE3_GAME_H;
+    gamesDisplayed[0]->h = SIDE3_GAME_H;
+    gamesDisplayed[1]->h = SIDE2_GAME_H;
+    gamesDisplayed[2]->h = SIDE1_GAME_H;
+    gamesDisplayed[3]->h = CENTER_GAME_H;
+    gamesDisplayed[4]->h = SIDE1_GAME_H;
+    gamesDisplayed[5]->h = SIDE2_GAME_H;
+    gamesDisplayed[6]->h = SIDE3_GAME_H;
  
 }
 
@@ -110,8 +110,9 @@ void UI_DrawArrow(int xPos, int yPos, int direction) {
 }
 
 //Function for drawing an image
-void UI_DrawImage() {
-    if (1) {
+void UI_DrawImage(int i) {
+
+    if (img.id > 0) {
             Rectangle sourceRect = {0.0f, 0.0f, (float)img.width, (float)img.height};
             Rectangle destRect = {(float)img_X, img_Y, img_W, img_H};
             Vector2 origin = {0.0f, 0.0f};
@@ -126,13 +127,13 @@ void UI_DrawImage() {
 
 //Function for drawing a game cover
 void UI_DrawGame(int i) {
-    img_Y = gamesDisplayed[i].y;
-    img_W = gamesDisplayed[i].w;
-    img_H = gamesDisplayed[i].h;
-    img = gamesDisplayed[i].cover;
-    img_X = gamesDisplayed[i].x;
-
-    UI_DrawImage();
+    img_Y = gamesDisplayed[i]->y;
+    img_W = gamesDisplayed[i]->w;
+    img_H = gamesDisplayed[i]->h;
+    img_X = gamesDisplayed[i]->x;
+    img = gamesDisplayed[i]->cover;
+ 
+    UI_DrawImage(i);
     DrawRectangleLinesEx(
         (Rectangle){
             img_X - THICKNESS_OTHER,
@@ -170,78 +171,78 @@ void UI_DrawScroll_Games() {
 
     if (scrollGames == SCROLL_LEFT) {
         UI_DrawGames_Left();
-        if (fabsf(gamesDisplayed[4].x - CENTER_GAME_X) <= SCROLL_THRESHOLD) {
+        if (fabsf(gamesDisplayed[4]->x - CENTER_GAME_X) <= SCROLL_THRESHOLD) {
             scrollGames = SCROLL_NO;
             Games_ScrollLeft();
             UI_ResetDisplayCoords_Games();
             return;
         }
 
-        gamesDisplayed[1].x = Lerp(gamesDisplayed[1].x, LEFT3_GAME_X, 0.075f);
-        gamesDisplayed[2].x = Lerp(gamesDisplayed[2].x, LEFT2_GAME_X, 0.1f);
-        gamesDisplayed[3].x = Lerp(gamesDisplayed[3].x, LEFT1_GAME_X, 0.1f);
-        gamesDisplayed[4].x = Lerp(gamesDisplayed[4].x, CENTER_GAME_X, 0.1f);
-        gamesDisplayed[5].x = Lerp(gamesDisplayed[5].x, RIGHT1_GAME_X, 0.1f); 
-        gamesDisplayed[6].x = Lerp(gamesDisplayed[6].x, RIGHT2_GAME_X, 0.1f); 
+        gamesDisplayed[1]->x = Lerp(gamesDisplayed[1]->x, LEFT3_GAME_X, SCROLL_GAMES_SPEED);
+        gamesDisplayed[2]->x = Lerp(gamesDisplayed[2]->x, LEFT2_GAME_X, SCROLL_GAMES_SPEED);
+        gamesDisplayed[3]->x = Lerp(gamesDisplayed[3]->x, LEFT1_GAME_X, SCROLL_GAMES_SPEED);
+        gamesDisplayed[4]->x = Lerp(gamesDisplayed[4]->x, CENTER_GAME_X, SCROLL_GAMES_SPEED);
+        gamesDisplayed[5]->x = Lerp(gamesDisplayed[5]->x, RIGHT1_GAME_X, SCROLL_GAMES_SPEED); 
+        gamesDisplayed[6]->x = Lerp(gamesDisplayed[6]->x, RIGHT2_GAME_X, SCROLL_GAMES_SPEED); 
 
-        gamesDisplayed[1].y = Lerp(gamesDisplayed[1].y, SIDE3_GAME_Y, 0.075f);
-        gamesDisplayed[2].y = Lerp(gamesDisplayed[2].y, SIDE2_GAME_Y, 0.1f);
-        gamesDisplayed[3].y = Lerp(gamesDisplayed[3].y, SIDE1_GAME_Y, 0.1f);
-        gamesDisplayed[4].y = Lerp(gamesDisplayed[4].y, CENTER_GAME_Y, 0.1f);
-        gamesDisplayed[5].y = Lerp(gamesDisplayed[5].y, SIDE1_GAME_Y, 0.1f);
-        gamesDisplayed[6].y = Lerp(gamesDisplayed[6].y, SIDE2_GAME_Y, 0.1f);   
+        gamesDisplayed[1]->y = Lerp(gamesDisplayed[1]->y, SIDE3_GAME_Y, SCROLL_GAMES_SPEED);
+        gamesDisplayed[2]->y = Lerp(gamesDisplayed[2]->y, SIDE2_GAME_Y, SCROLL_GAMES_SPEED);
+        gamesDisplayed[3]->y = Lerp(gamesDisplayed[3]->y, SIDE1_GAME_Y, SCROLL_GAMES_SPEED);
+        gamesDisplayed[4]->y = Lerp(gamesDisplayed[4]->y, CENTER_GAME_Y, SCROLL_GAMES_SPEED);
+        gamesDisplayed[5]->y = Lerp(gamesDisplayed[5]->y, SIDE1_GAME_Y, SCROLL_GAMES_SPEED);
+        gamesDisplayed[6]->y = Lerp(gamesDisplayed[6]->y, SIDE2_GAME_Y, SCROLL_GAMES_SPEED);   
 
-        gamesDisplayed[1].w = Lerp(gamesDisplayed[1].w, SIDE3_GAME_W, 0.075f);
-        gamesDisplayed[2].w = Lerp(gamesDisplayed[2].w, SIDE2_GAME_W, 0.1f);
-        gamesDisplayed[3].w = Lerp(gamesDisplayed[3].w, SIDE1_GAME_W, 0.1f);
-        gamesDisplayed[4].w = Lerp(gamesDisplayed[4].w, CENTER_GAME_W, 0.1f);
-        gamesDisplayed[5].w = Lerp(gamesDisplayed[5].w, SIDE1_GAME_W, 0.1f); 
-        gamesDisplayed[6].w = Lerp(gamesDisplayed[6].w, SIDE2_GAME_W, 0.1f);
+        gamesDisplayed[1]->w = Lerp(gamesDisplayed[1]->w, SIDE3_GAME_W, SCROLL_GAMES_SPEED);
+        gamesDisplayed[2]->w = Lerp(gamesDisplayed[2]->w, SIDE2_GAME_W, SCROLL_GAMES_SPEED);
+        gamesDisplayed[3]->w = Lerp(gamesDisplayed[3]->w, SIDE1_GAME_W, SCROLL_GAMES_SPEED);
+        gamesDisplayed[4]->w = Lerp(gamesDisplayed[4]->w, CENTER_GAME_W, SCROLL_GAMES_SPEED);
+        gamesDisplayed[5]->w = Lerp(gamesDisplayed[5]->w, SIDE1_GAME_W, SCROLL_GAMES_SPEED); 
+        gamesDisplayed[6]->w = Lerp(gamesDisplayed[6]->w, SIDE2_GAME_W, SCROLL_GAMES_SPEED);
 
-        gamesDisplayed[1].h = Lerp(gamesDisplayed[1].h, SIDE3_GAME_W, 0.075f);
-        gamesDisplayed[2].h = Lerp(gamesDisplayed[2].h, SIDE2_GAME_H, 0.1f);
-        gamesDisplayed[3].h = Lerp(gamesDisplayed[3].h, SIDE1_GAME_H, 0.1f);
-        gamesDisplayed[4].h = Lerp(gamesDisplayed[4].h, CENTER_GAME_H, 0.1f);
-        gamesDisplayed[5].h = Lerp(gamesDisplayed[5].h, SIDE1_GAME_H, 0.1f);  
-        gamesDisplayed[6].h = Lerp(gamesDisplayed[6].h, SIDE2_GAME_H, 0.1f);
+        gamesDisplayed[1]->h = Lerp(gamesDisplayed[1]->h, SIDE3_GAME_W, SCROLL_GAMES_SPEED);
+        gamesDisplayed[2]->h = Lerp(gamesDisplayed[2]->h, SIDE2_GAME_H, SCROLL_GAMES_SPEED);
+        gamesDisplayed[3]->h = Lerp(gamesDisplayed[3]->h, SIDE1_GAME_H, SCROLL_GAMES_SPEED);
+        gamesDisplayed[4]->h = Lerp(gamesDisplayed[4]->h, CENTER_GAME_H, SCROLL_GAMES_SPEED);
+        gamesDisplayed[5]->h = Lerp(gamesDisplayed[5]->h, SIDE1_GAME_H, SCROLL_GAMES_SPEED);  
+        gamesDisplayed[6]->h = Lerp(gamesDisplayed[6]->h, SIDE2_GAME_H, SCROLL_GAMES_SPEED);
     }
     
     else if (scrollGames == SCROLL_RIGHT) {
         UI_DrawGames_Right();
-        if (fabsf(gamesDisplayed[2].x - CENTER_GAME_X) <= SCROLL_THRESHOLD) {
+        if (fabsf(gamesDisplayed[2]->x - CENTER_GAME_X) <= SCROLL_THRESHOLD) {
             scrollGames = SCROLL_NO;
             Games_ScrollRight();
             UI_ResetDisplayCoords_Games();
             return;
         }
         
-        gamesDisplayed[0].x = Lerp(gamesDisplayed[0].x, LEFT2_GAME_X, 0.1f);
-        gamesDisplayed[1].x = Lerp(gamesDisplayed[1].x, LEFT1_GAME_X, 0.1f);
-        gamesDisplayed[2].x = Lerp(gamesDisplayed[2].x, CENTER_GAME_X, 0.1f);
-        gamesDisplayed[3].x = Lerp(gamesDisplayed[3].x, RIGHT1_GAME_X, 0.1f);
-        gamesDisplayed[4].x = Lerp(gamesDisplayed[4].x, RIGHT2_GAME_X, 0.1f);
-        gamesDisplayed[5].x = Lerp(gamesDisplayed[5].x, RIGHT3_GAME_X, 0.075f); 
+        gamesDisplayed[0]->x = Lerp(gamesDisplayed[0]->x, LEFT2_GAME_X, SCROLL_GAMES_SPEED);
+        gamesDisplayed[1]->x = Lerp(gamesDisplayed[1]->x, LEFT1_GAME_X, SCROLL_GAMES_SPEED);
+        gamesDisplayed[2]->x = Lerp(gamesDisplayed[2]->x, CENTER_GAME_X, SCROLL_GAMES_SPEED);
+        gamesDisplayed[3]->x = Lerp(gamesDisplayed[3]->x, RIGHT1_GAME_X, SCROLL_GAMES_SPEED);
+        gamesDisplayed[4]->x = Lerp(gamesDisplayed[4]->x, RIGHT2_GAME_X, SCROLL_GAMES_SPEED);
+        gamesDisplayed[5]->x = Lerp(gamesDisplayed[5]->x, RIGHT3_GAME_X, SCROLL_GAMES_SPEED); 
 
-        gamesDisplayed[0].y = Lerp(gamesDisplayed[0].y, SIDE2_GAME_Y, 0.1f);
-        gamesDisplayed[1].y = Lerp(gamesDisplayed[1].y, SIDE1_GAME_Y, 0.1f);
-        gamesDisplayed[2].y = Lerp(gamesDisplayed[2].y, CENTER_GAME_Y, 0.1f);
-        gamesDisplayed[3].y = Lerp(gamesDisplayed[3].y, SIDE1_GAME_Y, 0.1f);
-        gamesDisplayed[4].y = Lerp(gamesDisplayed[4].y, SIDE2_GAME_Y, 0.1f); 
-        gamesDisplayed[5].y = Lerp(gamesDisplayed[5].y, SIDE3_GAME_Y, 0.075f); 
+        gamesDisplayed[0]->y = Lerp(gamesDisplayed[0]->y, SIDE2_GAME_Y, SCROLL_GAMES_SPEED);
+        gamesDisplayed[1]->y = Lerp(gamesDisplayed[1]->y, SIDE1_GAME_Y, SCROLL_GAMES_SPEED);
+        gamesDisplayed[2]->y = Lerp(gamesDisplayed[2]->y, CENTER_GAME_Y, SCROLL_GAMES_SPEED);
+        gamesDisplayed[3]->y = Lerp(gamesDisplayed[3]->y, SIDE1_GAME_Y, SCROLL_GAMES_SPEED);
+        gamesDisplayed[4]->y = Lerp(gamesDisplayed[4]->y, SIDE2_GAME_Y, SCROLL_GAMES_SPEED); 
+        gamesDisplayed[5]->y = Lerp(gamesDisplayed[5]->y, SIDE3_GAME_Y, SCROLL_GAMES_SPEED); 
 
-        gamesDisplayed[0].w = Lerp(gamesDisplayed[0].w, SIDE2_GAME_W, 0.1f);
-        gamesDisplayed[1].w = Lerp(gamesDisplayed[1].w, SIDE1_GAME_W, 0.1f);
-        gamesDisplayed[2].w = Lerp(gamesDisplayed[2].w, CENTER_GAME_W, 0.1f);
-        gamesDisplayed[3].w = Lerp(gamesDisplayed[3].w, SIDE1_GAME_W, 0.1f);
-        gamesDisplayed[4].w = Lerp(gamesDisplayed[4].w, SIDE2_GAME_W, 0.1f);
-        gamesDisplayed[5].w = Lerp(gamesDisplayed[5].w, SIDE3_GAME_W, 0.075f);
+        gamesDisplayed[0]->w = Lerp(gamesDisplayed[0]->w, SIDE2_GAME_W, SCROLL_GAMES_SPEED);
+        gamesDisplayed[1]->w = Lerp(gamesDisplayed[1]->w, SIDE1_GAME_W, SCROLL_GAMES_SPEED);
+        gamesDisplayed[2]->w = Lerp(gamesDisplayed[2]->w, CENTER_GAME_W, SCROLL_GAMES_SPEED);
+        gamesDisplayed[3]->w = Lerp(gamesDisplayed[3]->w, SIDE1_GAME_W, SCROLL_GAMES_SPEED);
+        gamesDisplayed[4]->w = Lerp(gamesDisplayed[4]->w, SIDE2_GAME_W, SCROLL_GAMES_SPEED);
+        gamesDisplayed[5]->w = Lerp(gamesDisplayed[5]->w, SIDE3_GAME_W, SCROLL_GAMES_SPEED);
 
-        gamesDisplayed[0].h = Lerp(gamesDisplayed[0].h, SIDE2_GAME_H, 0.1f);
-        gamesDisplayed[1].h = Lerp(gamesDisplayed[1].h, SIDE1_GAME_H, 0.1f);
-        gamesDisplayed[2].h = Lerp(gamesDisplayed[2].h, CENTER_GAME_H, 0.1f);
-        gamesDisplayed[3].h = Lerp(gamesDisplayed[3].h, SIDE1_GAME_H, 0.1f);
-        gamesDisplayed[4].h = Lerp(gamesDisplayed[4].h, SIDE2_GAME_H, 0.1f);
-        gamesDisplayed[5].h = Lerp(gamesDisplayed[5].h, SIDE3_GAME_H, 0.075f);
+        gamesDisplayed[0]->h = Lerp(gamesDisplayed[0]->h, SIDE2_GAME_H, SCROLL_GAMES_SPEED);
+        gamesDisplayed[1]->h = Lerp(gamesDisplayed[1]->h, SIDE1_GAME_H, SCROLL_GAMES_SPEED);
+        gamesDisplayed[2]->h = Lerp(gamesDisplayed[2]->h, CENTER_GAME_H, SCROLL_GAMES_SPEED);
+        gamesDisplayed[3]->h = Lerp(gamesDisplayed[3]->h, SIDE1_GAME_H, SCROLL_GAMES_SPEED);
+        gamesDisplayed[4]->h = Lerp(gamesDisplayed[4]->h, SIDE2_GAME_H, SCROLL_GAMES_SPEED);
+        gamesDisplayed[5]->h = Lerp(gamesDisplayed[5]->h, SIDE3_GAME_H, SCROLL_GAMES_SPEED);
     }
 }
 
@@ -251,7 +252,6 @@ void UI_DrawCategories_Normal() {
     float spacing = CENTER_CATEG_SIZE / 10;
     Vector2 size = MeasureTextEx(font, categoriesDisplayed[2].name, CENTER_CATEG_SIZE, spacing);
     //char categ_header[30];
-    printf("name: %s\n", categoriesDisplayed[2].name);
     //sprintf(categ_header, "[%s]", categories[2].name);
     //printf("draw: %s\n", categ_header);
     DrawText(categoriesDisplayed[2].name, CENTER_CATEG_X, CATEG_Y, CENTER_CATEG_SIZE, BLUE);
@@ -391,6 +391,7 @@ void UI_DrawCategories() {
 //Function for drawing the main menu
 void UI_DrawMainMenu() {
     ClearBackground(BACKGROUND_CLR);
+
     UI_DrawHeading();
     UI_ChangeAlpa(0.25f, 0.25f);
     UI_DrawGames();

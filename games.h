@@ -24,7 +24,6 @@ typedef struct {
     char *title;
     char *coverPath;
     Texture2D cover;
-    int index;
     char *console;
     float x;
     float y;
@@ -35,16 +34,21 @@ typedef struct {
 
 extern Game gameLibrary[MAX_GAMES];
 
-extern Game gamesDisplayed[GAMES_ON_SCREEN + 2];
+extern Game* gamesDisplayed[GAMES_ON_SCREEN + 2];
 
 extern int gamesLen;
+extern bool texturesLoaded;
 
+void Games_UpdateIndexes(Categories categ);
+
+//Update the indexes of the current game category
+void Games_UpdateIndexes(Categories categ);
+//Update the games displayed for the new category
+void Games_Refresh();
 //Initialize game library
 void Games_Init();
 //Load game cover textures
 void Games_LoadTextures();
-//Update the games displayed for the new category
-void Games_UpdateDisplayed(Categories categ);
 //Shift the order of the games to the right
 void Games_ScrollRight();
 //Shift the order of the games to the left
