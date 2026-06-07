@@ -1,5 +1,7 @@
 #include "categories.h"
 #include <stdio.h>
+#include "states.h"
+#include <pthread.h>
 
 Category categories[CATEGORIES_LEN];
 

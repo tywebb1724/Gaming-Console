@@ -8,6 +8,8 @@
 #include "categories.h"
 #include "ui_config.h"
 #include <stdio.h>
+#include <stdlib.h>
+
 
 Texture2D img;
 Texture2D btnA;
@@ -148,16 +150,6 @@ void UI_DrawGame(int i) {
 
 //Function for drawing the games when scrolling to the left
 void UI_DrawGames_Left() {
-    UI_DrawGame(6);
-    UI_DrawGame(1);
-    UI_DrawGame(5);
-    UI_DrawGame(2);
-    UI_DrawGame(3);
-    UI_DrawGame(4);
-}
-
-//Function for drawing the games when scrolling to the right
-void UI_DrawGames_Right() {
     UI_DrawGame(0);
     UI_DrawGame(1);
     UI_DrawGame(5);
@@ -166,14 +158,24 @@ void UI_DrawGames_Right() {
     UI_DrawGame(2);
 }
 
+//Function for drawing the games when scrolling to the right
+void UI_DrawGames_Right() {
+    UI_DrawGame(6);
+    UI_DrawGame(1);
+    UI_DrawGame(5);
+    UI_DrawGame(2);
+    UI_DrawGame(3);
+    UI_DrawGame(4);
+}
+
 //Function for drawing the animation of scrolling games
 void UI_DrawScroll_Games() {
 
-    if (scrollGames == SCROLL_LEFT) {
-        UI_DrawGames_Left();
+    if (scrollGames == SCROLL_RIGHT) {
+        UI_DrawGames_Right();
         if (fabsf(gamesDisplayed[4]->x - CENTER_GAME_X) <= SCROLL_THRESHOLD) {
             scrollGames = SCROLL_NO;
-            Games_ScrollLeft();
+            Games_ScrollRight();
             UI_ResetDisplayCoords_Games();
             return;
         }
@@ -207,11 +209,11 @@ void UI_DrawScroll_Games() {
         gamesDisplayed[6]->h = Lerp(gamesDisplayed[6]->h, SIDE2_GAME_H, SCROLL_GAMES_SPEED);
     }
     
-    else if (scrollGames == SCROLL_RIGHT) {
-        UI_DrawGames_Right();
+    else if (scrollGames == SCROLL_LEFT) {
+        UI_DrawGames_Left();
         if (fabsf(gamesDisplayed[2]->x - CENTER_GAME_X) <= SCROLL_THRESHOLD) {
             scrollGames = SCROLL_NO;
-            Games_ScrollRight();
+            Games_ScrollLeft();
             UI_ResetDisplayCoords_Games();
             return;
         }
@@ -337,7 +339,6 @@ void UI_DrawBootScreen() {
     ClearBackground(BACKGROUND_CLR);
     /*DrawCircle(400, 225, 200, RED);
     DrawText("Welcome", 250, 185, 75, BLUE);*/
-    Texture2D spiderLogo = LoadTexture("./assets/SpiderLogo.png");
 
     Rectangle sourceRect = {0.0f, 0.0f, (float)spiderLogo.width, (float)spiderLogo.height};
     Rectangle destRect = {UI_CenterImg_X(500, CENTER_X), UI_CenterImg_Y(500, SCREEN_H / 2), 500, 500};

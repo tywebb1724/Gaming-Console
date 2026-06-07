@@ -6,9 +6,14 @@
 
 //Max amount of games console can hold
 #define MAX_GAMES 60
+#define GAMES_LEN 49
 
 #define GAMES_ON_SCREEN 5
 
+extern int start_LeftIndex;
+extern int end_LeftIndex;
+extern int start_RightIndex;
+extern int end_RightIndex;
 
 typedef enum {
     ARCADE,
@@ -36,8 +41,12 @@ extern Game gameLibrary[MAX_GAMES];
 
 extern Game* gamesDisplayed[GAMES_ON_SCREEN + 2];
 
-extern int gamesLen;
 extern bool texturesLoaded;
+
+extern Image LoadedImages[GAMES_LEN];
+extern bool isLoaded[GAMES_LEN];
+extern bool isTextureUploaded[GAMES_LEN];
+
 
 void Games_UpdateIndexes(Categories categ);
 
@@ -48,7 +57,7 @@ void Games_Refresh();
 //Initialize game library
 void Games_Init();
 //Load game cover textures
-void Games_LoadTextures();
+void *Games_LoadImages();
 //Shift the order of the games to the right
 void Games_ScrollRight();
 //Shift the order of the games to the left

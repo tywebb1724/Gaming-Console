@@ -5,12 +5,17 @@
 #include <unistd.h>
 #include "categories.h"
 #include "states.h"
+#include <pthread.h>
+#include <stdlib.h>
 
 Game gameLibrary[MAX_GAMES];
 
 Game* gamesDisplayed[GAMES_ON_SCREEN + 2];
 
-int gamesLen;
+Image LoadedImages[GAMES_LEN];
+bool isLoaded[GAMES_LEN] = { false };
+bool isTextureUploaded[GAMES_LEN] = { false };
+
 int start_index;
 int end_index;
 
@@ -19,16 +24,17 @@ bool texturesLoaded = false;
 int gamesIndex;
 int gamesRange;
 
+
 //Update the indexes of the current game category
 void Games_UpdateIndexes(Categories categ) {
-    for (int i = 0; i < gamesLen; i++) {
+    for (int i = 0; i < GAMES_LEN; i++) {
         if (gameLibrary[i].category == categ) {
             start_index = i;
             break;
         }
     }
-    for (int i = start_index + 1; i < gamesLen; i++) {
-        if (i == gamesLen - 1) {
+    for (int i = start_index + 1; i < GAMES_LEN; i++) {
+        if (i == GAMES_LEN - 1) {
             end_index = i;
             break;
         }
@@ -50,7 +56,6 @@ void Games_Refresh() {
         targetIndex = start_index + (gamesIndex - start_index + offset + gamesRange) % (gamesRange);
         gamesDisplayed[i] = &gameLibrary[targetIndex];
     }
-
 }
 
 //Initialize arcade games
@@ -279,8 +284,6 @@ void Games_Playstation_Init() {
     gameLibrary[48].coverPath = "./assets/covers/playstation/twist_met_2.png";
     gameLibrary[48].cover.id = 0;
     gameLibrary[48].category = PLAYSTATION;
-
-    gamesLen = 49;
 }
 
 //Initialize Sega games
@@ -345,32 +348,37 @@ void Games_Init() {
 }
 
 //Load game cover textures
-void Games_LoadTextures() {
-    if (gamesLoaded < gamesLen) {
-        gameLibrary[gamesLoaded].cover = LoadTexture(gameLibrary[gamesLoaded].coverPath);
-        gamesLoaded += 1;
-        if (gamesLoaded == gamesLen) {
-            texturesLoaded = true;
-        }
-        printf("%d\n", gamesLoaded);
+void* Games_LoadImages() {
+    pthread_detach(pthread_self());
+    for (int i = start_index; i <= end_index; i++) {
+        LoadedImages[i] = LoadImage(gameLibrary[i].coverPath);
+        isLoaded[i] = true;
+    }
+    for (int i = 0; i < start_index; i++) {
+        LoadedImages[i] = LoadImage(gameLibrary[i].coverPath);
+        isLoaded[i] = true;
+    }
+    for (int i = end_index + 1; i < GAMES_LEN; i++) {
+        LoadedImages[i] = LoadImage(gameLibrary[i].coverPath);
+        isLoaded[i] = true;
     }
 }
 
 //Shift the order of the games to the right
 void Games_ScrollRight() {
-    gamesIndex = start_index + (gamesIndex - start_index - 1 + gamesRange) % gamesRange;
+    gamesIndex = start_index + (gamesIndex - start_index + 1) % gamesRange;
     Games_Refresh();
 }
 
 //Shift the order of the gamees to the left
 void Games_ScrollLeft() {
-    gamesIndex = start_index + (gamesIndex - start_index + 1) % gamesRange;
+    gamesIndex = start_index + (gamesIndex - start_index - 1 + gamesRange) % gamesRange;
     Games_Refresh();
 }
     
 //Unload game cover textures
 void Games_UnloadTextures() {
-    for (int i = 0; i < gamesLen; i++) {
+    for (int i = 0; i <= GAMES_LEN; i++) {
         UnloadTexture(gameLibrary[i].cover);
     }
 }

@@ -1,7 +1,14 @@
 #ifndef STATES_H
 #define STATES_H
 
+#include <pthread.h>
+#include "raylib.h"
+
+
 extern int gamesLoaded;
+
+extern pthread_t loadThread;
+extern Texture2D spiderLogo;
 
 typedef enum {
     STATE_BOOT,
