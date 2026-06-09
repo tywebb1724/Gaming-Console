@@ -40,6 +40,7 @@ typedef struct {
 extern Game gameLibrary[MAX_GAMES];
 
 extern Game* gamesDisplayed[GAMES_ON_SCREEN + 2];
+extern Game * oldGamesDisplayed[GAMES_ON_SCREEN + 2];
 
 extern bool texturesLoaded;
 

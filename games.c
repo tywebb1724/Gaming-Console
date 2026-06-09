@@ -11,6 +11,7 @@
 Game gameLibrary[MAX_GAMES];
 
 Game* gamesDisplayed[GAMES_ON_SCREEN + 2];
+Game * oldGamesDisplayed[GAMES_ON_SCREEN + 2];
 
 Image LoadedImages[GAMES_LEN];
 bool isLoaded[GAMES_LEN] = { false };

@@ -42,10 +42,7 @@ void State_UpdateAndDraw() {
                 isTextureUploaded[i] = true;
                 if (i == GAMES_LEN - 1) {
                     allLoaded = true;
-                    printf("done\n");
                 }
-                printf("%d\n", i);
-                printf("time: %f\n", bootTimer);
             }
         }
     }
