@@ -7,11 +7,12 @@
 #include "states.h"
 #include <pthread.h>
 #include <stdlib.h>
+#include "ui_config.h"
 
 Game gameLibrary[MAX_GAMES];
 
 Game* gamesDisplayed[GAMES_ON_SCREEN + 2];
-Game * oldGamesDisplayed[GAMES_ON_SCREEN + 2];
+Game* newGamesDisplayed[GAMES_ON_SCREEN];
 
 Image LoadedImages[GAMES_LEN];
 bool isLoaded[GAMES_LEN] = { false };
@@ -20,11 +21,38 @@ bool isTextureUploaded[GAMES_LEN] = { false };
 int start_index;
 int end_index;
 
+int new_start_index;
+
 bool texturesLoaded = false;
 
 int gamesIndex;
 int gamesRange;
 
+void Game_New_Indexes() {
+    Categories categ;
+    if (scrollCategories == SCROLL_LEFT) {
+        if (end_index == GAMES_LEN - 1) {
+            new_start_index = 1;
+        }
+        else {
+            new_start_index = end_index + 2;
+        }
+    }
+    else {
+        if (start_index == 0) {
+            categ = gameLibrary[GAMES_LEN - 1].category;
+        }
+        else {
+            categ = gameLibrary[start_index - 1].category;
+        }
+        for (int i = 0; i < GAMES_LEN; i++) {
+            if (gameLibrary[i].category == categ) {
+                new_start_index = i + 1;
+                return;
+            }
+        }
+    }
+}
 
 //Update the indexes of the current game category
 void Games_UpdateIndexes(Categories categ) {
@@ -46,6 +74,18 @@ void Games_UpdateIndexes(Categories categ) {
     }
     gamesRange = end_index - start_index + 1;
     gamesIndex = start_index + 2;
+}
+
+void Games_NewRefresh() {
+    printf("%d\n", new_start_index);
+    for (int i = 0; i < GAMES_ON_SCREEN; i++) {
+        newGamesDisplayed[i] = &gameLibrary[i + new_start_index];
+    }
+    printf("%s\n", newGamesDisplayed[0]->title);
+    printf("%s\n", newGamesDisplayed[1]->title);
+    printf("%s\n", newGamesDisplayed[2]->title);
+    printf("%s\n", newGamesDisplayed[3]->title);
+    printf("%s\n", newGamesDisplayed[4]->title);
 }
 
 //Update the games displayed for the new category

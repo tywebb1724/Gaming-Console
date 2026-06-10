@@ -26,8 +26,8 @@ void Categories_Refresh() {
 //Init function for the consoles
 void Categories_Init() {
 
-    categories[0].name = "Sega Central";
-    categories[0].id = SEGA;
+    categories[0].name = "Retro PC & Indie";
+    categories[0].id = PC_INDIE;
 
     categories[1].name = "Retro Nintendo";
     categories[1].id = NINTENDO_RETRO;
@@ -35,17 +35,17 @@ void Categories_Init() {
     categories[2].name = "Nintendo 3D";
     categories[2].id = NINTENDO_3D;
 
-    categories[3].name = "Handheld Classics";
+    categories[3].name = "Handheld Classic";
     categories[3].id = HANDHELD;
 
-    categories[4].name = "Sony Playstation";
-    categories[4].id = PLAYSTATION;
+    categories[4].name = "Arcade";
+    categories[4].id = ARCADE;
 
-    categories[5].name = "Retro PC & Indie";
-    categories[5].id = PC_INDIE;
+    categories[5].name = "Sony Playstation";
+    categories[5].id = PLAYSTATION;
 
-    categories[6].name = "Arcade";
-    categories[6].id = ARCADE;
+    categories[6].name = "Sega";
+    categories[6].id = SEGA;
 
     categoriesIndex = 2;
     Categories_Refresh();

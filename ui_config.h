@@ -9,7 +9,6 @@
 #define LEFT 0
 #define MENU_IMG_Y_CENTER (SCREEN_H * (1.0f / 2))
 #define BTN_RADIUS (SCREEN_W / 100.0f)
-#define SCROLL_THRESHOLD 5.0f
 #define BTN_TXT_SIZE (SCREEN_W / 60.0f)
 
 #pragma endregion
@@ -82,7 +81,8 @@
 #define LEFT3_GAME_X (UI_CenterImg_X(SIDE3_GAME_W, (LEFT1_GAME + LEFT2_GAME) / 2))
 #define RIGHT3_GAME_X (UI_CenterImg_X(SIDE3_GAME_W, (RIGHT2_GAME + RIGHT1_GAME) / 2))
 
-#define SCROLL_GAMES_SPEED 0.15f
+#define SCROLL_GAMES_SPEED 0.225f
+#define SCROLL_GAMES_THRESHOLD 10.0f
 #pragma endregion
 
 #pragma region UI_GAMES_TOP
@@ -137,7 +137,9 @@
 #pragma endregion
 
 #pragma region UI_CATEGORIES_SCROLL
-#define SCROLL_CATEG_SPEED 0.05f
+#define SCROLL_CATEG_IN_SPEED 0.15f
+#define SCROLL_CATEG_OUT_SPEED 0.225f
+#define SCROLL_CATEG_THRESHOLD 12.0f
 
 #define LEFT2_SCROLLR (LEFT1_SCROLLR - (SIDE2_GAME_W * (19 / 20.0f)))
 #define LEFT1_SCROLLR (CENTER_SCROLLR - (SIDE1_GAME_W * (19 / 20.0f)))
@@ -162,3 +164,4 @@
 #define CENTER_SCROLLL_X (UI_CenterImg_X(CENTER_GAME_W, CENTER_SCROLLL))
 #define RIGHT1_SCROLLL_X (UI_CenterImg_X(SIDE1_GAME_W, RIGHT1_SCROLLL))
 #define RIGHT2_SCROLLL_X (UI_CenterImg_X(SIDE2_GAME_W, RIGHT2_SCROLLL))
+#pragma endregion

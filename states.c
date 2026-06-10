@@ -29,6 +29,8 @@ void State_Init() {
     UI_ResetDisplayCoords_Games();
     pthread_create(&loadThread, NULL, Games_LoadImages, NULL);
     spiderLogo = LoadTexture("./assets/SpiderLogo.png");
+    alphaCategories_Out = 1.0f;
+    alphaCategories_In = 0.0f;
 }
 
 //Update states and variabels and draw the correct screen
@@ -62,20 +64,30 @@ void State_UpdateAndDraw() {
         //Drawing the main menu
         case STATE_MAIN_MENU:
         UI_DrawMainMenu();
-        if (scrollGames == SCROLL_NO && scrollCategories == SCROLL_NO && IsKeyPressed(KEY_RIGHT)) {
+        if (scrollGames != SCROLL_LEFT && scrollCategories == SCROLL_NO && IsKeyDown(KEY_RIGHT)) {
             scrollGames = SCROLL_RIGHT;
         }
-        else if (scrollGames == SCROLL_NO && scrollCategories == SCROLL_NO && IsKeyPressed(KEY_LEFT)) {
+        else if (scrollGames != SCROLL_RIGHT && scrollCategories == SCROLL_NO && IsKeyDown(KEY_LEFT)) {
             scrollGames = SCROLL_LEFT;
         }
 
-        if (scrollCategories == SCROLL_NO && IsKeyPressed(KEY_D)) {
-            scrollCategories = SCROLL_RIGHT;
-            scrollGames = SCROLL_NO;
+        if (scrollCategories != SCROLL_LEFT && IsKeyDown(KEY_D)) {
+            if (scrollCategories == SCROLL_NO) {
+                scrollCategories = SCROLL_RIGHT;
+                scrollGames = SCROLL_NO;
+                Game_New_Indexes();
+                Games_NewRefresh();
+                UI_ResetDisplayCoords_Scroll();
+            }
         }
-        else if (scrollCategories == SCROLL_NO && IsKeyPressed(KEY_A)) {
-            scrollCategories = SCROLL_LEFT;
-            scrollGames = SCROLL_NO;
+        else if (scrollCategories != SCROLL_RIGHT && IsKeyDown(KEY_A)) {
+            if (scrollCategories == SCROLL_NO) {
+                scrollCategories = SCROLL_LEFT;
+                scrollGames = SCROLL_NO;
+                Game_New_Indexes();
+                Games_NewRefresh();
+                UI_ResetDisplayCoords_Scroll();
+            }
         }
         break;
 

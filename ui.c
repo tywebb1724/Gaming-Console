@@ -22,8 +22,8 @@ enum Scroll scrollGames = SCROLL_NO;
 enum Scroll scrollCategories = SCROLL_NO;
 
 float alphaGames;
-float alphaCategories_Out = 0;
-float alphaCategories_In = 1.0f;
+float alphaCategories_Out;
+float alphaCategories_In;
 
 
 //Change the alpha value for fading the display
@@ -47,16 +47,14 @@ void UI_ChangeAlpha_Games(float offRate, float onRate) {
 }
 
 void UI_ChangeAlpha_Categories(float offRate, float onRate) {
-    if (scrollCategories == SCROLL_NO) {
-        if (alphaCategories_In <= 1.0f) {
-            alphaCategories_In += onRate;
-        } 
-        else {
+    if (scrollCategories != SCROLL_NO) {
+        if (alphaCategories_In > 1.0f) {
             alphaCategories_In = 1.0f;
         }
-    }
-    else {
-        if (alphaCategories_Out <= 0.0f) {
+        else {
+            alphaCategories_In += onRate;
+        }
+        if (alphaCategories_Out < 0.0f) {
             alphaCategories_Out = 0.0f;
         }
         else {
@@ -102,6 +100,41 @@ void UI_ResetDisplayCoords_Games() {
  
 }
 
+void UI_ResetDisplayCoords_Scroll() {
+    if (scrollCategories == SCROLL_RIGHT) {
+        newGamesDisplayed[0]->x = LEFT2_SCROLLL_X;
+        newGamesDisplayed[1]->x = LEFT1_SCROLLL_X;
+        newGamesDisplayed[2]->x = CENTER_SCROLLL_X;
+        newGamesDisplayed[3]->x = RIGHT1_SCROLLL_X;
+        newGamesDisplayed[4]->x = RIGHT2_SCROLLL_X;
+    }
+    else {
+        newGamesDisplayed[0]->x = LEFT2_SCROLLR_X;
+        newGamesDisplayed[1]->x = LEFT1_SCROLLR_X;
+        newGamesDisplayed[2]->x = CENTER_SCROLLR_X;
+        newGamesDisplayed[3]->x = RIGHT1_SCROLLR_X;
+        newGamesDisplayed[4]->x = RIGHT2_SCROLLR_X;
+    }
+
+    newGamesDisplayed[0]->y = SIDE2_GAME_Y;
+    newGamesDisplayed[1]->y = SIDE1_GAME_Y;
+    newGamesDisplayed[2]->y = CENTER_GAME_Y;
+    newGamesDisplayed[3]->y = SIDE1_GAME_Y;
+    newGamesDisplayed[4]->y = SIDE2_GAME_Y;
+
+    newGamesDisplayed[0]->w = SIDE2_GAME_W;
+    newGamesDisplayed[1]->w = SIDE1_GAME_W;
+    newGamesDisplayed[2]->w = CENTER_GAME_W;
+    newGamesDisplayed[3]->w = SIDE1_GAME_W;
+    newGamesDisplayed[4]->w = SIDE2_GAME_W;
+
+    newGamesDisplayed[0]->h = SIDE2_GAME_H;
+    newGamesDisplayed[1]->h = SIDE1_GAME_H;
+    newGamesDisplayed[2]->h = CENTER_GAME_H;
+    newGamesDisplayed[3]->h = SIDE1_GAME_H;
+    newGamesDisplayed[4]->h = SIDE2_GAME_H;
+}
+
 //Function for drawing an arrow button
 void UI_DrawArrow(int xPos, int yPos, int direction) {
     int radius = BTN_RADIUS;
@@ -133,31 +166,51 @@ void UI_DrawArrow(int xPos, int yPos, int direction) {
 }
 
 //Function for drawing an image
-void UI_DrawImage() {
+void UI_DrawImage(float alpha) {
 
     if (img.id > 0) {
             Rectangle sourceRect = {0.0f, 0.0f, (float)img.width, (float)img.height};
             Rectangle destRect = {(float)img_X, img_Y, img_W, img_H};
             Vector2 origin = {0.0f, 0.0f};
-            DrawTexturePro(img, sourceRect, destRect, origin, 0.0f, Fade(WHITE, alphaCategories_Out));
+            DrawTexturePro(img, sourceRect, destRect, origin, 0.0f, Fade(WHITE, alpha));
         } 
         else {
             // Draw a gray placeholder box if the image file is missing!
-            DrawRectangle(img_X, img_Y, img_W, img_H, Fade(LIGHTGRAY, alphaCategories_Out));
-            DrawRectangleLines(img_X, img_Y, img_W, img_H, Fade(GRAY, alphaCategories_Out));
+            DrawRectangle(img_X, img_Y, img_W, img_H, Fade(LIGHTGRAY, alpha));
+            DrawRectangleLines(img_X, img_Y, img_W, img_H, Fade(GRAY, alpha));
         }
 }
 
 //Function for drawing a game cover
-void UI_DrawGame(int i) {
-    img_Y = gamesDisplayed[i]->y;
-    img_W = gamesDisplayed[i]->w;
-    img_H = gamesDisplayed[i]->h;
-    img_X = gamesDisplayed[i]->x;
-    img = gamesDisplayed[i]->cover;
- 
-    UI_DrawImage(i);
-    DrawRectangleLinesEx(
+void UI_DrawGame(int i, float alpha, bool scroll) {
+    if (scroll) {
+        img_Y = newGamesDisplayed[i]->y;
+        img_W = newGamesDisplayed[i]->w;
+        img_H = newGamesDisplayed[i]->h;
+        img_X = newGamesDisplayed[i]->x;
+        img = newGamesDisplayed[i]->cover;
+
+        UI_DrawImage(alpha);
+        DrawRectangleLinesEx(
+        (Rectangle){
+            img_X - THICKNESS_OTHER,
+            img_Y - THICKNESS_OTHER,
+            img_W + (2 * THICKNESS_OTHER),
+            img_H + (2 * THICKNESS_OTHER)
+        },
+        THICKNESS_OTHER, 
+        Fade(GRAY, alphaCategories_In)
+    );
+    }
+    else {
+        img_Y = gamesDisplayed[i]->y;
+        img_W = gamesDisplayed[i]->w;
+        img_H = gamesDisplayed[i]->h;
+        img_X = gamesDisplayed[i]->x;
+        img = gamesDisplayed[i]->cover;
+
+        UI_DrawImage(alpha);
+        DrawRectangleLinesEx(
         (Rectangle){
             img_X - THICKNESS_OTHER,
             img_Y - THICKNESS_OTHER,
@@ -167,26 +220,28 @@ void UI_DrawGame(int i) {
         THICKNESS_OTHER, 
         Fade(GRAY, alphaCategories_Out)
     );
+    }
+ 
 }
 
 //Function for drawing the games when scrolling to the left
 void UI_DrawGames_Left() {
-    UI_DrawGame(0);
-    UI_DrawGame(1);
-    UI_DrawGame(5);
-    UI_DrawGame(4);
-    UI_DrawGame(3);
-    UI_DrawGame(2);
+    UI_DrawGame(0, 1.0f, false);
+    UI_DrawGame(1, 1.0f, false);
+    UI_DrawGame(5, 1.0f, false);
+    UI_DrawGame(4, 1.0f, false);
+    UI_DrawGame(3, 1.0f, false);
+    UI_DrawGame(2, 1.0f, false);
 }
 
 //Function for drawing the games when scrolling to the right
 void UI_DrawGames_Right() {
-    UI_DrawGame(6);
-    UI_DrawGame(1);
-    UI_DrawGame(5);
-    UI_DrawGame(2);
-    UI_DrawGame(3);
-    UI_DrawGame(4);
+    UI_DrawGame(6, 1.0f, false);
+    UI_DrawGame(1, 1.0f, false);
+    UI_DrawGame(5, 1.0f, false);
+    UI_DrawGame(2, 1.0f, false);
+    UI_DrawGame(3, 1.0f, false);
+    UI_DrawGame(4, 1.0f, false);
 }
 
 //Function for drawing the animation of scrolling games
@@ -194,7 +249,7 @@ void UI_DrawScroll_Games() {
 
     if (scrollGames == SCROLL_RIGHT) {
         UI_DrawGames_Right();
-        if (fabsf(gamesDisplayed[4]->x - CENTER_GAME_X) <= SCROLL_THRESHOLD) {
+        if (fabsf(gamesDisplayed[4]->x - CENTER_GAME_X) <= SCROLL_GAMES_THRESHOLD) {
             scrollGames = SCROLL_NO;
             Games_ScrollRight();
             UI_ResetDisplayCoords_Games();
@@ -232,7 +287,7 @@ void UI_DrawScroll_Games() {
     
     else if (scrollGames == SCROLL_LEFT) {
         UI_DrawGames_Left();
-        if (fabsf(gamesDisplayed[2]->x - CENTER_GAME_X) <= SCROLL_THRESHOLD) {
+        if (fabsf(gamesDisplayed[2]->x - CENTER_GAME_X) <= SCROLL_GAMES_THRESHOLD) {
             scrollGames = SCROLL_NO;
             Games_ScrollLeft();
             UI_ResetDisplayCoords_Games();
@@ -269,6 +324,38 @@ void UI_DrawScroll_Games() {
     }
 }
 
+//Function for drawing games depending on whether it is scrolling
+void UI_DrawGames() {
+    if (scrollGames == SCROLL_NO) {
+        if (scrollCategories != SCROLL_NO) {
+            UI_DrawGame(0, alphaCategories_In, true);
+            UI_DrawGame(4, alphaCategories_In, true);
+            UI_DrawGame(1, alphaCategories_In, true);
+            UI_DrawGame(3, alphaCategories_In, true); 
+            UI_DrawGame(2, alphaCategories_In, true);
+        }
+        UI_DrawGame(1, alphaCategories_Out, false);
+        UI_DrawGame(5, alphaCategories_Out, false);
+        UI_DrawGame(2, alphaCategories_Out, false);
+        UI_DrawGame(4, alphaCategories_Out, false); 
+        UI_DrawGame(3, alphaCategories_Out, false);
+    }
+    else {
+        UI_DrawScroll_Games();
+    }
+        DrawRectangleLinesEx(
+            (Rectangle){
+                img_X - THICKNESS_SELECT_GAME,
+                img_Y - THICKNESS_SELECT_GAME,
+                img_W + (2 * THICKNESS_SELECT_GAME),
+                img_H + (2 * THICKNESS_SELECT_GAME)
+            },
+            THICKNESS_SELECT_GAME, 
+            Fade(BLUE, alphaGames)
+        );
+    
+}
+
 //Function for drawing the cateogires when they are static
 void UI_DrawCategories_Normal() {
     Font font = GetFontDefault();
@@ -292,37 +379,54 @@ void UI_DrawCategories_Normal() {
 //Function for drawing the animation of scrolling categories
 void UI_DrawScroll_Categories() {
     if (scrollCategories == SCROLL_RIGHT) {
-        if (fabsf(gamesDisplayed[3]->x - CENTER_SCROLLR_X) <= SCROLL_THRESHOLD) {
-            printf("done\n");
+        if (fabsf(newGamesDisplayed[2]->x - CENTER_GAME_X) <= SCROLL_CATEG_THRESHOLD) {
             Categories_ScrollRight();
-            UI_ResetDisplayCoords_Games();
             UI_DrawCategories_Normal();
+            UI_DrawGames();
             scrollCategories = SCROLL_NO;
             alphaCategories_Out = 1.0f;
+            alphaCategories_In = 0.0f;
+            UI_ResetDisplayCoords_Games();
             return;
         }
 
-        gamesDisplayed[1]->x = Lerp(gamesDisplayed[1]->x, LEFT2_SCROLLR_X, SCROLL_CATEG_SPEED);
-        gamesDisplayed[2]->x = Lerp(gamesDisplayed[2]->x, LEFT1_SCROLLR_X, SCROLL_CATEG_SPEED);
-        gamesDisplayed[3]->x = Lerp(gamesDisplayed[3]->x, CENTER_SCROLLR_X, SCROLL_CATEG_SPEED);
-        gamesDisplayed[4]->x = Lerp(gamesDisplayed[4]->x, RIGHT1_SCROLLR_X, SCROLL_CATEG_SPEED);
-        gamesDisplayed[5]->x = Lerp(gamesDisplayed[5]->x, RIGHT2_SCROLLR_X, SCROLL_CATEG_SPEED);
+        newGamesDisplayed[0]->x = Lerp(newGamesDisplayed[0]->x, LEFT2_GAME_X, SCROLL_CATEG_IN_SPEED);
+        newGamesDisplayed[1]->x = Lerp(newGamesDisplayed[1]->x, LEFT1_GAME_X, SCROLL_CATEG_IN_SPEED);
+        newGamesDisplayed[2]->x = Lerp(newGamesDisplayed[2]->x, CENTER_GAME_X, SCROLL_CATEG_IN_SPEED);
+        newGamesDisplayed[3]->x = Lerp(newGamesDisplayed[3]->x, RIGHT1_GAME_X, SCROLL_CATEG_IN_SPEED);
+        newGamesDisplayed[4]->x = Lerp(newGamesDisplayed[4]->x, RIGHT2_GAME_X, SCROLL_CATEG_IN_SPEED);
+
+        gamesDisplayed[1]->x = Lerp(gamesDisplayed[1]->x, LEFT2_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
+        gamesDisplayed[2]->x = Lerp(gamesDisplayed[2]->x, LEFT1_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
+        gamesDisplayed[3]->x = Lerp(gamesDisplayed[3]->x, CENTER_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
+        gamesDisplayed[4]->x = Lerp(gamesDisplayed[4]->x, RIGHT1_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
+        gamesDisplayed[5]->x = Lerp(gamesDisplayed[5]->x, RIGHT2_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
     }
     else {
-        if (fabsf(gamesDisplayed[3]->x - CENTER_SCROLLL_X) <= SCROLL_THRESHOLD) {
+        if (fabsf(newGamesDisplayed[2]->x - CENTER_GAME_X) <= SCROLL_CATEG_THRESHOLD) {
             Categories_ScrollLeft();
             UI_DrawCategories_Normal();
+            UI_DrawGames();
             scrollCategories = SCROLL_NO;
             UI_ResetDisplayCoords_Games();
             alphaCategories_Out = 1.0f;
+            alphaCategories_Out = 1.0f;
+            alphaCategories_In = 0.0f;
+            UI_ResetDisplayCoords_Games();
             return;
         }
 
-        gamesDisplayed[1]->x = Lerp(gamesDisplayed[1]->x, LEFT2_SCROLLL_X, SCROLL_CATEG_SPEED);
-        gamesDisplayed[2]->x = Lerp(gamesDisplayed[2]->x, LEFT1_SCROLLL_X, SCROLL_CATEG_SPEED);
-        gamesDisplayed[3]->x = Lerp(gamesDisplayed[3]->x, CENTER_SCROLLL_X, SCROLL_CATEG_SPEED);
-        gamesDisplayed[4]->x = Lerp(gamesDisplayed[4]->x, RIGHT1_SCROLLL_X, SCROLL_CATEG_SPEED);
-        gamesDisplayed[5]->x = Lerp(gamesDisplayed[5]->x, RIGHT2_SCROLLL_X, SCROLL_CATEG_SPEED);
+        newGamesDisplayed[0]->x = Lerp(newGamesDisplayed[0]->x, LEFT2_GAME_X, SCROLL_CATEG_IN_SPEED);
+        newGamesDisplayed[1]->x = Lerp(newGamesDisplayed[1]->x, LEFT1_GAME_X, SCROLL_CATEG_IN_SPEED);
+        newGamesDisplayed[2]->x = Lerp(newGamesDisplayed[2]->x, CENTER_GAME_X, SCROLL_CATEG_IN_SPEED);
+        newGamesDisplayed[3]->x = Lerp(newGamesDisplayed[3]->x, RIGHT1_GAME_X, SCROLL_CATEG_IN_SPEED);
+        newGamesDisplayed[4]->x = Lerp(newGamesDisplayed[4]->x, RIGHT2_GAME_X, SCROLL_CATEG_IN_SPEED);
+
+        gamesDisplayed[1]->x = Lerp(gamesDisplayed[1]->x, LEFT2_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
+        gamesDisplayed[2]->x = Lerp(gamesDisplayed[2]->x, LEFT1_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
+        gamesDisplayed[3]->x = Lerp(gamesDisplayed[3]->x, CENTER_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
+        gamesDisplayed[4]->x = Lerp(gamesDisplayed[4]->x, RIGHT1_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
+        gamesDisplayed[5]->x = Lerp(gamesDisplayed[5]->x, RIGHT2_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
     }
 }
 
@@ -396,30 +500,6 @@ void UI_DrawHeading() {
     DrawLine(0, TOP_Y, SCREEN_W, TOP_Y, BLUE);
 }
 
-//Function for drawing games depending on whether it is scrolling
-void UI_DrawGames() {
-    if (scrollGames == SCROLL_NO) {
-        UI_DrawGame(1);
-        UI_DrawGame(5);
-        UI_DrawGame(2);
-        UI_DrawGame(4); 
-        UI_DrawGame(3);
-    }
-    else {
-        UI_DrawScroll_Games();
-    }
-        DrawRectangleLinesEx(
-            (Rectangle){
-                img_X - THICKNESS_SELECT_GAME,
-                img_Y - THICKNESS_SELECT_GAME,
-                img_W + (2 * THICKNESS_SELECT_GAME),
-                img_H + (2 * THICKNESS_SELECT_GAME)
-            },
-            THICKNESS_SELECT_GAME, 
-            Fade(BLUE, alphaGames)
-        );
-    
-}
 
 //Function for drawing categories depending on whether it is scrolling
 void UI_DrawCategories() {
@@ -437,10 +517,10 @@ void UI_DrawMainMenu() {
 
     UI_DrawHeading();
     UI_ChangeAlpha_Games(0.25f, 0.25f);
-    UI_ChangeAlpha_Categories(0.05f, 0.05f);
+    UI_ChangeAlpha_Categories(0.1f, 0.05f);
+    UI_DrawCategories();
     UI_DrawGames();
 
-    UI_DrawCategories();
     UI_DrawBottom();
     //UI_DrawCtrls_L();
     //UI_DrawCtrls_R();

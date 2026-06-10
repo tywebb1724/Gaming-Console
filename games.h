@@ -40,7 +40,7 @@ typedef struct {
 extern Game gameLibrary[MAX_GAMES];
 
 extern Game* gamesDisplayed[GAMES_ON_SCREEN + 2];
-extern Game * oldGamesDisplayed[GAMES_ON_SCREEN + 2];
+extern Game* newGamesDisplayed[GAMES_ON_SCREEN];
 
 extern bool texturesLoaded;
 
@@ -49,7 +49,10 @@ extern bool isLoaded[GAMES_LEN];
 extern bool isTextureUploaded[GAMES_LEN];
 
 
+void Game_New_Indexes();
+
 void Games_UpdateIndexes(Categories categ);
+void Games_NewRefresh();
 
 //Update the indexes of the current game category
 void Games_UpdateIndexes(Categories categ);

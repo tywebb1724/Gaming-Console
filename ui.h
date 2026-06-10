@@ -11,12 +11,16 @@ enum Scroll {
 extern enum Scroll scrollGames;
 extern enum Scroll scrollCategories;
 
+extern float alphaCategories_Out;
+extern float alphaCategories_In;
+
 //Change the alpha value for fading the display
 void UI_ChangeAlpa(float offRate, float onRate);
 //Reset the coordinates for the displayed games
 void UI_ResetDisplayCoords_Games();
+void UI_ResetDisplayCoords_Scroll();
 //Function for drawing an image
-void UI_DrawImage();
+void UI_DrawImage(float alpha);
 //Function for drawing a console cover
 float UI_CenterImg_X(float width, float position);
 //Function for centering an image on a certain Y position
