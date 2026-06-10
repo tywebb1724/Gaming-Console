@@ -35,13 +35,13 @@ void Categories_Init() {
     categories[2].name = "Nintendo 3D";
     categories[2].id = NINTENDO_3D;
 
-    categories[3].name = "Handheld Classic";
+    categories[3].name = "Handheld Classics";
     categories[3].id = HANDHELD;
 
     categories[4].name = "Arcade";
     categories[4].id = ARCADE;
 
-    categories[5].name = "Sony Playstation";
+    categories[5].name = "Playstation";
     categories[5].id = PLAYSTATION;
 
     categories[6].name = "Sega";

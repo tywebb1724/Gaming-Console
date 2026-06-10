@@ -77,15 +77,9 @@ void Games_UpdateIndexes(Categories categ) {
 }
 
 void Games_NewRefresh() {
-    printf("%d\n", new_start_index);
     for (int i = 0; i < GAMES_ON_SCREEN; i++) {
         newGamesDisplayed[i] = &gameLibrary[i + new_start_index];
     }
-    printf("%s\n", newGamesDisplayed[0]->title);
-    printf("%s\n", newGamesDisplayed[1]->title);
-    printf("%s\n", newGamesDisplayed[2]->title);
-    printf("%s\n", newGamesDisplayed[3]->title);
-    printf("%s\n", newGamesDisplayed[4]->title);
 }
 
 //Update the games displayed for the new category

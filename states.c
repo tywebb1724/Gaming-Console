@@ -28,9 +28,11 @@ void State_Init() {
     gamesLoaded = 0;
     UI_ResetDisplayCoords_Games();
     pthread_create(&loadThread, NULL, Games_LoadImages, NULL);
-    spiderLogo = LoadTexture("./assets/SpiderLogo.png");
+    spiderLogo = LoadTexture("./assets/covers/logo/SpiderLogo.png");
     alphaCategories_Out = 1.0f;
     alphaCategories_In = 0.0f;
+    fontRegular = LoadFont("assets/fonts/Exo2-Regular.ttf");
+    fontBold = LoadFont("assets/fonts/Exo2-Bold.ttf");
 }
 
 //Update states and variabels and draw the correct screen

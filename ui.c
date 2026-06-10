@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+Font fontRegular;
+Font fontBold;
+
 
 Texture2D img;
 Texture2D btnA;
@@ -133,36 +136,6 @@ void UI_ResetDisplayCoords_Scroll() {
     newGamesDisplayed[2]->h = CENTER_GAME_H;
     newGamesDisplayed[3]->h = SIDE1_GAME_H;
     newGamesDisplayed[4]->h = SIDE2_GAME_H;
-}
-
-//Function for drawing an arrow button
-void UI_DrawArrow(int xPos, int yPos, int direction) {
-    int radius = BTN_RADIUS;
-
-    Vector2 centerA = { xPos, yPos };
-    DrawCircleV(centerA, radius, WHITE);
-
-    if (direction == LEFT) {
-        Vector2 v1 = {xPos + (2.0f / 3) * (radius), yPos};
-        Vector2 v2 = {xPos - (1.0f / 4) * (radius), yPos};
-        DrawLineEx(v1, v2, 4.0f, GRAY);
-    
-        Vector2 triangleTip   = { xPos - (3.0f / 4) * (radius), yPos };
-        Vector2 bottomRight   = { xPos - (1.0f / 4) * (radius), yPos + (1.0f / 2) * (radius) };
-        Vector2 topRight      = { xPos - (1.0f / 4) * (radius), yPos - (1.0f / 2) * (radius) };
-        DrawTriangle(triangleTip, bottomRight, topRight, GRAY);
-    }
-    else if (direction == RIGHT) {
-        Vector2 v1 = {xPos - (2.0f / 3) * (radius), yPos};
-        Vector2 v2 = {xPos + (1.0f / 4) * (radius), yPos};
-
-        DrawLineEx(v1, v2, 4.0f, GRAY);
-    
-        Vector2 triangleTip   = { xPos + (3.0f / 4) * (radius), yPos };
-        Vector2 bottomRight   = { xPos + (1.0f / 4) * (radius), yPos - (1.0f / 2) * (radius) };
-        Vector2 topRight      = { xPos + (1.0f / 4) * (radius), yPos + (1.0f / 2) * (radius) };
-        DrawTriangle(triangleTip, bottomRight, topRight, GRAY);
-    }
 }
 
 //Function for drawing an image
@@ -358,22 +331,18 @@ void UI_DrawGames() {
 
 //Function for drawing the cateogires when they are static
 void UI_DrawCategories_Normal() {
-    Font font = GetFontDefault();
-    float spacing = CENTER_CATEG_SIZE / 10;
-    Vector2 size = MeasureTextEx(font, categoriesDisplayed[2].name, CENTER_CATEG_SIZE, spacing);
-    //char categ_header[30];
-    //sprintf(categ_header, "[%s]", categories[2].name);
-    //printf("draw: %s\n", categ_header);
-    DrawText(categoriesDisplayed[2].name, CENTER_CATEG_X, CATEG_Y, CENTER_CATEG_SIZE, BLUE);
+    Vector2 size = MeasureTextEx(fontBold, categoriesDisplayed[2].name, CENTER_CATEG_SIZE, BOTTOM_TXT_SPACE);
+    Vector2 centerCateg = {CENTER_CATEG_X, CATEG_Y};
+    DrawTextEx(fontBold, categoriesDisplayed[2].name, centerCateg, CENTER_CATEG_SIZE, BOTTOM_TXT_SPACE, Fade(WHITE, alphaCategories_Out));
 
-    spacing = SIDE1_CATEG_SIZE / 10;
-    size = MeasureTextEx(font, categoriesDisplayed[1].name, SIDE1_CATEG_SIZE, spacing);
-    //sprintf(categ_header, "[%s]", categories[1].name);
-    DrawText(categoriesDisplayed[1].name, LEFT1_CATEG_X, CATEG_Y, SIDE1_CATEG_SIZE, BLUE);
+    size = MeasureTextEx(fontBold, categoriesDisplayed[1].name, SIDE1_CATEG_SIZE, BOTTOM_TXT_SPACE);
+    Vector2 left1Categ = {LEFT1_CATEG_X, CATEG_Y};
+    DrawTextEx(fontBold, categoriesDisplayed[1].name, left1Categ, SIDE1_CATEG_SIZE, BOTTOM_TXT_SPACE, Fade(WHITE, alphaCategories_Out));
 
-    size = MeasureTextEx(font, categoriesDisplayed[3].name, SIDE1_CATEG_SIZE, spacing);
-    //sprintf(categ_header, "[%s]", categories[3].name);
-    DrawText(categoriesDisplayed[3].name, RIGHT1_CATEG_X, CATEG_Y, SIDE1_CATEG_SIZE, BLUE);
+
+    size = MeasureTextEx(fontBold, categoriesDisplayed[3].name, SIDE1_CATEG_SIZE, BOTTOM_TXT_SPACE);
+    Vector2 right1Categ = {RIGHT1_CATEG_X, CATEG_Y};
+    DrawTextEx(fontBold, categoriesDisplayed[3].name, right1Categ, SIDE1_CATEG_SIZE, BOTTOM_TXT_SPACE, Fade(WHITE, alphaCategories_Out));
 }
 
 //Function for drawing the animation of scrolling categories
@@ -446,38 +415,45 @@ float UI_CenterText_X(char *text, int fontSize, int position) {
     return (position - (width / 2));
 }
 
-//Function for drawing the controls at the top left corner
-void UI_DrawCtrls_L() {
-    UI_DrawArrow(L_ARROW_X, ARROW_Y, LEFT);
-    UI_DrawArrow(R_ARROW_X, ARROW_Y, RIGHT);
-    DrawText(ARROW_TXT, ARROW_TXT_X, ARROW_TXT_Y, BTN_TXT_SIZE, BLUE);  
-}
+//Function to draw the bumpers
+void UI_DrawBumpers() {
+    Rectangle bumperL = {
+        BUMPER_L_X,
+        BUMPER_Y,
+        BUMPER_W,
+        BUMPER_H
+    };
 
-//Function for drawing the controls at the top right corner
-void UI_DrawCtrls_R() {
+    Rectangle bumperR = {
+        BUMPER_R_X,
+        BUMPER_Y,
+        BUMPER_W,
+        BUMPER_H
+    };
 
-    DrawText (BTN_BACK_TXT, BTN_BACK_TXT_X, BTN_BACK_TXT_Y, BTN_TXT_SIZE, BLUE);
+    DrawRectangleRounded(bumperL, BUMPER_ROUND, BUMPER_SEGMENTS, LIGHTGRAY);
+    DrawRectangleRounded(bumperR, BUMPER_ROUND, BUMPER_SEGMENTS, LIGHTGRAY);
 
-    Vector2 centerB = { XBOX_B_X, BTN_BACK_Y };
-    DrawCircleV(centerB, BTN_RADIUS, RED);
-    DrawText("B", XBOX_B_TXT_X, XBOX_B_TXT_Y, BTN_TXT_SIZE, WHITE);
-
-    DrawText ("/", BTN_BACK_SLASH_X, XBOX_B_TXT_Y, BTN_TXT_SIZE, BLUE);
-
-    Vector2 centerO = { PS_O_X, BTN_BACK_Y };
-    DrawCircleV(centerO, BTN_RADIUS, BLACK);
-    DrawText("O", PS_O_TXT_X, PS_O_TXT_Y, BTN_TXT_SIZE, RED);
-
+    Vector2 bumperL_Size = MeasureTextEx(fontBold, BUMPER_L_TXT, BUMPER_TXT_SIZE, BUMPER_TXT_SPACE);
+    Vector2 bumperR_Size = MeasureTextEx(fontBold, BUMPER_R_TXT, BUMPER_TXT_SIZE, BUMPER_TXT_SPACE);
+    Vector2 bumperR_Text = {BUMPER_R_TXT_X, BUMPER_TXT_Y};
+    Vector2 bumperL_Text = {BUMPER_L_TXT_X, BUMPER_TXT_Y};
+    DrawTextEx(fontBold, BUMPER_R_TXT, bumperR_Text, BUMPER_TXT_SIZE, BUMPER_TXT_SPACE, BLACK);
+    DrawTextEx(fontBold, BUMPER_L_TXT, bumperL_Text, BUMPER_TXT_SIZE, BUMPER_TXT_SPACE, BLACK);
 }
 
 //Function for drawing the select controls at the bottom
 void UI_DrawBottom() {
-    DrawRectangle(0, BOTTOM_Y, SCREEN_W, (SCREEN_H - BOTTOM_Y), WHITE);
-    DrawLine(0, BOTTOM_Y, SCREEN_W, BOTTOM_Y, BLUE);
     
-    DrawText(GAME_TXT, BOTTOM_TXT_X, GAME_TXT_Y, BTN_TXT_SIZE, Fade(BLUE, alphaGames));
+    Vector2 gameText_Size = MeasureTextEx(fontRegular, gamesDisplayed[3]->title, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE);
+    Vector2 bottomText_Size = MeasureTextEx(fontRegular, BOTTOM_TXT, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE);
+    Vector2 gameText = {BOTTOM_TXT_X, GAME_TXT_Y};
+    Vector2 bottomText = {BOTTOM_TXT_X, BOTTOM_TXT_Y};
 
-    DrawText(BOTTOM_TXT, BOTTOM_TXT_X, BOTTOM_TXT_Y, BTN_TXT_SIZE, Fade(BLUE, alphaGames));
+    DrawRectangle(BOTTOM_RECT_X, BOTTOM_RECT_Y, BOTTOM_RECT_W, BOTTOM_RECT_H, Fade(WHITE, alphaGames));
+
+    DrawTextEx(fontRegular, gamesDisplayed[3]->title, gameText, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(BLACK, alphaGames));
+    DrawTextEx(fontRegular, BOTTOM_TXT, bottomText, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(BLACK, alphaGames));
 }
 
 //Function for drawing the boot screen
@@ -487,7 +463,7 @@ void UI_DrawBootScreen() {
     DrawText("Welcome", 250, 185, 75, BLUE);*/
 
     Rectangle sourceRect = {0.0f, 0.0f, (float)spiderLogo.width, (float)spiderLogo.height};
-    Rectangle destRect = {UI_CenterImg_X(500, CENTER_X), UI_CenterImg_Y(500, SCREEN_H / 2), 500, 500};
+    Rectangle destRect = {UI_CenterImg_X(LOGO_SIZE, CENTER_X), UI_CenterImg_Y(LOGO_SIZE, SCREEN_H / 2), LOGO_SIZE, LOGO_SIZE};
     Vector2 origin = {0.0f, 0.0f};
     DrawTexturePro(spiderLogo, sourceRect, destRect, origin, 0.0f, WHITE);
 }
@@ -496,10 +472,9 @@ void UI_DrawBootScreen() {
 void UI_DrawHeading() {
     //DrawText(COMPANY_NAME, UI_CenterText_X(COMPANY_NAME, COMPANY_TXT_SIZE, CENTER_X), COMPANY_Y, COMPANY_TXT_SIZE, BLUE);
     //DrawText(PICK_GAME_TXT, UI_CenterText_X(PICK_GAME_TXT, PICK_GAME_TXT_SIZE, CENTER_X), PICK_GAME_Y, PICK_GAME_TXT_SIZE, BLUE);
-    DrawRectangle(0, 0, SCREEN_W, TOP_Y, WHITE);
-    DrawLine(0, TOP_Y, SCREEN_W, TOP_Y, BLUE);
+    //DrawRectangle(0, 0, SCREEN_W, TOP_Y, WHITE);
+    //DrawLine(0, TOP_Y, SCREEN_W, TOP_Y, BLUE);
 }
-
 
 //Function for drawing categories depending on whether it is scrolling
 void UI_DrawCategories() {
@@ -520,10 +495,9 @@ void UI_DrawMainMenu() {
     UI_ChangeAlpha_Categories(0.1f, 0.05f);
     UI_DrawCategories();
     UI_DrawGames();
+    UI_DrawBumpers();
 
     UI_DrawBottom();
-    //UI_DrawCtrls_L();
-    //UI_DrawCtrls_R();
 }
 
 //Function for drawing the diagnostics screen

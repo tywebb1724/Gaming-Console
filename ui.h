@@ -8,6 +8,9 @@ enum Scroll {
     SCROLL_RIGHT
 };
 
+extern Font fontRegular;
+extern Font fontBold;
+
 extern enum Scroll scrollGames;
 extern enum Scroll scrollCategories;
 
