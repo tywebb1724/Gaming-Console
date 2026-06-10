@@ -1,21 +1,22 @@
 #include "categories.h"
-#include <stdio.h>
-#include "states.h"
-#include <pthread.h>
 
+
+//Arrays to hold all categories and those displayed on the screen
 Category categories[CATEGORIES_LEN];
-
 Category categoriesDisplayed[CATEGORIES_ON_SCREEN + 2];
 
+//Index for the current category
 int categoriesIndex;
 
 //Update the categories 
 void Categories_Refresh() {
     int offset;
     int targetIndex;
+    //Cycle through the categories
     for (int i = 0; i < CATEGORIES_ON_SCREEN + 2; i++) {
         offset = i - 2;
         targetIndex = (categoriesIndex + offset) % CATEGORIES_LEN;
+        //If the offset causes the index to be negative, add the category length
         if (targetIndex < 0) {
             targetIndex += CATEGORIES_LEN;
         }
@@ -47,6 +48,7 @@ void Categories_Init() {
     categories[6].name = "Sega";
     categories[6].id = SEGA;
 
+    //Start with the Nintendo 3D category
     categoriesIndex = 2;
     Categories_Refresh();
 }

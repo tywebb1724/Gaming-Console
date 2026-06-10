@@ -9,43 +9,54 @@
 #include <stdlib.h>
 #include "ui_config.h"
 
+//Arrays to hold all games, the games displayed, and the new games displayed
 Game gameLibrary[MAX_GAMES];
-
 Game* gamesDisplayed[GAMES_ON_SCREEN + 2];
 Game* newGamesDisplayed[GAMES_ON_SCREEN];
-
+//Array to hold loaded images during boot up
 Image LoadedImages[GAMES_LEN];
-bool isLoaded[GAMES_LEN] = { false };
-bool isTextureUploaded[GAMES_LEN] = { false };
-
+//Variables to keep track of which images and textures are loaded
+bool isLoaded[GAMES_LEN];
+bool isTextureUploaded[GAMES_LEN];
+//Indexes and range to keep track of current and new games
 int start_index;
 int end_index;
-
 int new_start_index;
-
-bool texturesLoaded = false;
-
 int gamesIndex;
 int gamesRange;
 
+//Initialize images and texture loaded arrays
+isLoaded[GAMES_LEN] = { false };
+isTextureUploaded[GAMES_LEN] = { false };
+
+
+//Update the indexes for the new game category
 void Game_New_Indexes() {
     Categories categ;
+    //If scrolling to the left
     if (scrollCategories == SCROLL_LEFT) {
+        //If it is the last category in the array, the new category starts at the beginning
         if (end_index == GAMES_LEN - 1) {
             new_start_index = 1;
         }
+        //If not, update the new start index
         else {
             new_start_index = end_index + 2;
         }
     }
+    //If scrolling to the right
     else {
+        //If the first category in the array, new category is the last one
         if (start_index == 0) {
             categ = gameLibrary[GAMES_LEN - 1].category;
         }
+        //If not, it's the previous category
         else {
             categ = gameLibrary[start_index - 1].category;
         }
+        //Search the games for the start of the new category
         for (int i = 0; i < GAMES_LEN; i++) {
+            //If you find the start fo the new category, update the start index
             if (gameLibrary[i].category == categ) {
                 new_start_index = i + 1;
                 return;
@@ -56,26 +67,33 @@ void Game_New_Indexes() {
 
 //Update the indexes of the current game category
 void Games_UpdateIndexes(Categories categ) {
+    //Search through all the games
     for (int i = 0; i < GAMES_LEN; i++) {
+        //When beginning of category is found, update start index
         if (gameLibrary[i].category == categ) {
             start_index = i;
             break;
         }
     }
+    //Search starting at the start index
     for (int i = start_index + 1; i < GAMES_LEN; i++) {
+        //If get to end of array, that's the end of the category
         if (i == GAMES_LEN - 1) {
             end_index = i;
             break;
         }
+        //Once you enter another category, update the end of the category as previous index
         if (gameLibrary[i].category != categ) {
             end_index = i - 1;
             break;
         }
     }
+    //Update range and current index
     gamesRange = end_index - start_index + 1;
     gamesIndex = start_index + 2;
 }
 
+//Update the array of the new games displayed
 void Games_NewRefresh() {
     for (int i = 0; i < GAMES_ON_SCREEN; i++) {
         newGamesDisplayed[i] = &gameLibrary[i + new_start_index];
@@ -283,44 +301,6 @@ void Games_PCIndie_Init() {
     gameLibrary[34].category = PC_INDIE;
 }
 
-//Initialize Playstation games
-void Games_Playstation_Init() {
-    gameLibrary[42].title = "Megaman X4";
-    gameLibrary[42].coverPath = "./assets/covers/playstation/megaman_x4.png";
-    gameLibrary[42].cover.id = 0;
-    gameLibrary[42].category = PLAYSTATION;
-
-    gameLibrary[43].title = "Pac-Man World";
-    gameLibrary[43].coverPath = "./assets/covers/playstation/pac-man_world.png";
-    gameLibrary[43].cover.id = 0;
-    gameLibrary[43].category = PLAYSTATION;
-
-    gameLibrary[44].title = "Soulblade";
-    gameLibrary[44].coverPath = "./assets/covers/playstation/soulblade.png";
-    gameLibrary[44].cover.id = 0;
-    gameLibrary[44].category = PLAYSTATION;
-
-    gameLibrary[45].title = "Spider-Man (2000)";
-    gameLibrary[45].coverPath = "./assets/covers/playstation/spider-man.png";
-    gameLibrary[45].cover.id = 0;
-    gameLibrary[45].category = PLAYSTATION;
-
-    gameLibrary[46].title = "Street Fighter: Alpha 3";
-    gameLibrary[46].coverPath = "./assets/covers/playstation/street_fighter_alpha_3.png";
-    gameLibrary[46].cover.id = 0;
-    gameLibrary[46].category = PLAYSTATION;
-
-    gameLibrary[47].title = "Metal Gear Solid";
-    gameLibrary[47].coverPath = "./assets/covers/playstation/met_gear_solid.png";
-    gameLibrary[47].cover.id = 0;
-    gameLibrary[47].category = PLAYSTATION;
-
-    gameLibrary[48].title = "Twisted Metal 2";
-    gameLibrary[48].coverPath = "./assets/covers/playstation/twist_met_2.png";
-    gameLibrary[48].cover.id = 0;
-    gameLibrary[48].category = PLAYSTATION;
-}
-
 //Initialize Sega games
 void Games_Sega_Init() {
     gameLibrary[35].title = "Crazy Taxi";
@@ -359,6 +339,44 @@ void Games_Sega_Init() {
     gameLibrary[41].category = SEGA;
 }
 
+//Initialize Playstation games
+void Games_Playstation_Init() {
+    gameLibrary[42].title = "Megaman X4";
+    gameLibrary[42].coverPath = "./assets/covers/playstation/megaman_x4.png";
+    gameLibrary[42].cover.id = 0;
+    gameLibrary[42].category = PLAYSTATION;
+
+    gameLibrary[43].title = "Pac-Man World";
+    gameLibrary[43].coverPath = "./assets/covers/playstation/pac-man_world.png";
+    gameLibrary[43].cover.id = 0;
+    gameLibrary[43].category = PLAYSTATION;
+
+    gameLibrary[44].title = "Soulblade";
+    gameLibrary[44].coverPath = "./assets/covers/playstation/soulblade.png";
+    gameLibrary[44].cover.id = 0;
+    gameLibrary[44].category = PLAYSTATION;
+
+    gameLibrary[45].title = "Spider-Man (2000)";
+    gameLibrary[45].coverPath = "./assets/covers/playstation/spider-man.png";
+    gameLibrary[45].cover.id = 0;
+    gameLibrary[45].category = PLAYSTATION;
+
+    gameLibrary[46].title = "Street Fighter: Alpha 3";
+    gameLibrary[46].coverPath = "./assets/covers/playstation/street_fighter_alpha_3.png";
+    gameLibrary[46].cover.id = 0;
+    gameLibrary[46].category = PLAYSTATION;
+
+    gameLibrary[47].title = "Metal Gear Solid";
+    gameLibrary[47].coverPath = "./assets/covers/playstation/met_gear_solid.png";
+    gameLibrary[47].cover.id = 0;
+    gameLibrary[47].category = PLAYSTATION;
+
+    gameLibrary[48].title = "Twisted Metal 2";
+    gameLibrary[48].coverPath = "./assets/covers/playstation/twist_met_2.png";
+    gameLibrary[48].cover.id = 0;
+    gameLibrary[48].category = PLAYSTATION;
+}
+
 //Initialize game library
 void Games_Init() {
     //Arcade games
@@ -378,21 +396,23 @@ void Games_Init() {
 
     Games_UpdateIndexes(NINTENDO_3D);
     Games_Refresh();
-    
-    texturesLoaded = false;
 }
 
 //Load game cover textures
 void* Games_LoadImages() {
+    //Detach the thread
     pthread_detach(pthread_self());
+    //Load the images of the current category first
     for (int i = start_index; i <= end_index; i++) {
         LoadedImages[i] = LoadImage(gameLibrary[i].coverPath);
         isLoaded[i] = true;
     }
+    //Load the images at beginning of array
     for (int i = 0; i < start_index; i++) {
         LoadedImages[i] = LoadImage(gameLibrary[i].coverPath);
         isLoaded[i] = true;
     }
+    //Load then images at end of array
     for (int i = end_index + 1; i < GAMES_LEN; i++) {
         LoadedImages[i] = LoadImage(gameLibrary[i].coverPath);
         isLoaded[i] = true;
@@ -405,7 +425,7 @@ void Games_ScrollRight() {
     Games_Refresh();
 }
 
-//Shift the order of the gamees to the left
+//Shift the order of the games to the left
 void Games_ScrollLeft() {
     gamesIndex = start_index + (gamesIndex - start_index - 1 + gamesRange) % gamesRange;
     Games_Refresh();
@@ -413,6 +433,7 @@ void Games_ScrollLeft() {
     
 //Unload game cover textures
 void Games_UnloadTextures() {
+    //Unload all covers
     for (int i = 0; i <= GAMES_LEN; i++) {
         UnloadTexture(gameLibrary[i].cover);
     }
