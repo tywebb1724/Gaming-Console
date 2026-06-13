@@ -1,0 +1,3 @@
+C:/Users/tyweb/OneDrive/Documents/PlatformIO/Projects/Gaming-Console/build/CMakeFiles/game_launcher.dir
+C:/Users/tyweb/OneDrive/Documents/PlatformIO/Projects/Gaming-Console/build/CMakeFiles/edit_cache.dir
+C:/Users/tyweb/OneDrive/Documents/PlatformIO/Projects/Gaming-Console/build/CMakeFiles/rebuild_cache.dir

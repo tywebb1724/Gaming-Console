@@ -15,9 +15,6 @@ Game* gamesDisplayed[GAMES_ON_SCREEN + 2];
 Game* newGamesDisplayed[GAMES_ON_SCREEN];
 //Array to hold loaded images during boot up
 Image LoadedImages[GAMES_LEN];
-//Variables to keep track of which images and textures are loaded
-bool isLoaded[GAMES_LEN];
-bool isTextureUploaded[GAMES_LEN];
 //Indexes and range to keep track of current and new games
 int start_index;
 int end_index;
@@ -25,9 +22,9 @@ int new_start_index;
 int gamesIndex;
 int gamesRange;
 
-//Initialize images and texture loaded arrays
-isLoaded[GAMES_LEN] = { false };
-isTextureUploaded[GAMES_LEN] = { false };
+//Variables to keep track of which images and textures are loaded
+bool isLoaded[GAMES_LEN] = { false };
+bool isTextureUploaded[GAMES_LEN] = { false };
 
 
 //Update the indexes for the new game category
@@ -399,7 +396,7 @@ void Games_Init() {
 }
 
 //Load game cover textures
-void* Games_LoadImages() {
+void* Games_LoadImages(void *args) {
     //Detach the thread
     pthread_detach(pthread_self());
     //Load the images of the current category first

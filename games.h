@@ -62,7 +62,7 @@ void Games_Refresh();
 //Initialize game library
 void Games_Init();
 //Load game cover textures
-void *Games_LoadImages();
+void *Games_LoadImages(void *args);
 //Shift the order of the games to the right
 void Games_ScrollRight();
 //Shift the order of the games to the left

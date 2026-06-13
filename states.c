@@ -22,10 +22,6 @@ pthread_t loadThread;
 //Spider logo texture
 Texture2D spiderLogo;
 
-//Initialize state of the console
-currentConsoleState = STATE_BOOT;
-//Initialize the games loaded variable
-allLoaded = false;
 
 
 //Initialize the states
@@ -48,6 +44,8 @@ void State_Init() {
     //Load fonts
     fontRegular = LoadFont("assets/fonts/Exo2-Regular.ttf");
     fontBold = LoadFont("assets/fonts/Exo2-Bold.ttf");
+    //All textures not loaded
+    allLoaded = false;
 }
 
 //Update states and variabels and draw the correct screen

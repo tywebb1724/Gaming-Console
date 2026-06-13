@@ -3,8 +3,8 @@
 #define FPS 60
 #define BACKGROUND_CLR BLACK
 //(Color){ 60, 64, 72, 255 }
-#define SCREEN_W 1600.0f
-#define SCREEN_H 900.0f
+#define SCREEN_W 800.0f
+#define SCREEN_H 450.0f
 #define CENTER_X (SCREEN_W / 2)
 #define RIGHT 1
 #define LEFT 0
