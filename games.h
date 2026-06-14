@@ -15,6 +15,8 @@ extern int end_LeftIndex;
 extern int start_RightIndex;
 extern int end_RightIndex;
 
+extern float maxLen;
+
 //Category identifiers
 typedef enum {
     ARCADE,

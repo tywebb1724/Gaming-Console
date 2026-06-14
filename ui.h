@@ -2,25 +2,27 @@
 #define UI_H
 #include "games.h"
 
-enum Scroll {
+//Scrolling states
+typedef enum {
     SCROLL_NO,
     SCROLL_LEFT,
     SCROLL_RIGHT
-};
+} Scroll;
 
+//Types of font
 extern Font fontRegular;
 extern Font fontBold;
-
-extern enum Scroll scrollGames;
-extern enum Scroll scrollCategories;
-
+//Variables to show whether user is scrolling
+extern Scroll scrollGames;
+extern Scroll scrollCategories;
+//Different alphas
 extern float alphaCategories_Out;
 extern float alphaCategories_In;
 
-//Change the alpha value for fading the display
-void UI_ChangeAlpa(float offRate, float onRate);
-//Reset the coordinates for the displayed games
+
+//Reset the coordinates for the displayed games after games scroll
 void UI_ResetDisplayCoords_Games();
+//Reset the coordinates for the displayed games after category scroll
 void UI_ResetDisplayCoords_Scroll();
 //Function for drawing an image
 void UI_DrawImage(float alpha);
@@ -36,6 +38,5 @@ void UI_DrawBootScreen();
 void UI_DrawMainMenu();
 //Function for drawing the diagnostics screen
 void UI_DrawDiagnostics();
-
 
 #endif

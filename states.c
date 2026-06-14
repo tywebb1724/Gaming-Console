@@ -22,6 +22,8 @@ pthread_t loadThread;
 //Spider logo texture
 Texture2D spiderLogo;
 
+Texture2D background;
+
 
 
 //Initialize the states
@@ -41,9 +43,10 @@ void State_Init() {
     pthread_create(&loadThread, NULL, Games_LoadImages, NULL);
     //Load the logo textures
     spiderLogo = LoadTexture("./assets/covers/logo/SpiderLogo.png");
-    //Load fonts
-    fontRegular = LoadFont("assets/fonts/Exo2-Regular.ttf");
-    fontBold = LoadFont("assets/fonts/Exo2-Bold.ttf");
+    background = LoadTexture("./assets/covers/logo/image.png");
+    //Start in a static position
+    scrollGames = SCROLL_NO;
+    scrollCategories = SCROLL_NO;
     //All textures not loaded
     allLoaded = false;
 }
@@ -119,12 +122,24 @@ void State_UpdateAndDraw() {
                     UI_ResetDisplayCoords_Scroll();
                 }
             }
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                currentConsoleState = STATE_APP_LAUNCHER;
+            }
+            if (IsKeyPressed(KEY_TAB)) {
+                currentConsoleState = STATE_DIAGNOSTICS;
+            }
             break;
 
         case STATE_APP_LAUNCHER:
+            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+                currentConsoleState = STATE_MAIN_MENU;
+            }
             break;
 
         case STATE_DIAGNOSTICS:
+            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+                currentConsoleState = STATE_MAIN_MENU;
+            }
             break;
 
     }
@@ -147,9 +162,11 @@ void State_UpdateAndDraw() {
             break;
 
         case STATE_APP_LAUNCHER:
+            ClearBackground(RED);
             break;
 
         case STATE_DIAGNOSTICS:
+            UI_DrawDiagnostics();
             break;
             
     }

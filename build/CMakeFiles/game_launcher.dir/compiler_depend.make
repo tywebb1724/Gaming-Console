@@ -109,6 +109,7 @@ CMakeFiles/game_launcher.dir/main.c.obj: C:/Users/tyweb/OneDrive/Documents/Platf
   C:/msys64/ucrt64/include/crtdefs.h \
   C:/msys64/ucrt64/include/errno.h \
   C:/msys64/ucrt64/include/limits.h \
+  C:/msys64/ucrt64/include/math.h \
   C:/msys64/ucrt64/include/process.h \
   C:/msys64/ucrt64/include/pthread.h \
   C:/msys64/ucrt64/include/pthread_compat.h \
@@ -343,10 +344,10 @@ C:/Users/tyweb/OneDrive/Documents/PlatformIO/Projects/Gaming-Console/ui_config.h
 
 C:/Users/tyweb/OneDrive/Documents/PlatformIO/Projects/Gaming-Console/main.c:
 
+C:/msys64/ucrt64/include/math.h:
+
 C:/Users/tyweb/OneDrive/Documents/PlatformIO/Projects/Gaming-Console/states.c:
 
 C:/Users/tyweb/OneDrive/Documents/PlatformIO/Projects/Gaming-Console/ui.c:
-
-C:/msys64/ucrt64/include/math.h:
 
 C:/msys64/ucrt64/include/raymath.h:

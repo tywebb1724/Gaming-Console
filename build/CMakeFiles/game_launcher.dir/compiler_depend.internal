@@ -112,6 +112,7 @@ CMakeFiles/game_launcher.dir/main.c.obj
  C:/msys64/ucrt64/include/crtdefs.h
  C:/msys64/ucrt64/include/errno.h
  C:/msys64/ucrt64/include/limits.h
+ C:/msys64/ucrt64/include/math.h
  C:/msys64/ucrt64/include/process.h
  C:/msys64/ucrt64/include/pthread.h
  C:/msys64/ucrt64/include/pthread_compat.h

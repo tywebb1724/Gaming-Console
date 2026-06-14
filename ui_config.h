@@ -2,18 +2,18 @@
 //General setup definitions
 #define FPS 60
 #define BACKGROUND_CLR BLACK
-//(Color){ 60, 64, 72, 255 }
-#define SCREEN_W 800.0f
-#define SCREEN_H 450.0f
+#define SCREEN_W 1920
+#define SCREEN_H 1080
+//Position macros
 #define CENTER_X (SCREEN_W / 2)
 #define RIGHT 1
 #define LEFT 0
-#define MENU_IMG_Y_CENTER (SCREEN_H * (1.0f / 2))
-
+#define MENU_IMG_Y_CENTER (SCREEN_H * (11.0f / 20))
 #pragma endregion
 
 #pragma region UI_BOOT
-#define LOGO_SIZE (SCREEN_H)
+//Width and length of logo
+#define LOGO_SIZE (SCREEN_H / 5 * 6)
 #pragma endregion
 
 #pragma region UI_TOP_TXT
@@ -57,47 +57,57 @@
 #define SIDE3_GAME_Y (UI_CenterImg_Y(SIDE3_GAME_H, MENU_IMG_Y_CENTER))
 #define LEFT3_GAME_X (UI_CenterImg_X(SIDE3_GAME_W, (LEFT1_GAME + LEFT2_GAME) / 2))
 #define RIGHT3_GAME_X (UI_CenterImg_X(SIDE3_GAME_W, (RIGHT2_GAME + RIGHT1_GAME) / 2))
-
+//Macros for scrolling animation
 #define SCROLL_GAMES_SPEED 0.225f
 #define SCROLL_GAMES_THRESHOLD 10.0f
 #pragma endregion
 
 #pragma region UI_CATEGORIES
-#define TOP_Y (SCREEN_H * (1.0f / 10))
-#define CATEG_Y (TOP_Y - size.y / 2)
+//Categories coordinates
+#define TOP_Y (CENTER_GAME_Y - (SCREEN_H / 12.0f))
+#define CENTER_CATEG_Y (TOP_Y - MeasureTextEx(fontBold, "L", CENTER_CATEG_SIZE, BOTTOM_TXT_SPACE).y / 2)
+#define SIDE_CATEG_Y (TOP_Y -  MeasureTextEx(fontBold, "L", SIDE1_CATEG_SIZE, BOTTOM_TXT_SPACE).y / 2)
 #define LEFT1_CATEG (SCREEN_W * (1.0f / 4))
 #define RIGHT1_CATEG (SCREEN_W * (3.0f / 4))
-
-#define CENTER_CATEG_SIZE (SCREEN_W / 38.0f)
-#define SIDE1_CATEG_SIZE (CENTER_CATEG_SIZE * (3.0f / 4))
-
+//Category sizes
+#define CENTER_CATEG_SIZE (SCREEN_W / 35.0f)
+#define SIDE1_CATEG_SIZE (CENTER_CATEG_SIZE * (1.0f / 2))
+//X coordinates of categories
 #define CENTER_CATEG_X (CENTER_X - size.x / 2)
-
 #define LEFT1_CATEG_X (UI_CenterText_X(categoriesDisplayed[1].name, SIDE1_CATEG_SIZE, LEFT1_CATEG))
 #define RIGHT1_CATEG_X (UI_CenterText_X(categoriesDisplayed[1].name, SIDE1_CATEG_SIZE, RIGHT1_CATEG))
 #pragma endregion
 
 #pragma region UI_BOTTOM
+//Y coordinate for bottom section
 #define BOTTOM_Y (SCREEN_H * (7.0f / 8))
-
 //Selected game outline constants
 #define THICKNESS_SELECT_GAME (SCREEN_W / 200.0f)
 #define THICKNESS_OTHER (SCREEN_W / 400.0f)
 #define THICKNESS_SELECT_TXT (SCREEN_W / 400.0f)
 
-#define BOTTOM_TXT_SIZE (SCREEN_W / 60.0f)
-#define BOTTOM_TXT_SPACE BUMPER_TXT_SPACE
-#define BOTTOM_TXT_SPACING_Y (SCREEN_H / 100.0f)
+#define LS_LEFT_X (CENTER_X - SCREEN_W / 55.0f)
+#define LS_RIGHT_X (CENTER_X + SCREEN_W / 55.0f)
+#define LS_Y (CENTER_GAME_Y + CENTER_GAME_H + SCREEN_H / 23.0f)
+#define LS_TRIANGLE_SIZE (SCREEN_W / 80.0f)
+#define LS_RADIUS (SCREEN_W / 90.0f)
+
+#define BOTTOM_TXT_SIZE (SCREEN_W / 72.0f)
+#define BOTTOM_TXT_SPACE (SCREEN_W / 750.0f)
+#define BOTTOM_TXT_SPACING_Y (SCREEN_H / 120.0f)
+
+#define BOTTOM_ROUND 0.1f
+#define BOTTOM_SEGMENTS 25
 
 #define GAME_TXT_Y (SCREEN_H * (7.0f / 8))
-#define BOTTOM_TXT "Press [A/X] to play   |   Press [OPTIONS] for options"
-#define BOTTOM_TXT_X (SCREEN_W / 30.0f)
-#define BOTTOM_TXT_Y (GAME_TXT_Y + gameText_Size.y + BOTTOM_TXT_SPACING_Y)
+#define BOTTOM_TXT "Press [A/X] to play"
+#define BOTTOM_TXT_X (SCREEN_W / 40.0f)
 
-#define SELECT_TXT_Y (SCREEN_H * (19.0f / 20))
+#define CONSOLE_TXT_Y (GAME_TXT_Y + gameText_Size.y + BOTTOM_TXT_SPACING_Y)
+#define BOTTOM_TXT_Y (CONSOLE_TXT_Y + gameText_Size.y + BOTTOM_TXT_SPACING_Y)
 
-#define BOTTOM_RECT_W (bottomText_Size.x + 4 * BOTTOM_TXT_SPACING_Y)
-#define BOTTOM_RECT_H (bottomText_Size.y + gameText_Size.y + 3 * BOTTOM_TXT_SPACING_Y)
+#define BOTTOM_RECT_W (maxLen + 4 * BOTTOM_TXT_SPACING_Y)
+#define BOTTOM_RECT_H (bottomText_Size.y * 3 + 4 * BOTTOM_TXT_SPACING_Y)
 #define BOTTOM_RECT_X (BOTTOM_TXT_X - 2 * BOTTOM_TXT_SPACING_Y)
 #define BOTTOM_RECT_Y (GAME_TXT_Y - BOTTOM_TXT_SPACING_Y)
 
@@ -134,24 +144,65 @@
 #pragma endregion
 
 #pragma region UI_BUMPERS
-
-#define BUMPER_L (SCREEN_W / 20.0f)
-#define BUMPER_R (SCREEN_W * 19.0f / 20)
+//Bumper coordinates and values
+#define BUMPER_L (SCREEN_W / 15.0f)
+#define BUMPER_R (SCREEN_W * 14.0f / 15)
 #define BUMPER_Y (TOP_Y - BUMPER_H / 2.0f)
-#define BUMPER_W (SCREEN_W / 15.0f)
-#define BUMPER_H (SCREEN_H / 15.0f)
-
+#define BUMPER_W (SCREEN_W / 22.0f)
+#define BUMPER_H (SCREEN_H / 18.0f)
 #define BUMPER_L_X (BUMPER_L - (BUMPER_W / 2.0f))
 #define BUMPER_R_X (BUMPER_R - (BUMPER_W / 2.0f))
-
+//Macros for drawing edges of bumpers
 #define BUMPER_ROUND 0.5f
 #define BUMPER_SEGMENTS 20
-
-#define BUMPER_TXT_SIZE (SCREEN_W / 75.0f)
-#define BUMPER_TXT_SPACE (SCREEN_W / 400.0f)
+//Bumper text macros
+#define BUMPER_TXT_SIZE (SCREEN_W / 88.0f)
+#define BUMPER_TXT_SPACE (SCREEN_W / 700.0f)
 #define BUMPER_R_TXT "[RB/R1]"
 #define BUMPER_L_TXT "[LB/L1]"
 #define BUMPER_L_TXT_X (BUMPER_L - bumperL_Size.x / 2)
 #define BUMPER_R_TXT_X (BUMPER_R - bumperR_Size.x / 2)
 #define BUMPER_TXT_Y (TOP_Y - bumperR_Size.y / 2)
+
+#define SMALL_LOGO_SIZE (SCREEN_W / 12.0f)
+
+
+#define START_SECTION_Y (TOP_Y + MeasureTextEx(fontBold, "L", CENTER_CATEG_SIZE, BOTTOM_TXT_SPACE).y / 2 + 2 * BOTTOM_TXT_SPACING_Y) 
+#define END_SECTION_Y (CENTER_CATEG_Y - 2 * BOTTOM_TXT_SPACING_Y)
+#define THICKNESS_LINE (SCREEN_H / 500.0f)
 #pragma endregion
+
+#pragma region UI_DIAGNOSTICS
+#define DIAGNOSTICS_TITLE "System Diagnostics"
+#define DIAGNOSTICS_TITLE_SIZE (SCREEN_W / 25.0f)
+#define DIAGNOSTICS_TITLE_X (CENTER_X - diagnosticsTitle_Size.x / 2)
+#define DIAGNOSTICS_TITLE_Y (SCREEN_H / 12.0f)
+#define DIAGNOSTICS_TITLE_TXT_Y (DIAGNOSTICS_TITLE_Y - diagnosticsTitle_Size.x / 2)
+
+#define DIAGNOSTICS_SIZE (SCREEN_W / 35.0f)
+#define DIAGNOSTICS_SPACING (SCREEN_W / 400.0f)
+#define RESOLUTION_TXT_X (FPS_TXT_X)
+#define RESOLUTION_TXT_Y (SCREEN_H / 4.0f)
+
+
+#define FPS_TXT_X (SCREEN_W / 10.0f)
+#define FPS_TXT_Y (RESOLUTION_TXT_Y + SCREEN_H / 12.0f)
+
+#pragma endregion
+
+#pragma region UI_OPTIONS
+#define OPTION_BTN_X (SCREEN_W * 19.0f / 20)
+#define OPTION_BTN_Y (SCREEN_H / 18.0f)
+#define OPTION_LINE_START (OPTION_BTN_X - LS_RADIUS / 2 )
+#define OPTION_LINE_END (OPTION_BTN_X + LS_RADIUS / 2 )
+#define OPTION_LINE1_Y (OPTION_BTN_Y - LS_RADIUS * (2.0f / 5))
+#define OPTION_LINE2_Y (OPTION_BTN_Y)
+#define OPTION_LINE3_Y (OPTION_BTN_Y + LS_RADIUS * (2.0f / 5))
+#define OPTION_THICKNESS (SCREEN_H / 350.0f)
+#define OPTION_THICKNESS2 (SCREEN_H / 250.0f)
+
+#define OPTIONS_TXT_SIZE (SCREEN_W / 90.0f)
+#define OPTIONS_TXT_SPACE (SCREEN_W / 700.0f)
+#define OPTIONS_TXT "[OPTIONS]"
+#define OPTIONS_TXT_X (OPTION_BTN_X - options_Size.x / 2.0f)
+#define OPTIONS_TXT_Y (OPTION_BTN_Y + LS_RADIUS + SCREEN_H / 100.0f)

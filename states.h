@@ -19,6 +19,8 @@ extern pthread_t loadThread;
 //Spider logo texture
 extern Texture2D spiderLogo;
 
+extern Texture2D background;
+
 
 //Initialize the states
 void State_Init();
