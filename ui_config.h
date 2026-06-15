@@ -2,8 +2,8 @@
 //General setup definitions
 #define FPS 60
 #define BACKGROUND_CLR BLACK
-#define SCREEN_W 1920
-#define SCREEN_H 1080
+#define SCREEN_W monitorWidth
+#define SCREEN_H monitorHeight
 //Position macros
 #define CENTER_X (SCREEN_W / 2)
 #define RIGHT 1
@@ -198,8 +198,9 @@
 #define OPTION_LINE1_Y (OPTION_BTN_Y - LS_RADIUS * (2.0f / 5))
 #define OPTION_LINE2_Y (OPTION_BTN_Y)
 #define OPTION_LINE3_Y (OPTION_BTN_Y + LS_RADIUS * (2.0f / 5))
-#define OPTION_THICKNESS (SCREEN_H / 350.0f)
-#define OPTION_THICKNESS2 (SCREEN_H / 250.0f)
+#define OPTION_THICKNESS (SCREEN_H / 650.0f)
+#define OPTION_THICKNESS2 (SCREEN_H / 550.0f)
+#define OPTION_THICKNESS3 (SCREEN_H / 550.0f)
 
 #define OPTIONS_TXT_SIZE (SCREEN_W / 90.0f)
 #define OPTIONS_TXT_SPACE (SCREEN_W / 700.0f)

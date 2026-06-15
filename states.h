@@ -3,6 +3,9 @@
 
 #include <pthread.h>
 #include "raylib.h"
+extern int monitorWidth;
+extern int monitorHeight;
+
 
 //States of the console
 typedef enum {

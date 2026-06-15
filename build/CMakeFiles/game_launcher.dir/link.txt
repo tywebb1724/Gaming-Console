@@ -1,3 +1,1 @@
-"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\game_launcher.dir/objects.a
-C:\msys64\ucrt64\bin\ar.exe qc CMakeFiles\game_launcher.dir/objects.a @CMakeFiles\game_launcher.dir\objects1.rsp
-C:\msys64\ucrt64\bin\cc.exe -Wl,--whole-archive CMakeFiles\game_launcher.dir/objects.a -Wl,--no-whole-archive -o game_launcher.exe -Wl,--out-implib,libgame_launcher.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\game_launcher.dir\linkLibs.rsp
+/usr/bin/cc -Wl,--dependency-file=CMakeFiles/game_launcher.dir/link.d CMakeFiles/game_launcher.dir/main.c.o CMakeFiles/game_launcher.dir/ui.c.o CMakeFiles/game_launcher.dir/games.c.o CMakeFiles/game_launcher.dir/states.c.o CMakeFiles/game_launcher.dir/categories.c.o -o game_launcher  /usr/local/lib/libraylib.a -lm -lpthread -ldl /usr/lib/aarch64-linux-gnu/libSM.so /usr/lib/aarch64-linux-gnu/libICE.so /usr/lib/aarch64-linux-gnu/libX11.so /usr/lib/aarch64-linux-gnu/libXext.so

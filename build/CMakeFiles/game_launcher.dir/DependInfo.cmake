@@ -8,11 +8,12 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "C:/Users/tyweb/OneDrive/Documents/PlatformIO/Projects/Gaming-Console/categories.c" "CMakeFiles/game_launcher.dir/categories.c.obj" "gcc" "CMakeFiles/game_launcher.dir/categories.c.obj.d"
-  "C:/Users/tyweb/OneDrive/Documents/PlatformIO/Projects/Gaming-Console/games.c" "CMakeFiles/game_launcher.dir/games.c.obj" "gcc" "CMakeFiles/game_launcher.dir/games.c.obj.d"
-  "C:/Users/tyweb/OneDrive/Documents/PlatformIO/Projects/Gaming-Console/main.c" "CMakeFiles/game_launcher.dir/main.c.obj" "gcc" "CMakeFiles/game_launcher.dir/main.c.obj.d"
-  "C:/Users/tyweb/OneDrive/Documents/PlatformIO/Projects/Gaming-Console/states.c" "CMakeFiles/game_launcher.dir/states.c.obj" "gcc" "CMakeFiles/game_launcher.dir/states.c.obj.d"
-  "C:/Users/tyweb/OneDrive/Documents/PlatformIO/Projects/Gaming-Console/ui.c" "CMakeFiles/game_launcher.dir/ui.c.obj" "gcc" "CMakeFiles/game_launcher.dir/ui.c.obj.d"
+  "/home/tywebb1724/Desktop/Gaming-Console/categories.c" "CMakeFiles/game_launcher.dir/categories.c.o" "gcc" "CMakeFiles/game_launcher.dir/categories.c.o.d"
+  "/home/tywebb1724/Desktop/Gaming-Console/games.c" "CMakeFiles/game_launcher.dir/games.c.o" "gcc" "CMakeFiles/game_launcher.dir/games.c.o.d"
+  "/home/tywebb1724/Desktop/Gaming-Console/main.c" "CMakeFiles/game_launcher.dir/main.c.o" "gcc" "CMakeFiles/game_launcher.dir/main.c.o.d"
+  "/home/tywebb1724/Desktop/Gaming-Console/states.c" "CMakeFiles/game_launcher.dir/states.c.o" "gcc" "CMakeFiles/game_launcher.dir/states.c.o.d"
+  "/home/tywebb1724/Desktop/Gaming-Console/ui.c" "CMakeFiles/game_launcher.dir/ui.c.o" "gcc" "CMakeFiles/game_launcher.dir/ui.c.o.d"
+  "" "game_launcher" "gcc" "CMakeFiles/game_launcher.dir/link.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

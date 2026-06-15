@@ -498,7 +498,7 @@ void UI_DrawBumpers() {
     DrawLineEx(start1, end1, OPTION_THICKNESS2, BLACK);
     Vector2 start3 = {OPTION_LINE_START, OPTION_LINE3_Y};
     Vector2 end3 = {OPTION_LINE_END, OPTION_LINE3_Y};
-    DrawLineEx(start3, end3, OPTION_THICKNESS2, BLACK);
+    DrawLineEx(start3, end3, OPTION_THICKNESS3, BLACK);
 
     Vector2 options_Size = MeasureTextEx(fontBold, OPTIONS_TXT, OPTIONS_TXT_SIZE, OPTIONS_TXT_SPACE);
     Vector2 options_Text = {OPTIONS_TXT_X, OPTIONS_TXT_Y};

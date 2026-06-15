@@ -450,7 +450,6 @@ void Games_Init() {
     for (int i = 0; i < GAMES_LEN; i++) {
         tempLen1 = MeasureTextEx(fontBold, gameLibrary[i].title, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x;
         tempLen2 = MeasureTextEx(fontBold, gameLibrary[i].console, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x;
-        printf("%d:%f\n", i, tempLen1);
         if (tempLen1 > maxLen) {
             maxLen = tempLen1;
         }
@@ -458,7 +457,6 @@ void Games_Init() {
             maxLen = tempLen2;
         }
     }
-    printf("%f\n", maxLen);
 }
 
 //Load game cover textures
