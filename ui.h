@@ -36,6 +36,7 @@ float UI_CenterText_X(char *text, int fontSize, int position);
 void UI_DrawBootScreen();
 //Function for drawing the main menu
 void UI_DrawMainMenu();
+void UI_DrawOptions();
 //Function for drawing the diagnostics screen
 void UI_DrawDiagnostics();
 

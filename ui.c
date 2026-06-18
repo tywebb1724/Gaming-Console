@@ -21,11 +21,78 @@ int img_X, img_Y, img_W, img_H;
 float alphaGames;
 float alphaCategories_Out;
 float alphaCategories_In;
+float alphaSelectBox;
+float alphaSelectTxt = 0.0f;
+float alphaSelectTxt_TimeElapsed = 0.0f;
+bool alphaSelectTxt_Blink = true;
 //Variables to show whether user is scrolling
 Scroll scrollGames;
 Scroll scrollCategories;
 
+void UI_ChangeAlpha_SelectTxt(float offRate, float onRate) {
+    //If not scrolling at all, increment alpha back to normal
+    if (scrollGames == SCROLL_NO && scrollCategories == SCROLL_NO) {
+        if (alphaSelectTxt_Blink == true) {
+            //If less than 1, increment 
+            if (alphaSelectTxt < 1.0f) {
+                alphaSelectTxt += 0.04f;
+            }
+            else if (alphaSelectTxt >= 1.0f) {
+                alphaSelectTxt_TimeElapsed += GetFrameTime();
+                if (alphaSelectTxt_TimeElapsed >= 1) {
+                    alphaSelectTxt_Blink = false;
+                    alphaSelectTxt_TimeElapsed = 0.0f;
+                }
+            }
+        }
+        else {
+            //If less than 1, increment 
+            if (alphaSelectTxt > 0.1f) {
+                alphaSelectTxt -= 0.04f;
+            } 
+            //If greater than 1, bring back to 1
+            else if (alphaSelectTxt <= 0.1f) {
+                alphaSelectTxt_TimeElapsed += GetFrameTime();
+                if (alphaSelectTxt_TimeElapsed >= 0.1) {
+                    alphaSelectTxt_Blink = true;
+                    alphaSelectTxt_TimeElapsed = 0.0f;
+                }
+            }
+        }
+    }
+    //If scrolling, bring alpha down
+    else {
+        alphaSelectTxt_Blink = true;
+        alphaSelectTxt_TimeElapsed = 0.0f;
+        //If less than 0, bring to 0
+        if (alphaSelectTxt < 0.0f) {
+            alphaSelectTxt = 0.0f;
+        }
+        //If greater than 0, decrement
+        else if (alphaSelectTxt > 0.0f) {
+            alphaSelectTxt -= 0.25f;
+        }
+    }
+}
 
+void UI_ChangeAlpha_SelectBox(float offRate, float onRate) {
+    if (scrollCategories == SCROLL_NO) {
+        if (alphaSelectBox < 1.0f) {
+            alphaSelectBox += onRate;
+        }
+        else if (alphaSelectBox > 1.0f) {
+            alphaSelectBox = 1.0f;
+        }
+    }
+    else {
+        if (alphaSelectBox > 0.0f) {
+            alphaSelectBox -= offRate;
+        }
+        else if (alphaSelectBox < 0.0f) {
+            alphaSelectBox = 0.0f;
+        }
+    }
+}
 
 //Change the alpha value for fading when scrolling games
 void UI_ChangeAlpha_Games(float offRate, float onRate) {
@@ -513,17 +580,17 @@ void UI_DrawBumpers() {
 //Function for drawing the select controls at the bottom
 void UI_DrawBottom() {
 
-    DrawCircle(LS_LEFT_X + (SCREEN_W / 700.0f), LS_Y, LS_RADIUS, Fade(WHITE, alphaGames));
+    DrawCircle(LS_LEFT_X + (SCREEN_W / 700.0f), LS_Y, LS_RADIUS, Fade(WHITE, alphaSelectTxt));
     Vector2 point1 = {LS_LEFT_X - (LS_TRIANGLE_SIZE / 2), LS_Y};
     Vector2 point2 = {LS_LEFT_X + (LS_TRIANGLE_SIZE / 2), LS_Y + LS_TRIANGLE_SIZE / 2};
     Vector2 point3 = {LS_LEFT_X + (LS_TRIANGLE_SIZE / 2), LS_Y - LS_TRIANGLE_SIZE / 2};
-    DrawTriangle(point1, point2, point3, BLACK);
+    DrawTriangle(point1, point2, point3, Fade(BLACK, alphaSelectTxt));
 
-    DrawCircle(LS_RIGHT_X - (SCREEN_W / 700.0f), LS_Y, LS_RADIUS, Fade(WHITE, alphaGames));
+    DrawCircle(LS_RIGHT_X - (SCREEN_W / 700.0f), LS_Y, LS_RADIUS, Fade(WHITE, alphaSelectTxt));
     Vector2 point4 = {LS_RIGHT_X + (LS_TRIANGLE_SIZE / 2), LS_Y};
     Vector2 point5 = {LS_RIGHT_X - (LS_TRIANGLE_SIZE / 2), LS_Y + LS_TRIANGLE_SIZE / 2};
     Vector2 point6 = {LS_RIGHT_X - (LS_TRIANGLE_SIZE / 2), LS_Y - LS_TRIANGLE_SIZE / 2};
-    DrawTriangle(point6, point5, point4, Fade(BLACK, alphaGames));
+    DrawTriangle(point6, point5, point4, Fade(BLACK, alphaSelectTxt));
 
     //Values for Text
     Vector2 gameText_Size = MeasureTextEx(fontBold, gamesDisplayed[3]->title, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE);
@@ -550,12 +617,12 @@ void UI_DrawBottom() {
         BOTTOM_RECT_H
     };
 
-    DrawRectangleRoundedLinesEx(rect, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 0.7));
-    DrawRectangleRounded(rect, BOTTOM_ROUND, BOTTOM_SEGMENTS, Fade(BLACK, 0.7));
+    DrawRectangleRoundedLinesEx(rect, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(WHITE, alphaSelectBox));
+    DrawRectangleRounded(rect, BOTTOM_ROUND, BOTTOM_SEGMENTS, Fade(BLACK, alphaSelectBox));
     //Draw text
-    DrawTextEx(fontBold, gamesDisplayed[3]->title, gameText, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(WHITE, alphaGames));
-    DrawTextEx(fontBold, gamesDisplayed[3]->console, consoleText, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(WHITE, alphaGames));
-    DrawTextEx(fontBold, BOTTOM_TXT, bottomText, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(WHITE, alphaGames));
+    DrawTextEx(fontBold, gamesDisplayed[3]->title, gameText, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(WHITE, alphaSelectTxt));
+    DrawTextEx(fontBold, gamesDisplayed[3]->console, consoleText, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(WHITE, alphaSelectTxt));
+    DrawTextEx(fontBold, BOTTOM_TXT, bottomText, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(WHITE, alphaSelectTxt));
 }
 
 //Function for drawing the boot screen
@@ -613,6 +680,8 @@ void UI_DrawMainMenu() {
     //Change alphas
     UI_ChangeAlpha_Games(0.25f, 0.25f);
     UI_ChangeAlpha_Categories(0.1f, 0.05f);
+    UI_ChangeAlpha_SelectBox(0.25f, 0.25f);
+    UI_ChangeAlpha_SelectTxt(0.25f, 0.25f);
     //Draw categories
     UI_DrawCategories();
     //Draw games
@@ -621,6 +690,91 @@ void UI_DrawMainMenu() {
     UI_DrawBumpers();
     //Draw bottom section of screen
     UI_DrawBottom();
+}
+
+void UI_DrawOptions() {
+    //Draw section
+    Rectangle rect1 = {
+        OPTIONS_RECT_X,
+        OPTIONS_RECT_Y,
+        OPTIONS_RECT_W,
+        OPTIONS_RECT_H
+    };
+
+    DrawRectangleRoundedLinesEx(rect1, OPTIONS_ROUND, OPTIONS_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
+    DrawRectangleRounded(rect1, OPTIONS_ROUND, OPTIONS_SEGMENTS, Fade(BLACK, 1.0f));
+
+    Vector2 optionsTitle_Size = MeasureTextEx(fontBold, OPTIONS_TITLE, OPTIONS_TITLE_SIZE, OPTIONS_TITLE_SPACE);
+    Vector2 optionsTitle = { OPTIONS_TITLE_X, OPTIONS_TITLE_Y};
+    Vector2 optionsBrightness_Size = MeasureTextEx(fontRegular, OPTIONS_BRIGHTNESS, OPTIONS_BRIGHTNESS_SIZE, OPTIONS_TITLE_SPACE);
+    Vector2 optionsBrightness = { OPTIONS_BRIGHTNESS_X, OPTIONS_BRIGHTNESS_Y};
+    Vector2 optionsTheme_Size = MeasureTextEx(fontRegular, OPTIONS_THEME, OPTIONS_THEME_SIZE, OPTIONS_TITLE_SPACE);
+    Vector2 optionsTheme = { OPTIONS_THEME_X, OPTIONS_THEME_Y};
+    Vector2 optionsDisplayDiagnostics_Size = MeasureTextEx(fontRegular, OPTIONS_DISPLAY_DIAGNOSTICS, OPTIONS_DISPLAY_DIAGNOSTICS_SIZE, OPTIONS_TITLE_SPACE);
+    Vector2 optionsDisplayDiagnostics = { OPTIONS_DISPLAY_DIAGNOSTICS_X, OPTIONS_DISPLAY_DIAGNOSTICS_Y};
+    Vector2 optionsDiagnostics_Size = MeasureTextEx(fontRegular, OPTIONS_DIAGNOSTICS, OPTIONS_DIAGNOSTICS_SIZE, OPTIONS_TITLE_SPACE);
+    Vector2 optionsDiagnostics = { OPTIONS_DIAGNOSTICS_X, OPTIONS_DIAGNOSTICS_Y};
+    Vector2 optionsSelect_Size = MeasureTextEx(fontRegular, OPTIONS_SELECT, OPTIONS_SELECT_SIZE, OPTIONS_TITLE_SPACE);
+    Vector2 optionsSelect = { OPTIONS_SELECT_X, OPTIONS_SELECT_Y};
+    Vector2 optionsBack_Size = MeasureTextEx(fontRegular, OPTIONS_BACK, OPTIONS_BACK_SIZE, OPTIONS_TITLE_SPACE);
+    Vector2 optionsBack = { OPTIONS_BACK_X, OPTIONS_BACK_Y};
+
+    DrawTextEx(fontBold, OPTIONS_TITLE, optionsTitle, OPTIONS_TITLE_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
+
+    Rectangle rect2 = {
+        OPTIONS_SELECT_RECT_X,
+        OPTIONS_BRIGHTNESS_RECT_Y,
+        OPTIONS_SELECT_RECT_W,
+        OPTIONS_SELECT_RECT_H
+    };
+
+    DrawRectangleRoundedLinesEx(rect2, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
+    DrawRectangleRounded(rect2, BOTTOM_ROUND, BOTTOM_SEGMENTS, Fade(BLACK, 1.0f));
+
+    DrawTextEx(fontRegular, OPTIONS_BRIGHTNESS, optionsBrightness, OPTIONS_BRIGHTNESS_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
+
+    Rectangle rect3 = {
+        OPTIONS_SELECT_RECT_X,
+        OPTIONS_THEME_RECT_Y,
+        OPTIONS_SELECT_RECT_W,
+        OPTIONS_SELECT_RECT_H
+    };
+
+    DrawRectangleRoundedLinesEx(rect3, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
+    DrawRectangleRounded(rect3, BOTTOM_ROUND, BOTTOM_SEGMENTS, Fade(BLACK, 1.0f));
+
+    DrawTextEx(fontRegular, OPTIONS_THEME, optionsTheme, OPTIONS_THEME_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
+
+    Rectangle rect4 = {
+        OPTIONS_SELECT_RECT_X,
+        OPTIONS_DISPLAY_DIAGNOSTICS_RECT_Y,
+        OPTIONS_SELECT_RECT_W,
+        OPTIONS_SELECT_RECT_H
+    };
+
+    DrawRectangleRoundedLinesEx(rect4, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
+    DrawRectangleRounded(rect4, BOTTOM_ROUND, BOTTOM_SEGMENTS, Fade(BLACK, 1.0f));
+
+    DrawTextEx(fontRegular, OPTIONS_DISPLAY_DIAGNOSTICS, optionsDisplayDiagnostics, OPTIONS_DISPLAY_DIAGNOSTICS_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
+
+    Rectangle rect5 = {
+        OPTIONS_SELECT_RECT_X,
+        OPTIONS_DIAGNOSTICS_RECT_Y,
+        OPTIONS_SELECT_RECT_W,
+        OPTIONS_SELECT_RECT_H
+    };
+
+    DrawRectangleRoundedLinesEx(rect5, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
+    DrawRectangleRounded(rect5, BOTTOM_ROUND, BOTTOM_SEGMENTS, Fade(BLACK, 1.0f));
+
+    DrawTextEx(fontRegular, OPTIONS_DIAGNOSTICS, optionsDiagnostics, OPTIONS_DIAGNOSTICS_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
+
+    DrawTextEx(fontRegular, OPTIONS_SELECT, optionsSelect, OPTIONS_SELECT_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
+
+
+    DrawTextEx(fontRegular, OPTIONS_BACK, optionsBack, OPTIONS_BACK_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
+
+
 }
 
 //Function for drawing the diagnostics screen

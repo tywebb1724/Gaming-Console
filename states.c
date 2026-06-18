@@ -166,7 +166,7 @@ void State_UpdateAndDraw() {
             break;
 
         case STATE_DIAGNOSTICS:
-            UI_DrawDiagnostics();
+            UI_DrawOptions();
             break;
             
     }
