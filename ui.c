@@ -14,6 +14,7 @@
 mainMenuState currentMainMenuState = NORMAL;
 optionsState currentOptionsState = BRIGHTNESS;
 float optionsTimeElapsed = 0.0f;
+bool openDiagnostics false;
 
 //Types of font
 Font fontRegular;
@@ -396,6 +397,35 @@ void UI_DrawScroll_Games() {
     }
 }
 
+void MainMenu_DrawGames_Normal() {
+    //If scrolling categories
+    if (scrollCategories != SCROLL_NO) {
+        UI_DrawGame(0, alphaCategories_In, true);
+        UI_DrawGame(4, alphaCategories_In, true);
+        UI_DrawGame(1, alphaCategories_In, true);
+        UI_DrawGame(3, alphaCategories_In, true); 
+        UI_DrawGame(2, alphaCategories_In, true);
+    }
+    //If not scrolling categories
+    UI_DrawGame(1, alphaCategories_Out, false);
+    UI_DrawGame(5, alphaCategories_Out, false);
+    UI_DrawGame(2, alphaCategories_Out, false);
+    UI_DrawGame(4, alphaCategories_Out, false); 
+    UI_DrawGame(3, alphaCategories_Out, false);
+
+    //Draw outline for selected game
+    DrawRectangleLinesEx(
+        (Rectangle){
+            img_X - THICKNESS_SELECT_GAME,
+            img_Y - THICKNESS_SELECT_GAME,
+            img_W + (2 * THICKNESS_SELECT_GAME),
+            img_H + (2 * THICKNESS_SELECT_GAME)
+        },
+        THICKNESS_SELECT_GAME, 
+        Fade(BLUE, alphaGames)
+    );
+}
+
 //Function for drawing games depending on whether it is scrolling
 void UI_DrawGames() {
     //If not scrolling
@@ -661,8 +691,7 @@ void UI_DrawCategories() {
     }
 }
 
-//Function for drawing the main menu
-void UI_DrawMainMenu() {
+void MainMenu_DrawBase() {
     //Clear background
     ClearBackground(BACKGROUND_CLR);
 
@@ -679,9 +708,12 @@ void UI_DrawMainMenu() {
     Vector2 startSection2 = {0, END_SECTION_Y};
     Vector2 endSection2 = {SCREEN_W, END_SECTION_Y};
     DrawLineEx(startSection2, endSection2, THICKNESS_LINE, WHITE);
-    
-    //Draw top ehading
-    UI_DrawHeading();
+}
+
+//Function for drawing the main menu
+void UI_DrawMainMenu() {
+    MainMenu_DrawBase();
+   
     //Change alphas
     UI_ChangeAlpha_Games(0.25f, 0.25f);
     UI_ChangeAlpha_Categories(0.1f, 0.05f);
@@ -695,6 +727,8 @@ void UI_DrawMainMenu() {
     UI_DrawBumpers();
     //Draw bottom section of screen
     UI_DrawBottom();
+
+    
 }
 
 
@@ -808,6 +842,9 @@ void UI_DrawOptions() {
                 currentOptionsState = VIEW_DIAGNOSTICS;
                 optionsTimeElapsed = 0.0f;
             }
+            else if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+
+            }
             break;
 
         case THEME:
@@ -818,6 +855,9 @@ void UI_DrawOptions() {
             else if (IsKeyDown(KEY_UP) && optionsTimeElapsed >= 0.25f) {
                 currentOptionsState = BRIGHTNESS;
                 optionsTimeElapsed = 0.0f;
+            }
+            else if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+                
             }
             break;
 
@@ -830,6 +870,9 @@ void UI_DrawOptions() {
                 currentOptionsState = THEME;
                 optionsTimeElapsed = 0.0f;
             }
+            else if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+                
+            }
             break;
 
         case VIEW_DIAGNOSTICS:
@@ -841,8 +884,8 @@ void UI_DrawOptions() {
                 currentOptionsState = DISPLAY_DIAGNOSTICS;
                 optionsTimeElapsed = 0.0f;
             }
-            else if (IsKeyDown(KEY_TAB)) {
-
+            else if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+                openDiagnostics = true;
             }
             break;
     }
@@ -856,6 +899,13 @@ void UI_DrawOptions() {
 
 //Tick function for the main menu
 void MainMenu_Tick() {
+
+    //Change alphas
+    UI_ChangeAlpha_Games(0.25f, 0.25f);
+    UI_ChangeAlpha_Categories(0.1f, 0.05f);
+    UI_ChangeAlpha_SelectBox(0.25f, 0.25f);
+    UI_ChangeAlpha_SelectTxt(0.25f, 0.25f);
+
     //Transition
     switch(currentMainMenuState) {
         case NORMAL:
@@ -911,7 +961,6 @@ void MainMenu_Tick() {
             break;
 
         case OPTIONS:
-            
             break;
         
     }
@@ -919,16 +968,50 @@ void MainMenu_Tick() {
     //Action
     switch(currentMainMenuState) {
         case NORMAL:
-
+            UI_DrawCategories_Normal();
+            MainMenu_DrawGames_Normal();
+            //Draw bumpers
+            UI_DrawBumpers();
+            //Draw bottom section of screen
+            UI_DrawBottom();
             break;
 
         case SCROLL_GAMES:
+            UI_DrawScroll_Games();
+            //Draw outline for selected game
+            DrawRectangleLinesEx(
+            (Rectangle){
+                img_X - THICKNESS_SELECT_GAME,
+                img_Y - THICKNESS_SELECT_GAME,
+                img_W + (2 * THICKNESS_SELECT_GAME),
+                img_H + (2 * THICKNESS_SELECT_GAME)
+            },
+            THICKNESS_SELECT_GAME, 
+            Fade(BLUE, alphaGames)
+            );
+            UI_DrawCategories_Normal();
+            //Draw bumpers
+            UI_DrawBumpers();
+            //Draw bottom section of screen
+            UI_DrawBottom();
             break;
 
         case SCROLL_CATEGORIES:
+            UI_DrawScroll_Categories();
+            MainMenu_DrawGames_Normal();
+            //Draw bumpers
+            UI_DrawBumpers();
+            //Draw bottom section of screen
+            UI_DrawBottom();
             break;
 
         case OPTIONS:
+            UI_DrawCategories_Normal();
+            MainMenu_DrawGames_Normal();
+            //Draw bumpers
+            UI_DrawBumpers();
+            //Draw bottom section of screen
+            UI_DrawBottom();
             UI_DrawOptions();
             break;
         

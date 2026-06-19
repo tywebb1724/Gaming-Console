@@ -1,2 +1,7 @@
 # Ignore the ROMs directory so they aren't uploaded to GitHub
 roms/
+# Ignore build artifacts
+build/
+*.o
+game_launcher
+game_launcher.exe

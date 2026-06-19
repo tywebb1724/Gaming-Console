@@ -125,9 +125,6 @@ void State_UpdateAndDraw() {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 currentConsoleState = STATE_APP_LAUNCHER;
             }
-            if (IsKeyPressed(KEY_TAB)) {
-                currentConsoleState = STATE_DIAGNOSTICS;
-            }
             break;
 
         case STATE_APP_LAUNCHER:
