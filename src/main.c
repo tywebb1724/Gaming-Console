@@ -6,6 +6,7 @@
 #include "categories.h"
 #include <stdio.h>
 #include <math.h>
+#include "emulators/libretro/libretro.h"
 
 int monitorWidth;
 int monitorHeight;
@@ -21,8 +22,8 @@ int main(void)
     ToggleFullscreen();
     
     //Load fonts
-    //fontRegular = LoadFont("assets/fonts/Exo2-Regular.ttf");
-    //fontBold = LoadFont("assets/fonts/Exo2-Bold.ttf");
+    fontRegular = LoadFont("assets/fonts/Exo2-Regular.ttf");
+    fontBold = LoadFont("assets/fonts/Exo2-Bold.ttf");
 
     monitorWidth = GetMonitorWidth(0);
     monitorHeight = GetMonitorHeight(0);
@@ -47,10 +48,8 @@ int main(void)
         //Stop drawing
         EndDrawing();
     }
-    //Unload texture
-    //UnloadRenderTexture(target);
     //Unload game textures and close window
-    //Games_UnloadTextures();
+    Games_UnloadTextures();
     //Close window
     CloseWindow();
     return 0;

@@ -29,7 +29,7 @@ Texture2D background;
 //Initialize the states
 void State_Init() {
     //Console starts in boot state
-    currentConsoleState = STATE_APP_LAUNCHER;
+    currentConsoleState = STATE_BOOT;
     //Boot timer starts at 0
     bootTimer = 0.0f;
     //Initially no games loaded
@@ -49,8 +49,6 @@ void State_Init() {
     scrollCategories = SCROLL_NO;
     //All textures not loaded
     allLoaded = false;
-
-    chip8_init(SCREEN_W, SCREEN_H);
 }
 
 //Update states and variabels and draw the correct screen
@@ -126,13 +124,14 @@ void State_UpdateAndDraw() {
             }
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 currentConsoleState = STATE_APP_LAUNCHER;
+                chip8_init(SCREEN_W, SCREEN_H);
             }
             break;
 
         case STATE_APP_LAUNCHER:
-            //if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-                //currentConsoleState = STATE_MAIN_MENU;
-            //}
+            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+                currentConsoleState = STATE_MAIN_MENU;
+            }
             break;
 
         case STATE_DIAGNOSTICS:

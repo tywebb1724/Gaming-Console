@@ -10,7 +10,7 @@ float chip8_OffsetY;
 
 chip8_t chip8;
 config_t chip8_config = { .window_width = 64, .window_height = 32 };
-bool chip8_is_initialized = false;
+bool chip8_is_initialized;
 
 // Define the mapping once here, private to this file
 static const int keymap[16] = {
@@ -21,6 +21,7 @@ static const int keymap[16] = {
 };
 
 void chip8_init(int screenWidth, int screenHeight) {
+    chip8_is_initialized = false;
     // Calculate scale for width and height
     chip8_ScaleX = screenWidth / 64.0f;
     chip8_ScaleY = screenHeight / 32.0f;
