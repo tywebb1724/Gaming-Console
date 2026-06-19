@@ -14,7 +14,7 @@
 mainMenuState currentMainMenuState = NORMAL;
 optionsState currentOptionsState = BRIGHTNESS;
 float optionsTimeElapsed = 0.0f;
-bool openDiagnostics false;
+bool openDiagnostics = false;
 
 //Types of font
 Font fontRegular;

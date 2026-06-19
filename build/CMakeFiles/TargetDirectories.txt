@@ -1,3 +1,0 @@
-/home/tywebb1724/Desktop/Gaming-Console/build/CMakeFiles/game_launcher.dir
-/home/tywebb1724/Desktop/Gaming-Console/build/CMakeFiles/edit_cache.dir
-/home/tywebb1724/Desktop/Gaming-Console/build/CMakeFiles/rebuild_cache.dir

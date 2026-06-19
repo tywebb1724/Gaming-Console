@@ -21,32 +21,36 @@ int main(void)
     ToggleFullscreen();
     
     //Load fonts
-    fontRegular = LoadFont("assets/fonts/Exo2-Regular.ttf");
-    fontBold = LoadFont("assets/fonts/Exo2-Bold.ttf");
+    //fontRegular = LoadFont("assets/fonts/Exo2-Regular.ttf");
+    //fontBold = LoadFont("assets/fonts/Exo2-Bold.ttf");
 
     monitorWidth = GetMonitorWidth(0);
     monitorHeight = GetMonitorHeight(0);
+
+    
     //Initialize state machine
     Games_Init();
     Categories_Init();
     State_Init();
 
     SetTargetFPS(0);
+
+    
     //Main game loop
     while (!WindowShouldClose()) {
+        
         //Start drawing
         BeginDrawing();
         //Update console and draw
         State_UpdateAndDraw();
-
-        DrawText(TextFormat("FPS:%d", GetFPS()), 100, 100, 50, RED);        
+        
         //Stop drawing
         EndDrawing();
     }
     //Unload texture
     //UnloadRenderTexture(target);
     //Unload game textures and close window
-    Games_UnloadTextures();
+    //Games_UnloadTextures();
     //Close window
     CloseWindow();
     return 0;

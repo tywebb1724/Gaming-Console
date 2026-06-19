@@ -6,6 +6,7 @@
 #include "categories.h"
 #include <stdio.h>
 #include <pthread.h>
+#include "emulators/chip8/chip8_app.h"
 
 //Time the boot up screen should display
 #define BOOT_TIME 3.0f
@@ -25,11 +26,10 @@ Texture2D spiderLogo;
 Texture2D background;
 
 
-
 //Initialize the states
 void State_Init() {
     //Console starts in boot state
-    currentConsoleState = STATE_BOOT;
+    currentConsoleState = STATE_APP_LAUNCHER;
     //Boot timer starts at 0
     bootTimer = 0.0f;
     //Initially no games loaded
@@ -49,6 +49,8 @@ void State_Init() {
     scrollCategories = SCROLL_NO;
     //All textures not loaded
     allLoaded = false;
+
+    chip8_init(SCREEN_W, SCREEN_H);
 }
 
 //Update states and variabels and draw the correct screen
@@ -128,9 +130,9 @@ void State_UpdateAndDraw() {
             break;
 
         case STATE_APP_LAUNCHER:
-            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-                currentConsoleState = STATE_MAIN_MENU;
-            }
+            //if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+                //currentConsoleState = STATE_MAIN_MENU;
+            //}
             break;
 
         case STATE_DIAGNOSTICS:
@@ -159,10 +161,11 @@ void State_UpdateAndDraw() {
             break;
 
         case STATE_APP_LAUNCHER:
-            ClearBackground(RED);
+            chip8_update();
             break;
 
         case STATE_DIAGNOSTICS:
+            
             UI_DrawOptions();
             break;
             
