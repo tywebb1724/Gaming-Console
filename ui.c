@@ -10,6 +10,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+mainMenuState currentMainMenuState = NORMAL;
+optionsState currentOptionsState = BRIGHTNESS;
+float optionsTimeElapsed = 0.0f;
+
 //Types of font
 Font fontRegular;
 Font fontBold;
@@ -692,90 +697,6 @@ void UI_DrawMainMenu() {
     UI_DrawBottom();
 }
 
-void UI_DrawOptions() {
-    //Draw section
-    Rectangle rect1 = {
-        OPTIONS_RECT_X,
-        OPTIONS_RECT_Y,
-        OPTIONS_RECT_W,
-        OPTIONS_RECT_H
-    };
-
-    DrawRectangleRoundedLinesEx(rect1, OPTIONS_ROUND, OPTIONS_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
-    DrawRectangleRounded(rect1, OPTIONS_ROUND, OPTIONS_SEGMENTS, Fade(BLACK, 1.0f));
-
-    Vector2 optionsTitle_Size = MeasureTextEx(fontBold, OPTIONS_TITLE, OPTIONS_TITLE_SIZE, OPTIONS_TITLE_SPACE);
-    Vector2 optionsTitle = { OPTIONS_TITLE_X, OPTIONS_TITLE_Y};
-    Vector2 optionsBrightness_Size = MeasureTextEx(fontRegular, OPTIONS_BRIGHTNESS, OPTIONS_BRIGHTNESS_SIZE, OPTIONS_TITLE_SPACE);
-    Vector2 optionsBrightness = { OPTIONS_BRIGHTNESS_X, OPTIONS_BRIGHTNESS_Y};
-    Vector2 optionsTheme_Size = MeasureTextEx(fontRegular, OPTIONS_THEME, OPTIONS_THEME_SIZE, OPTIONS_TITLE_SPACE);
-    Vector2 optionsTheme = { OPTIONS_THEME_X, OPTIONS_THEME_Y};
-    Vector2 optionsDisplayDiagnostics_Size = MeasureTextEx(fontRegular, OPTIONS_DISPLAY_DIAGNOSTICS, OPTIONS_DISPLAY_DIAGNOSTICS_SIZE, OPTIONS_TITLE_SPACE);
-    Vector2 optionsDisplayDiagnostics = { OPTIONS_DISPLAY_DIAGNOSTICS_X, OPTIONS_DISPLAY_DIAGNOSTICS_Y};
-    Vector2 optionsDiagnostics_Size = MeasureTextEx(fontRegular, OPTIONS_DIAGNOSTICS, OPTIONS_DIAGNOSTICS_SIZE, OPTIONS_TITLE_SPACE);
-    Vector2 optionsDiagnostics = { OPTIONS_DIAGNOSTICS_X, OPTIONS_DIAGNOSTICS_Y};
-    Vector2 optionsSelect_Size = MeasureTextEx(fontRegular, OPTIONS_SELECT, OPTIONS_SELECT_SIZE, OPTIONS_TITLE_SPACE);
-    Vector2 optionsSelect = { OPTIONS_SELECT_X, OPTIONS_SELECT_Y};
-    Vector2 optionsBack_Size = MeasureTextEx(fontRegular, OPTIONS_BACK, OPTIONS_BACK_SIZE, OPTIONS_TITLE_SPACE);
-    Vector2 optionsBack = { OPTIONS_BACK_X, OPTIONS_BACK_Y};
-
-    DrawTextEx(fontBold, OPTIONS_TITLE, optionsTitle, OPTIONS_TITLE_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
-
-    Rectangle rect2 = {
-        OPTIONS_SELECT_RECT_X,
-        OPTIONS_BRIGHTNESS_RECT_Y,
-        OPTIONS_SELECT_RECT_W,
-        OPTIONS_SELECT_RECT_H
-    };
-
-    DrawRectangleRoundedLinesEx(rect2, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
-    DrawRectangleRounded(rect2, BOTTOM_ROUND, BOTTOM_SEGMENTS, Fade(BLACK, 1.0f));
-
-    DrawTextEx(fontRegular, OPTIONS_BRIGHTNESS, optionsBrightness, OPTIONS_BRIGHTNESS_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
-
-    Rectangle rect3 = {
-        OPTIONS_SELECT_RECT_X,
-        OPTIONS_THEME_RECT_Y,
-        OPTIONS_SELECT_RECT_W,
-        OPTIONS_SELECT_RECT_H
-    };
-
-    DrawRectangleRoundedLinesEx(rect3, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
-    DrawRectangleRounded(rect3, BOTTOM_ROUND, BOTTOM_SEGMENTS, Fade(BLACK, 1.0f));
-
-    DrawTextEx(fontRegular, OPTIONS_THEME, optionsTheme, OPTIONS_THEME_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
-
-    Rectangle rect4 = {
-        OPTIONS_SELECT_RECT_X,
-        OPTIONS_DISPLAY_DIAGNOSTICS_RECT_Y,
-        OPTIONS_SELECT_RECT_W,
-        OPTIONS_SELECT_RECT_H
-    };
-
-    DrawRectangleRoundedLinesEx(rect4, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
-    DrawRectangleRounded(rect4, BOTTOM_ROUND, BOTTOM_SEGMENTS, Fade(BLACK, 1.0f));
-
-    DrawTextEx(fontRegular, OPTIONS_DISPLAY_DIAGNOSTICS, optionsDisplayDiagnostics, OPTIONS_DISPLAY_DIAGNOSTICS_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
-
-    Rectangle rect5 = {
-        OPTIONS_SELECT_RECT_X,
-        OPTIONS_DIAGNOSTICS_RECT_Y,
-        OPTIONS_SELECT_RECT_W,
-        OPTIONS_SELECT_RECT_H
-    };
-
-    DrawRectangleRoundedLinesEx(rect5, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
-    DrawRectangleRounded(rect5, BOTTOM_ROUND, BOTTOM_SEGMENTS, Fade(BLACK, 1.0f));
-
-    DrawTextEx(fontRegular, OPTIONS_DIAGNOSTICS, optionsDiagnostics, OPTIONS_DIAGNOSTICS_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
-
-    DrawTextEx(fontRegular, OPTIONS_SELECT, optionsSelect, OPTIONS_SELECT_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
-
-
-    DrawTextEx(fontRegular, OPTIONS_BACK, optionsBack, OPTIONS_BACK_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
-
-
-}
 
 //Function for drawing the diagnostics screen
 void UI_DrawDiagnostics() {
@@ -790,4 +711,226 @@ void UI_DrawDiagnostics() {
     Vector2 diagnosticsFPS_Text = {FPS_TXT_X, FPS_TXT_Y};
     DrawTextEx(fontRegular, TextFormat("FPS:  %d", GetFPS()), diagnosticsFPS_Text, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, WHITE);
     return;
+}
+
+//Draw the options menu
+void MainMenu_DrawOptions(optionsState currentOptionsState) {
+    //Draw whole section
+    Rectangle rect1 = {
+        OPTIONS_RECT_X,
+        OPTIONS_RECT_Y,
+        OPTIONS_RECT_W,
+        OPTIONS_RECT_H
+    };
+    DrawRectangleRoundedLinesEx(rect1, OPTIONS_ROUND, OPTIONS_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
+    DrawRectangleRounded(rect1, OPTIONS_ROUND, OPTIONS_SEGMENTS, Fade(BLACK, 1.0f));
+    //Draw title
+    Vector2 optionsTitle_Size = MeasureTextEx(fontBold, OPTIONS_TITLE, OPTIONS_TITLE_SIZE, OPTIONS_TITLE_SPACE);
+    Vector2 optionsTitle = { OPTIONS_TITLE_X, OPTIONS_TITLE_Y};
+    DrawTextEx(fontBold, OPTIONS_TITLE, optionsTitle, OPTIONS_TITLE_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
+    //Draw brightness section
+    Vector2 optionsBrightness_Size = MeasureTextEx(fontRegular, OPTIONS_BRIGHTNESS, OPTIONS_BRIGHTNESS_SIZE, OPTIONS_TITLE_SPACE);
+    Vector2 optionsBrightness = { OPTIONS_BRIGHTNESS_X, OPTIONS_BRIGHTNESS_Y};
+    Rectangle rect2 = {
+        OPTIONS_SELECT_RECT_X,
+        OPTIONS_BRIGHTNESS_RECT_Y,
+        OPTIONS_SELECT_RECT_W,
+        OPTIONS_SELECT_RECT_H
+    };
+    DrawRectangleRoundedLinesEx(rect2, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
+    DrawTextEx(fontRegular, OPTIONS_BRIGHTNESS, optionsBrightness, OPTIONS_BRIGHTNESS_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
+    //Draw theme section
+    Vector2 optionsTheme_Size = MeasureTextEx(fontRegular, OPTIONS_THEME, OPTIONS_THEME_SIZE, OPTIONS_TITLE_SPACE);
+    Vector2 optionsTheme = { OPTIONS_THEME_X, OPTIONS_THEME_Y};
+    Rectangle rect3 = {
+        OPTIONS_SELECT_RECT_X,
+        OPTIONS_THEME_RECT_Y,
+        OPTIONS_SELECT_RECT_W,
+        OPTIONS_SELECT_RECT_H
+    };
+    DrawRectangleRoundedLinesEx(rect3, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
+    DrawTextEx(fontRegular, OPTIONS_THEME, optionsTheme, OPTIONS_THEME_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
+    //Draw display diagnostics section
+    Vector2 optionsDisplayDiagnostics_Size = MeasureTextEx(fontRegular, OPTIONS_DISPLAY_DIAGNOSTICS, OPTIONS_DISPLAY_DIAGNOSTICS_SIZE, OPTIONS_TITLE_SPACE);
+    Vector2 optionsDisplayDiagnostics = { OPTIONS_DISPLAY_DIAGNOSTICS_X, OPTIONS_DISPLAY_DIAGNOSTICS_Y};
+    Rectangle rect4 = {
+        OPTIONS_SELECT_RECT_X,
+        OPTIONS_DISPLAY_DIAGNOSTICS_RECT_Y,
+        OPTIONS_SELECT_RECT_W,
+        OPTIONS_SELECT_RECT_H
+    };
+    DrawRectangleRoundedLinesEx(rect4, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
+    DrawTextEx(fontRegular, OPTIONS_DISPLAY_DIAGNOSTICS, optionsDisplayDiagnostics, OPTIONS_DISPLAY_DIAGNOSTICS_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
+    //Draw view diagnostics section
+    Vector2 optionsDiagnostics_Size = MeasureTextEx(fontRegular, OPTIONS_DIAGNOSTICS, OPTIONS_DIAGNOSTICS_SIZE, OPTIONS_TITLE_SPACE);
+    Vector2 optionsDiagnostics = { OPTIONS_DIAGNOSTICS_X, OPTIONS_DIAGNOSTICS_Y};
+    Rectangle rect5 = {
+        OPTIONS_SELECT_RECT_X,
+        OPTIONS_DIAGNOSTICS_RECT_Y,
+        OPTIONS_SELECT_RECT_W,
+        OPTIONS_SELECT_RECT_H
+    };
+    DrawRectangleRoundedLinesEx(rect5, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(WHITE, 1.0f));
+    DrawTextEx(fontRegular, OPTIONS_DIAGNOSTICS, optionsDiagnostics, OPTIONS_DIAGNOSTICS_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
+    //Draw select text
+    Vector2 optionsSelect_Size = MeasureTextEx(fontRegular, OPTIONS_SELECT, OPTIONS_SELECT_SIZE, OPTIONS_TITLE_SPACE);
+    Vector2 optionsSelect = { OPTIONS_SELECT_X, OPTIONS_SELECT_Y};
+    DrawTextEx(fontRegular, OPTIONS_SELECT, optionsSelect, OPTIONS_SELECT_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
+    //Draw back text
+    Vector2 optionsBack_Size = MeasureTextEx(fontRegular, OPTIONS_BACK, OPTIONS_BACK_SIZE, OPTIONS_TITLE_SPACE);
+    Vector2 optionsBack = { OPTIONS_BACK_X, OPTIONS_BACK_Y};
+    DrawTextEx(fontRegular, OPTIONS_BACK, optionsBack, OPTIONS_BACK_SIZE, OPTIONS_TITLE_SPACE, Fade(WHITE, 1.0f));
+
+    if (currentOptionsState == BRIGHTNESS) {
+        DrawRectangleRoundedLinesEx(rect2, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(BLUE, 1.0f));
+    }
+    else if (currentOptionsState == THEME) {
+        DrawRectangleRoundedLinesEx(rect3, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(BLUE, 1.0f));
+    }
+    else if (currentOptionsState == DISPLAY_DIAGNOSTICS) {
+        DrawRectangleRoundedLinesEx(rect4, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(BLUE, 1.0f));
+    }
+    else {
+        DrawRectangleRoundedLinesEx(rect5, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_LINE, Fade(BLUE, 1.0f));
+    }
+}
+
+//Tick function for options menu
+void UI_DrawOptions() {
+    //Transition
+    switch(currentOptionsState) {
+        case BRIGHTNESS:
+            if (IsKeyDown(KEY_DOWN) && optionsTimeElapsed >= 0.25f) {
+                currentOptionsState = THEME;
+                optionsTimeElapsed = 0.0f;
+            }
+            else if (IsKeyDown(KEY_UP) && optionsTimeElapsed >= 0.25f) {
+                currentOptionsState = VIEW_DIAGNOSTICS;
+                optionsTimeElapsed = 0.0f;
+            }
+            break;
+
+        case THEME:
+            if (IsKeyDown(KEY_DOWN) && optionsTimeElapsed >= 0.25f) {
+                currentOptionsState = DISPLAY_DIAGNOSTICS;
+                optionsTimeElapsed = 0.0f;
+            }
+            else if (IsKeyDown(KEY_UP) && optionsTimeElapsed >= 0.25f) {
+                currentOptionsState = BRIGHTNESS;
+                optionsTimeElapsed = 0.0f;
+            }
+            break;
+
+        case DISPLAY_DIAGNOSTICS:
+            if (IsKeyDown(KEY_DOWN) && optionsTimeElapsed >= 0.25f) {
+                currentOptionsState = VIEW_DIAGNOSTICS;
+                optionsTimeElapsed = 0.0f;
+            }
+            else if (IsKeyDown(KEY_UP) && optionsTimeElapsed >= 0.25f) {
+                currentOptionsState = THEME;
+                optionsTimeElapsed = 0.0f;
+            }
+            break;
+
+        case VIEW_DIAGNOSTICS:
+            if (IsKeyDown(KEY_DOWN) && optionsTimeElapsed >= 0.25f) {
+                currentOptionsState = BRIGHTNESS;
+                optionsTimeElapsed = 0.0f;
+            }
+            else if (IsKeyDown(KEY_UP) && optionsTimeElapsed >= 0.25f) {
+                currentOptionsState = DISPLAY_DIAGNOSTICS;
+                optionsTimeElapsed = 0.0f;
+            }
+            else if (IsKeyDown(KEY_TAB)) {
+
+            }
+            break;
+    }
+
+    optionsTimeElapsed += GetFrameTime();
+    if (optionsTimeElapsed > 1000000) {
+        optionsTimeElapsed = 0.25f;
+    }
+    MainMenu_DrawOptions(currentOptionsState);
+}
+
+//Tick function for the main menu
+void MainMenu_Tick() {
+    //Transition
+    switch(currentMainMenuState) {
+        case NORMAL:
+            //If not scrolling games to left, not scrolling categories, and the right input is pressed
+            if (scrollGames != SCROLL_LEFT && scrollCategories == SCROLL_NO && IsKeyDown(KEY_RIGHT)) {
+                //Scroll games to the right
+                scrollGames = SCROLL_RIGHT;
+                currentMainMenuState = SCROLL_GAMES;
+            }
+            //If not scrolling games to right, not scrolling categories, and the right input is pressed
+            else if (scrollGames != SCROLL_RIGHT && scrollCategories == SCROLL_NO && IsKeyDown(KEY_LEFT)) {
+                //Scroll games to the left
+                scrollGames = SCROLL_LEFT;
+                currentMainMenuState = SCROLL_GAMES;
+            }
+            //If not scrolling categories to left and right input is pressed
+            if (scrollCategories != SCROLL_LEFT && IsKeyDown(KEY_D)) {
+                //If not already scrolling cateogries
+                if (scrollCategories == SCROLL_NO) {
+                    //Scroll cateogries to right and don't scroll games
+                    scrollCategories = SCROLL_RIGHT;
+                    scrollGames = SCROLL_NO;
+                    currentMainMenuState = SCROLL_CATEGORIES;
+                    //Get new games ready and reset the coordinates
+                    Game_New_Indexes();
+                    Games_NewRefresh();
+                    UI_ResetDisplayCoords_Scroll();
+                }
+            }
+            //If not scrolling categories to right and right input is pressed
+            else if (scrollCategories != SCROLL_RIGHT && IsKeyDown(KEY_A)) {
+                //If not already scrolling cateogries
+                if (scrollCategories == SCROLL_NO) {
+                    //Scroll cateogries to right and don't scroll games
+                    scrollCategories = SCROLL_LEFT;
+                    scrollGames = SCROLL_NO;
+                    currentMainMenuState = SCROLL_CATEGORIES;
+                    //Get new games ready and reset the coordinates
+                    Game_New_Indexes();
+                    Games_NewRefresh();
+                    UI_ResetDisplayCoords_Scroll();
+                }
+            }
+            if (IsKeyPressed(KEY_TAB)) {
+                currentMainMenuState = OPTIONS;
+            }
+            break;
+
+        case SCROLL_GAMES:
+            break;
+
+        case SCROLL_CATEGORIES:
+            break;
+
+        case OPTIONS:
+            
+            break;
+        
+    }
+
+    //Action
+    switch(currentMainMenuState) {
+        case NORMAL:
+
+            break;
+
+        case SCROLL_GAMES:
+            break;
+
+        case SCROLL_CATEGORIES:
+            break;
+
+        case OPTIONS:
+            UI_DrawOptions();
+            break;
+        
+    }
 }

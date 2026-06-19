@@ -2,6 +2,21 @@
 #define UI_H
 #include "games.h"
 
+
+typedef enum {
+    BRIGHTNESS,
+    THEME,
+    DISPLAY_DIAGNOSTICS,
+    VIEW_DIAGNOSTICS
+} optionsState;
+
+typedef enum {
+    NORMAL,
+    SCROLL_GAMES,
+    SCROLL_CATEGORIES,
+    OPTIONS
+} mainMenuState;
+
 //Scrolling states
 typedef enum {
     SCROLL_NO,
