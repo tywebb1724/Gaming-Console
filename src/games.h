@@ -38,6 +38,8 @@ typedef struct {
     float w;
     float h;
     Categories category;
+    char *romPath;
+    char *corePath;
 } Game;
 
 //Arrays to hold all games, the games displayed, and the new games displayed
@@ -72,5 +74,8 @@ void Games_ScrollLeft();
 //Unload game cover textures
 void Games_UnloadTextures();
 
+void Games_LaunchInit(Game game);
+
+void Games_LaunchRefresh(Game game);
 
 #endif

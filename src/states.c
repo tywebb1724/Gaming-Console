@@ -124,7 +124,7 @@ void State_UpdateAndDraw() {
             }
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 currentConsoleState = STATE_APP_LAUNCHER;
-                chip8_init(SCREEN_W, SCREEN_H);
+                Games_LaunchInit(gameLibrary[0]);
             }
             break;
 
@@ -160,7 +160,7 @@ void State_UpdateAndDraw() {
             break;
 
         case STATE_APP_LAUNCHER:
-            chip8_update();
+            Games_LaunchRefresh(gameLibrary[0]);
             break;
 
         case STATE_DIAGNOSTICS:

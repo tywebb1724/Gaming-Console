@@ -8,6 +8,10 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include "ui_config.h"
+#include "emulators/libretro/retro_bridge.h"
+#include "emulators/libretro/libretro.h"
+#include <string.h>
+#include <math.h>
 
 //Arrays to hold all games, the games displayed, and the new games displayed
 Game gameLibrary[MAX_GAMES];
@@ -27,6 +31,14 @@ float maxLen = 0;
 //Variables to keep track of which images and textures are loaded
 bool isLoaded[GAMES_LEN] = { false };
 bool isTextureUploaded[GAMES_LEN] = { false };
+
+
+int your_key_map[RETRO_DEVICE_ID_JOYPAD_MASK];
+Texture2D emulator_texture;
+bool is_game_running = false;
+float saveTimeElapsed = 0.0f;
+
+
 
 
 //Update the indexes for the new game category
@@ -110,6 +122,7 @@ void Games_Refresh() {
     }
 }
 
+//*********** */
 //Initialize arcade games
 void Games_Arcade_Init() {
     gameLibrary[0].title = "Metal Slug 3";
@@ -117,89 +130,124 @@ void Games_Arcade_Init() {
     gameLibrary[0].cover.id = 0;
     gameLibrary[0].category = ARCADE;
     gameLibrary[0].console = "Arcade";
+    gameLibrary[0].corePath = PATH_ARCADE;
+    gameLibrary[0].romPath = "assets/roms/arcade/SuperMario64.gba";
     
     gameLibrary[1].title = "Pac-Man";
     gameLibrary[1].coverPath = "./assets/covers/arcade/pac-man.png";
     gameLibrary[1].cover.id = 0;
     gameLibrary[1].category = ARCADE;
     gameLibrary[1].console = "Arcade";
+    gameLibrary[1].corePath = PATH_ARCADE;
+    gameLibrary[1].romPath = "assets/roms/arcade/SuperMario64.gba";
 
     gameLibrary[2].title = "Simpsons Arcade Game";
     gameLibrary[2].coverPath = "./assets/covers/arcade/simpsons_arcade.png";
     gameLibrary[2].cover.id = 0;
     gameLibrary[2].category = ARCADE;
     gameLibrary[2].console = "Arcade";
+    gameLibrary[2].corePath = PATH_ARCADE;
+    gameLibrary[2].romPath = "assets/roms/arcade/SuperMario64.gba";
 
     gameLibrary[3].title = "Street Fighter: 3rd Strike";
     gameLibrary[3].coverPath = "./assets/covers/arcade/street_fighter_3rd_strike.png";
     gameLibrary[3].cover.id = 0;
     gameLibrary[3].category = ARCADE;
     gameLibrary[3].console = "Arcade";
+    gameLibrary[3].corePath = PATH_ARCADE;
+    gameLibrary[3].romPath = "assets/roms/arcade/SuperMario64.gba";
 
     gameLibrary[4].title = "Teenage Mutant Ninja Turtles: Turtles in Time";
     gameLibrary[4].coverPath = "./assets/covers/arcade/tmnt_turtles_in_time.png";
     gameLibrary[4].cover.id = 0;
     gameLibrary[4].category = ARCADE;
     gameLibrary[4].console = "Arcade";
+    gameLibrary[4].corePath = PATH_ARCADE;
+    gameLibrary[4].romPath = "assets/roms/arcade/SuperMario64.gba";
 
     gameLibrary[5].title = "The Punisher Arcade";
     gameLibrary[5].coverPath = "./assets/covers/arcade/punisher_arcade.png";
     gameLibrary[5].cover.id = 0;
     gameLibrary[5].category = ARCADE;
     gameLibrary[5].console = "Arcade";
+    gameLibrary[5].corePath = PATH_ARCADE;
+    gameLibrary[5].romPath = "assets/roms/arcade/SuperMario64.gba";
 
     gameLibrary[6].title = "X-Men Arcade";
     gameLibrary[6].coverPath = "./assets/covers/arcade/x-men_arcade.png";
     gameLibrary[6].cover.id = 0;
     gameLibrary[6].category = ARCADE;
     gameLibrary[6].console = "Arcade";
+    gameLibrary[6].corePath = PATH_ARCADE;
+    gameLibrary[6].romPath = "assets/roms/arcade/SuperMario64.gba";
 }
 
 //Initialize handheld classics games
 void Games_Handheld_Init() {
+    //*********** */
     gameLibrary[7].title = "Grand Theft Auto: Liberty City Stories";
     gameLibrary[7].coverPath = "./assets/covers/handheld/gta_liberty.png";
     gameLibrary[7].cover.id = 0;
     gameLibrary[7].category = HANDHELD;
     gameLibrary[7].console = "Sony PlayStation Portable";
+    gameLibrary[7].corePath = PATH_PSP;
+    gameLibrary[7].romPath = "assets/roms/psp/SuperMario64.gba";
 
+    //*********** */
     gameLibrary[8].title = "Mario Kart DS";
     gameLibrary[8].coverPath = "./assets/covers/handheld/mario_kart_ds.png";
     gameLibrary[8].cover.id = 0;
     gameLibrary[8].category = HANDHELD;
     gameLibrary[8].console = "Nintendo DS";
+    gameLibrary[8].corePath = PATH_DS;
+    gameLibrary[8].romPath = "assets/roms/ds/Chrono Trigger (USA) (En,Fr).nds";
 
+    //*********** */
     gameLibrary[9].title = "Pokemon HeartGold";
     gameLibrary[9].coverPath = "./assets/covers/handheld/pokemon_heartgold.png";
     gameLibrary[9].cover.id = 0;
     gameLibrary[9].category = HANDHELD;
     gameLibrary[9].console = "Nintendo DS";
+    gameLibrary[9].corePath = PATH_DS;
+    gameLibrary[9].romPath = "assets/roms/ds/SuperMario64.gba";
 
+    //*********** */
     gameLibrary[10].title = "Pokemon SoulSilver";
     gameLibrary[10].coverPath = "./assets/covers/handheld/pokemon_soulsilver.png";
     gameLibrary[10].cover.id = 0;
     gameLibrary[10].category = HANDHELD;
     gameLibrary[10].console = "Nintendo DS";
+    gameLibrary[10].corePath = PATH_DS;
+    gameLibrary[10].romPath = "assets/roms/ds/SuperMario64.gba";
 
     gameLibrary[11].title = "The Legend of Zelda: The Minish Cap";
     gameLibrary[11].coverPath = "./assets/covers/handheld/zelda_minish_cap.png";
     gameLibrary[11].cover.id = 0;
     gameLibrary[11].category = HANDHELD;
     gameLibrary[11].console = "Game Boy Advance";
+    gameLibrary[11].corePath = PATH_GBA;
+    gameLibrary[11].romPath = "assets/roms/gba/MinishChap.gba";
 
+    //*********** */
     gameLibrary[12].title = "Chrono Trigger";
     gameLibrary[12].coverPath = "./assets/covers/handheld/chrono_trigger.png";
     gameLibrary[12].cover.id = 0;
     gameLibrary[12].category = HANDHELD;
     gameLibrary[12].console = "Nintendo DS";
+    gameLibrary[12].corePath = PATH_DS;
+    gameLibrary[12].romPath = "assets/roms/ds/SuperMario64.gba";
 
+    //*********** */
     gameLibrary[13].title = "Monster Hunter Freedom Unite";
     gameLibrary[13].coverPath = "./assets/covers/handheld/monst_hunt_free_unite.png";
     gameLibrary[13].cover.id = 0;
     gameLibrary[13].category = HANDHELD;
     gameLibrary[13].console = "Sony PlayStation Portable";
+    gameLibrary[13].corePath = PATH_PSP;
+    gameLibrary[13].romPath = "assets/roms/psp/SuperMario64.gba";
 }
 
+//*********** */
 //Initialize Nintendo 3D games
 void Games_Nint3D_Init() {
     gameLibrary[14].title = "Super Mario 64";
@@ -207,42 +255,56 @@ void Games_Nint3D_Init() {
     gameLibrary[14].cover.id = 0;
     gameLibrary[14].category = NINTENDO_3D;
     gameLibrary[14].console = "Nintendo 64";
+    gameLibrary[14].corePath = PATH_N64;
+    gameLibrary[15].romPath = "assets/roms/n64/SuperMario64.gba";
 
     gameLibrary[15].title = "Super Mario Sunshine";
     gameLibrary[15].coverPath = "./assets/covers/nint_3d/mario_sunshine.png";
     gameLibrary[15].cover.id = 0;
     gameLibrary[15].category = NINTENDO_3D;
     gameLibrary[15].console = "Nintendo GameCube";
+    
+    gameLibrary[15].romPath = "assets/roms/n64/SuperMario64.gba";
 
     gameLibrary[16].title = "Starfox 64";
     gameLibrary[16].coverPath = "./assets/covers/nint_3d/starfox_64.png";
     gameLibrary[16].cover.id = 0;
     gameLibrary[16].category = NINTENDO_3D;
     gameLibrary[16].console = "Nintendo 64";
+    gameLibrary[16].corePath = PATH_N64;
+    gameLibrary[16].romPath = "assets/roms/n64/StarFox64.gba";
 
     gameLibrary[17].title = "The Legend of Zelda: Ocarina of Time";
     gameLibrary[17].coverPath = "./assets/covers/nint_3d/zelda_ocarina.png";
     gameLibrary[17].cover.id = 0;
     gameLibrary[17].category = NINTENDO_3D;
     gameLibrary[17].console = "Nintendo 64";
+    gameLibrary[17].corePath = PATH_N64;
+    gameLibrary[17].romPath = "assets/roms/n64/SuperMario64.gba";
 
     gameLibrary[18].title = "The Legend of Zelda: The Wind Waker";
     gameLibrary[18].coverPath = "./assets/covers/nint_3d/zelda_windwaker.png";
     gameLibrary[18].cover.id = 0;
     gameLibrary[18].category = NINTENDO_3D;
     gameLibrary[18].console = "Nintendo GameCube";
+    
+    gameLibrary[18].romPath = "assets/roms/n64/SuperMario64.gba";
 
     gameLibrary[19].title = "Super Smash Bros: Melee";
     gameLibrary[19].coverPath = "./assets/covers/nint_3d/smash_bros_melee.png";
     gameLibrary[19].cover.id = 0;
     gameLibrary[19].category = NINTENDO_3D;
     gameLibrary[19].console = "Nintendo GameCube";
+    
+    gameLibrary[19].romPath = "assets/roms/n64/SuperMario64.gba";
 
     gameLibrary[20].title = "The Legend of Zelda: Twilight Princess";
     gameLibrary[20].coverPath = "./assets/covers/nint_3d/zelda_twilight.png";
     gameLibrary[20].cover.id = 0;
     gameLibrary[20].category = NINTENDO_3D;
     gameLibrary[20].console = "Nintendo GameCube";
+    
+    gameLibrary[20].romPath = "assets/roms/n64/SuperMario64.gba";
 }
 
 //Initialize retro Nintendo games
@@ -252,44 +314,59 @@ void Games_NintRet_Init() {
     gameLibrary[21].cover.id = 0;
     gameLibrary[21].category = NINTENDO_RETRO;
     gameLibrary[21].console = "Super Nintendo Entertainment System";
+    gameLibrary[21].corePath = PATH_SNES;
+    gameLibrary[21].romPath = "assets/roms/snes/DK2.smc";
 
-    gameLibrary[22].title = "Punch-Out";
+    gameLibrary[22].title = "Mike Tyson's Punch-Out!!";
     gameLibrary[22].coverPath = "./assets/covers/nint_ret/punch-out.png";
     gameLibrary[22].cover.id = 0;
     gameLibrary[22].category = NINTENDO_RETRO;
     gameLibrary[22].console = "Nintendo Entertainment System";
+    gameLibrary[22].corePath = PATH_NES;
+    gameLibrary[22].romPath = "assets/roms/snes/Punch-Out.nes";
 
     gameLibrary[23].title = "Super Mario World";
     gameLibrary[23].coverPath = "./assets/covers/nint_ret/super_mario_world.png";
     gameLibrary[23].cover.id = 0;
     gameLibrary[23].category = NINTENDO_RETRO;
     gameLibrary[23].console = "Super Nintendo Entertainment System";
+    gameLibrary[23].corePath = PATH_SNES;
+    gameLibrary[23].romPath = "assets/roms/snes/SuperMarioWorld.smc";
 
     gameLibrary[24].title = "Super Metroid";
     gameLibrary[24].coverPath = "./assets/covers/nint_ret/super_metroid.png";
     gameLibrary[24].cover.id = 0;
     gameLibrary[24].category = NINTENDO_RETRO;
     gameLibrary[24].console = "Super Nintendo Entertainment System";
+    gameLibrary[24].corePath = PATH_SNES;
+    gameLibrary[24].romPath = "assets/roms/snes/SuperMetroid.smc";
 
     gameLibrary[25].title = "The Legend of Zelda";
     gameLibrary[25].coverPath = "./assets/covers/nint_ret/zelda.png";
     gameLibrary[25].cover.id = 0;
     gameLibrary[25].category = NINTENDO_RETRO;
     gameLibrary[25].console = "Nintendo Entertainment System";
+    gameLibrary[25].corePath = PATH_NES;
+    gameLibrary[25].romPath = "assets/roms/nes/LegendOfZelda.nes";
 
-    gameLibrary[26].title = "Earth Bound";
+    gameLibrary[26].title = "EarthBound";
     gameLibrary[26].coverPath = "./assets/covers/nint_ret/earth_bound.png";
     gameLibrary[26].cover.id = 0;
     gameLibrary[26].category = NINTENDO_RETRO;
     gameLibrary[26].console = "Super Nintendo Entertainment System";
+    gameLibrary[26].corePath = PATH_SNES;
+    gameLibrary[26].romPath = "assets/roms/snes/EarthBound.sfc";
 
     gameLibrary[27].title = "Megaman X2";
     gameLibrary[27].coverPath = "./assets/covers/nint_ret/megaman_x2.png";
     gameLibrary[27].cover.id = 0;
     gameLibrary[27].category = NINTENDO_RETRO;
     gameLibrary[27].console = "Super Nintendo Entertainment System";
+    gameLibrary[27].corePath = PATH_SNES;
+    gameLibrary[27].romPath = "assets/roms/snes/MegamanX2.sfc";
 }
 
+//*********** */
 //Initialize retro PC & Indie games
 void Games_PCIndie_Init() {
     gameLibrary[28].title = "Counter Strike 1.6";
@@ -337,49 +414,65 @@ void Games_PCIndie_Init() {
 
 //Initialize Sega games
 void Games_Sega_Init() {
+    //*********** */
     gameLibrary[35].title = "Crazy Taxi";
     gameLibrary[35].coverPath = "./assets/covers/sega/crazy_taxi.png";
     gameLibrary[35].cover.id = 0;
     gameLibrary[35].category = SEGA;
     gameLibrary[35].console = "Sega Dreamcast";
-
+    gameLibrary[35].corePath = PATH_DREAMCAST;
+    gameLibrary[35].romPath = "assets/roms/dreamcast/SuperMario64.gba";
+    //*********** */
     gameLibrary[36].title = "Fighting Vipers";
     gameLibrary[36].coverPath = "./assets/covers/sega/fighting_vipers.png";
     gameLibrary[36].cover.id = 0;
     gameLibrary[36].category = SEGA;
     gameLibrary[36].console = "Sega Dreamcast";
+    gameLibrary[36].corePath = PATH_DREAMCAST;
+    gameLibrary[35].romPath = "assets/roms/dreamcast/SuperMario64.gba";
 
     gameLibrary[37].title = "Sonic the Hedgehog 3 & Knuckles";
     gameLibrary[37].coverPath = "./assets/covers/sega/sonic_3_and_knuckles.png";
     gameLibrary[37].cover.id = 0;
     gameLibrary[37].category = SEGA;
     gameLibrary[37].console = "Sega Genesis";
+    gameLibrary[37].corePath = PATH_GENESIS;
+    gameLibrary[37].romPath = "assets/roms/genesis/Sonic3&Knuckles.md";
 
     gameLibrary[38].title = "Sonic CD";
     gameLibrary[38].coverPath = "./assets/covers/sega/sonic_cd.png";
     gameLibrary[38].cover.id = 0;
     gameLibrary[38].category = SEGA;
     gameLibrary[38].console = "Sega CD";
-
+    gameLibrary[38].corePath = PATH_GENESIS;
+    gameLibrary[38].romPath = "assets/roms/genesis/SuperMario64.gba";
+    //*********** */
     gameLibrary[39].title = "X-Men vs Street Fighter";
     gameLibrary[39].coverPath = "./assets/covers/sega/x-men_vs_street_fighter.png";
     gameLibrary[39].cover.id = 0;
     gameLibrary[39].category = SEGA;
     gameLibrary[39].console = "Sega Saturn";
-
+    gameLibrary[39].corePath = PATH_SATURN;
+    gameLibrary[39].romPath = "assets/roms/saturn/SuperMario64.gba";
+    //*********** */
     gameLibrary[40].title = "Daytona USA";
     gameLibrary[40].coverPath = "./assets/covers/sega/daytona_usa.png";
     gameLibrary[40].cover.id = 0;
     gameLibrary[40].category = SEGA;
     gameLibrary[40].console = "Sega Saturn";
+    gameLibrary[40].corePath = PATH_SATURN;
+    gameLibrary[40].romPath = "assets/roms/saturn/SuperMario64.gba";
 
     gameLibrary[41].title = "Gunstar Heroes";
     gameLibrary[41].coverPath = "./assets/covers/sega/gunstar_heroes.png";
     gameLibrary[41].cover.id = 0;
     gameLibrary[41].category = SEGA;
     gameLibrary[41].console = "Sega Genesis";
+    gameLibrary[41].corePath = PATH_GENESIS;
+    gameLibrary[41].romPath = "assets/roms/genesis/GunstarHeroes.md";
 }
 
+//*********** */
 //Initialize Playstation games
 void Games_Playstation_Init() {
     gameLibrary[42].title = "Megaman X4";
@@ -387,42 +480,56 @@ void Games_Playstation_Init() {
     gameLibrary[42].cover.id = 0;
     gameLibrary[42].category = PLAYSTATION;
     gameLibrary[42].console = "Sony PlayStation";
+    gameLibrary[42].corePath = PATH_PS1;
+    gameLibrary[42].romPath = "assets/roms/ps1/SuperMario64.gba";
 
     gameLibrary[43].title = "Pac-Man World";
     gameLibrary[43].coverPath = "./assets/covers/playstation/pac-man_world.png";
     gameLibrary[43].cover.id = 0;
     gameLibrary[43].category = PLAYSTATION;
     gameLibrary[43].console = "Sony PlayStation";
+    gameLibrary[43].corePath = PATH_PS1;
+    gameLibrary[43].romPath = "assets/roms/ps1/SuperMario64.gba";
 
     gameLibrary[44].title = "Soulblade";
     gameLibrary[44].coverPath = "./assets/covers/playstation/soulblade.png";
     gameLibrary[44].cover.id = 0;
     gameLibrary[44].category = PLAYSTATION;
     gameLibrary[44].console = "Sony PlayStation";
+    gameLibrary[44].corePath = PATH_PS1;
+    gameLibrary[44].romPath = "assets/roms/ps1/SuperMario64.gba";
 
     gameLibrary[45].title = "Spider-Man (2000)";
     gameLibrary[45].coverPath = "./assets/covers/playstation/spider-man.png";
     gameLibrary[45].cover.id = 0;
     gameLibrary[45].category = PLAYSTATION;
     gameLibrary[45].console = "Sony PlayStation";
+    gameLibrary[45].corePath = PATH_PS1;
+    gameLibrary[45].romPath = "assets/roms/ps1/SuperMario64.gba";
 
     gameLibrary[46].title = "Street Fighter: Alpha 3";
     gameLibrary[46].coverPath = "./assets/covers/playstation/street_fighter_alpha_3.png";
     gameLibrary[46].cover.id = 0;
     gameLibrary[46].category = PLAYSTATION;
     gameLibrary[46].console = "Sony PlayStation";
+    gameLibrary[46].corePath = PATH_PS1;
+    gameLibrary[46].romPath = "assets/roms/ps1/SuperMario64.gba";
 
     gameLibrary[47].title = "Metal Gear Solid";
     gameLibrary[47].coverPath = "./assets/covers/playstation/met_gear_solid.png";
     gameLibrary[47].cover.id = 0;
     gameLibrary[47].category = PLAYSTATION;
     gameLibrary[47].console = "Sony PlayStation";
+    gameLibrary[47].corePath = PATH_PS1;
+    gameLibrary[47].romPath = "assets/roms/ps1/SuperMario64.gba";
 
     gameLibrary[48].title = "Twisted Metal 2";
     gameLibrary[48].coverPath = "./assets/covers/playstation/twist_met_2.png";
     gameLibrary[48].cover.id = 0;
     gameLibrary[48].category = PLAYSTATION;
     gameLibrary[48].console = "Sony PlayStation";
+    gameLibrary[48].corePath = PATH_PS1;
+    gameLibrary[48].romPath = "assets/roms/ps1/SuperMario64.gba";
 }
 
 //Initialize game library
@@ -499,3 +606,212 @@ void Games_UnloadTextures() {
         UnloadTexture(gameLibrary[i].cover);
     }
 }
+
+bool Games_IsLibRetro(Game game) {
+    if (game.category == ARCADE || game.category == NINTENDO_RETRO || game.category == SEGA || game.category == PLAYSTATION) {
+        return true;
+    }
+    if (strcmp(game.corePath, PATH_N64) == 0 || strcmp(game.corePath, PATH_GAMEBOY) == 0 || 
+    strcmp(game.corePath, PATH_GBA) == 0 || strcmp(game.corePath, PATH_GBC) == 0 || strcmp(game.corePath, PATH_DS) == 0) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+void Games_ApplyKeyMap(char* corePath) {
+    // Clear the map first (assuming standard libretro size or maximum possible keys)
+    for(int i = 0; i < 32; i++) your_key_map[i] = 0;
+
+    // =========================================================================
+    // 1. COMMON SYSTEM INPUTS (Shared across all consoles)
+    // =========================================================================
+    your_key_map[RETRO_DEVICE_ID_JOYPAD_UP]     = KEY_UP;
+    your_key_map[RETRO_DEVICE_ID_JOYPAD_DOWN]   = KEY_DOWN;
+    your_key_map[RETRO_DEVICE_ID_JOYPAD_LEFT]   = KEY_LEFT;
+    your_key_map[RETRO_DEVICE_ID_JOYPAD_RIGHT]  = KEY_RIGHT;
+    your_key_map[RETRO_DEVICE_ID_JOYPAD_START]  = KEY_ENTER;
+    your_key_map[RETRO_DEVICE_ID_JOYPAD_SELECT] = KEY_RIGHT_SHIFT;
+
+    // =========================================================================
+    // 2. TWO-BUTTON SIMPLE LAYOUT (NES, Game Boy, GBC, Atari 2600, Lynx)
+    // =========================================================================
+    if (strcmp(corePath, PATH_NES) == 0      || 
+        strcmp(corePath, PATH_GAMEBOY) == 0 || 
+        strcmp(corePath, PATH_GBC) == 0     || 
+        strcmp(corePath, PATH_LYNX) == 0    || 
+        strcmp(corePath, PATH_ATARI2600) == 0) 
+    {
+        // Classic ergonomic 2-button arcade layout (Z=B/Action1, X=A/Action2)
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_A] = KEY_X;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_B] = KEY_Z;
+    } 
+
+    // =========================================================================
+    // 3. FOUR-BUTTON DIAMOND / FOUR-BUTTON SHIFTED (SNES, GBA, DS, TG16, NGPC, WSWAN)
+    // =========================================================================
+    else if (strcmp(corePath, PATH_SNES) == 0  || 
+             strcmp(corePath, PATH_GBA) == 0   || 
+             strcmp(corePath, PATH_DS) == 0    || 
+             strcmp(corePath, PATH_TG16) == 0  || 
+             strcmp(corePath, PATH_NGPC) == 0  || 
+             strcmp(corePath, PATH_WSWAN) == 0) 
+    {
+        // Standard SNES Diamond / Shoulder layout (Z=B, X=A, A=Y, S=X, Q=L, W=R)
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_B] = KEY_Z; // Bottom Face
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_A] = KEY_X; // Right Face
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_Y] = KEY_A; // Left Face
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_X] = KEY_S; // Top Face
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L] = KEY_Q; // Left Shoulder
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_R] = KEY_W; // Right Shoulder
+    }
+
+    // =========================================================================
+    // 4. SEGA THREE/SIX BUTTON LAYOUT (Genesis, Saturn)
+    // =========================================================================
+    else if (strcmp(corePath, PATH_GENESIS) == 0 || strcmp(corePath, PATH_SATURN) == 0) {
+        // Traditional Sega bottom row: A=Z, B=X, C=C
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_Y] = KEY_Z; // Libretro Y -> Sega A
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_B] = KEY_X; // Libretro B -> Sega B
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_A] = KEY_C; // Libretro A -> Sega C
+        
+        // Six-Button mapping extension (Top Row: X=A, Y=S, Z=D + Shoulders)
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_X] = KEY_A; // Libretro X -> Sega X
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L] = KEY_S; // Libretro L -> Sega Y
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_R] = KEY_D; // Libretro R -> Sega Z
+        
+        // Saturn specifically uses L2/R2 wrappers for its real L/R shoulders
+        if (strcmp(corePath, PATH_SATURN) == 0) {
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_L2] = KEY_Q; // Left Shoulder
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_R2] = KEY_W; // Right Shoulder
+        }
+    }
+
+    // =========================================================================
+    // 5. MODERN 3D / FIGHTING ENGINE LAYOUT (PS1, PSP, Dreamcast, Arcade)
+    // =========================================================================
+    else if (strcmp(corePath, PATH_PS1) == 0       || 
+             strcmp(corePath, PATH_PSP) == 0       || 
+             strcmp(corePath, PATH_DREAMCAST) == 0 || 
+             strcmp(corePath, PATH_ARCADE) == 0) 
+    {
+        // Full dual-analog controller & heavy action map (Z, X, A, S, Q, W, E, R)
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_B]  = KEY_Z; // Cross / Core Button 1
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_A]  = KEY_X; // Circle / Core Button 2
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_Y]  = KEY_A; // Square / Core Button 3
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_X]  = KEY_S; // Triangle / Core Button 4
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L]  = KEY_Q; // L1 / Left Shoulder
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_R]  = KEY_W; // R1 / Right Shoulder
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L2] = KEY_E; // L2 Trigger
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_R2] = KEY_R; // R2 Trigger
+    }
+
+    // =========================================================================
+    // 6. NINTENDO 64 LAYOUT (Unique C-Button Paradigm)
+    // =========================================================================
+    else if (strcmp(corePath, PATH_N64) == 0) {
+        // Essential face/trigger keys
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_B] = KEY_Z; // N64 B
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_A] = KEY_X; // N64 A
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L] = KEY_Q; // N64 L-Trigger
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_R] = KEY_W; // N64 R-Trigger
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L2]= KEY_SPACE; // N64 Z-Trigger (Underneath)
+
+        // CORRECTED: Standard Libretro Right-Analog direction macros for C-Buttons
+        your_key_map[RETRO_DEVICE_ID_LIGHTGUN_RELOAD]   = KEY_I; // N64 C-Up (Often mapped to Lightgun Reload or R-Stick Up depending on core build)
+        // Alternatively, the most bulletproof way for a keyboard frontend is to map them to unused higher Joypad slots if the core expects digital:
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L3]         = KEY_J; // N64 C-Left
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_R3]         = KEY_L; // N64 C-Right
+        
+        // Wait, let's look at how Mupen64Plus-Next actually reads digital C-buttons:
+        // It maps them directly to the Right Analog Stick axes! 
+    }
+}
+
+void Games_LaunchInit(Game game) {
+    // Inside your main initialization code:
+    // Create a blank texture. 640x480 covers most retro systems (NES, Genesis, SNES, etc.)
+    // Find where you load your texture in main.c and add the filter line right below it:
+    if (is_game_running && core_run != NULL) {
+        core_run(); 
+    }
+    if (Games_IsLibRetro(game)) {
+        Image blank = GenImageColor(640, 480, BLACK);
+        emulator_texture = LoadTextureFromImage(blank);
+        UnloadImage(blank);
+        SetTextureFilter(emulator_texture, TEXTURE_FILTER_POINT);
+        Games_ApplyKeyMap(game.corePath);
+        if (LoadRetroCore(game.corePath)) {
+            printf("DEBUG: Attempting to load ROM at: %s\n", game.romPath);
+            if (LoadGame(game.romPath)) {
+                is_game_running = true;
+                //LoadBattery(game.romPath);
+            }
+            else {
+            printf("CRITICAL: LoadGame() returned false. Aborting launch.\n");
+            is_game_running = false; // Prevent the run loop
+            // Optionally: unload core here
+            }
+        }
+    }
+    saveTimeElapsed = 0;
+}
+ 
+
+void ShutdownEmulator(void) {
+    if (core_unload_game) core_unload_game();
+    if (core_deinit) core_deinit();
+}
+
+void Games_LaunchRefresh(Game game) {
+    RunFrame(is_game_running);
+    ClearBackground(BLACK);
+    // 2. Draw the automatically updated texture to the screen
+    float scale = fminf((float)monitorWidth / emulator_texture.width, (float)monitorHeight / emulator_texture.height);
+    float destWidth = emulator_texture.width * scale;
+    float destHeight = emulator_texture.height * scale;
+    float destX = (monitorWidth - destWidth) / 2.0f;
+    float destY = (monitorHeight - destHeight) / 2.0f;
+
+    DrawTexturePro(
+        emulator_texture,
+        (Rectangle){ 0, 0, (float)emulator_texture.width, (float)emulator_texture.height },
+        (Rectangle){ destX, destY, destWidth, destHeight }, 
+        (Vector2){ 0, 0 },
+        0.0f,
+        WHITE
+    );
+    saveTimeElapsed += GetFrameTime();
+    if (saveTimeElapsed >= 60.0f) {
+        SaveBattery(game.romPath);
+    }
+}
+
+/*void Games_LaunchRefresh(Game game) {
+    RunFrame(); // 1. Tell emulator to update pixels & check keys
+    SetTextureFilter(emulator_texture, TEXTURE_FILTER_POINT);
+    ClearBackground(BLACK);
+    // 2. Draw the automatically updated texture to the screen
+    float scale = fminf((float)monitorWidth / emulator_texture.width, (float)monitorHeight / emulator_texture.height);
+    float destWidth = emulator_texture.width * scale;
+    float destHeight = emulator_texture.height * scale;
+    float destX = (monitorWidth - destWidth) / 2.0f;
+    float destY = (monitorHeight - destHeight) / 2.0f;
+
+    DrawTexturePro(
+        emulator_texture,
+        (Rectangle){ 0, 0, (float)emulator_texture.width, (float)emulator_texture.height },
+        (Rectangle){ destX, destY, destWidth, destHeight }, 
+        (Vector2){ 0, 0 },
+        0.0f,
+        WHITE
+    );
+    saveTimeElapsed += GetFrameTime();
+    if (saveTimeElapsed >= 60.0f) {
+        SaveBattery(game.romPath);
+    }
+
+
+}*/
+

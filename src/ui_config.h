@@ -261,5 +261,26 @@
 #define OPTIONS_THEME_RECT_Y (OPTIONS_THEME_Y - OPTIONS_TXT_SPACING_Y / 16)
 #define OPTIONS_DISPLAY_DIAGNOSTICS_RECT_Y (OPTIONS_DISPLAY_DIAGNOSTICS_Y - OPTIONS_TXT_SPACING_Y / 16)
 #define OPTIONS_DIAGNOSTICS_RECT_Y (OPTIONS_DIAGNOSTICS_Y - OPTIONS_TXT_SPACING_Y / 16)
+#pragma endregion
 
+#pragma region GAME_LAUNCHER
+#define PATH_GBA "assets/cores/mgba_libretro.so"
+#define PATH_NES "assets/cores/fceumm_libretro.so"
+#define PATH_GENESIS "assets/cores/genesis_plus_gx_libretro.so"
+#define PATH_SNES "assets/cores/bsnes_libretro.so"
+#define PATH_GAMEBOY "assets/cores/gambatte_libretro.so"
+#define PATH_ARCADE "assets/cores/fbnea_libretro.so"
+#define PATH_PS1 "assets/cores/swanstation_libretro.so"
+#define PATH_N64 "assets/cores/mupen64plus_next_libretro.so"
+#define PATH_PSP "assets/cores/ppsspp_libretro.so"
+#define PATH_DS "assets/cores/melonds_libretro.so"
+#define PATH_DREAMCAST "assets/cores/flycast_libretro.so"
+#define PATH_SATURN "assets/cores/yabause_libretro.so"
+#define PATH_GBC "assets/cores/sameboy_libretro.so"
+#define PATH_LYNX "assets/cores/handy_libretro.so"
+#define PATH_NGPC "assets/cores/mednafen_ngp_libretro.so"
+#define PATH_WSWAN "assets/cores/mednafen_wswan_libretro.so"
+#define PATH_TG16 "assets/cores/mednafen_pce_fast_libretro.so"
+#define PATH_ATARI2600 "assets/cores/stella_libretro.so"
 
+#pragma enregion
