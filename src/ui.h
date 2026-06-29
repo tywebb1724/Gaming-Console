@@ -4,11 +4,21 @@
 
 
 typedef enum {
+    LIST,
     BRIGHTNESS,
     THEME,
     DISPLAY_DIAGNOSTICS,
     VIEW_DIAGNOSTICS
 } optionsState;
+
+typedef enum {
+    SCREEN_MAIN,
+    SCREEN_LIST,
+    SCREEN_BRIGHTNESS,
+    SCREEN_THEME,
+    SCREEN_DISPLAY_DIAG,
+    SCREEN_VIEW_DIAG
+} screenState;
 
 typedef enum {
     NORMAL,
@@ -24,6 +34,33 @@ typedef enum {
     SCROLL_RIGHT
 } Scroll;
 
+typedef enum {
+    THEME_1,
+    THEME_2,
+    THEME_3,
+    THEME_4
+} theme_t;
+
+typedef enum {
+    NEITHER,
+    LEFT_PRESS,
+    RIGHT_PRESS
+} brightPressed;
+
+typedef enum {
+    DIAG_NORMAL,
+    DIAG_OPTIONS
+} diagState;
+
+//States of the console
+typedef enum {
+    STATE_BOOT,
+    STATE_MAIN_MENU,
+    STATE_APP_LAUNCHER,
+    STATE_LIST,
+    STATE_VIEW_DIAG
+} ConsoleState;
+
 //Types of font
 extern Font fontRegular;
 extern Font fontBold;
@@ -34,6 +71,15 @@ extern Scroll scrollCategories;
 extern float alphaCategories_Out;
 extern float alphaCategories_In;
 
+extern float brightness;
+extern float brightCircleX;
+
+extern Color themeColor1;
+extern Color themeColor2;
+extern Color themeColor3;
+extern theme_t currentTheme;
+extern bool displayDiag;
+extern bool mouseWasPressed;
 
 //Reset the coordinates for the displayed games after games scroll
 void UI_ResetDisplayCoords_Games();
@@ -47,12 +93,13 @@ float UI_CenterImg_X(float width, float position);
 float UI_CenterImg_Y(float height, float position);
 //Function to center text on a certain X position
 float UI_CenterText_X(char *text, int fontSize, int position);
+void UI_DrawOptionsBtn();
 //Function for drawing the boot up screen
 void UI_DrawBootScreen();
-//Function for drawing the main menu
-void UI_DrawMainMenu();
+
 void UI_DrawOptions();
+ConsoleState MainMenu_Tick(ConsoleState currentConsoleState) ;
 //Function for drawing the diagnostics screen
-void UI_DrawDiagnostics();
+ConsoleState UI_DrawDiagnostics(ConsoleState currentConsoleState);
 
 #endif

@@ -2,6 +2,9 @@
 roms/
 # Ignore build artifacts
 build/
+system/
+cores/
+saves/
 *.o
 game_launcher
 game_launcher.exe

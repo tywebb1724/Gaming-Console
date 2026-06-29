@@ -6,7 +6,7 @@
 
 //Max amount of games console can hold
 #define MAX_GAMES 60
-#define GAMES_LEN 49
+#define GAMES_LEN 56
 
 #define GAMES_ON_SCREEN 5
 
@@ -16,6 +16,8 @@ extern int start_RightIndex;
 extern int end_RightIndex;
 
 extern float maxLen;
+
+extern bool is_game_running;
 
 //Category identifiers
 typedef enum {
@@ -27,6 +29,13 @@ typedef enum {
     SEGA,
     PLAYSTATION
 } Categories;
+
+typedef enum {
+    BATTERY,
+    EXTERNAL,
+    NONE
+} save_t;
+
 //Game struct
 typedef struct {
     char *title;
@@ -40,6 +49,10 @@ typedef struct {
     Categories category;
     char *romPath;
     char *corePath;
+    bool libRetro;
+    save_t save;
+    char *serial;
+    float aspect;
 } Game;
 
 //Arrays to hold all games, the games displayed, and the new games displayed
@@ -52,7 +65,9 @@ extern Image LoadedImages[GAMES_LEN];
 extern bool isLoaded[GAMES_LEN];
 extern bool isTextureUploaded[GAMES_LEN];
 
+// -1 = none found
 
+void Games_DetectController(void);
 //Update the indexes for the new game category
 void Game_New_Indexes();
 //Update the indexes of the current game category
@@ -75,7 +90,8 @@ void Games_ScrollLeft();
 void Games_UnloadTextures();
 
 void Games_LaunchInit(Game game);
+void Games_StopGame(Game game);
 
-void Games_LaunchRefresh(Game game);
+bool Games_LaunchRefresh(Game game);
 
 #endif

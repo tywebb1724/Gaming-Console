@@ -6,12 +6,14 @@
 #include "categories.h"
 #include <stdio.h>
 #include <pthread.h>
-#include "emulators/chip8/chip8_app.h"
+#include <string.h>
+#include <stdlib.h>
 
 //Time the boot up screen should display
 #define BOOT_TIME 3.0f
 //State of the console
 static ConsoleState currentConsoleState;
+static ConsoleState changeConsoleState;
 //Timer to keep track of the time on the boot screen
 static float bootTimer;
 //Variable to keep track of the amount of games loaded
@@ -23,8 +25,100 @@ pthread_t loadThread;
 //Spider logo texture
 Texture2D spiderLogo;
 
-Texture2D background;
+Texture2D background_Blue;
+Texture2D background_Red;
+Texture2D background_Green;
+Texture2D background_Yellow;
+Texture2D currentBackground;
 
+bool exitApp;
+
+double d0 = 0;
+    double d1 = 0;
+    double d2 = 0;
+    double d3 = 0;
+    double d4 = 0;
+
+
+const Color NametoColor(char *c) {
+    if (strcmp(c, "BLUE") == 0) {
+        return BLUE;
+    }
+    else if (strcmp(c, "RED") == 0) {
+        return RED;
+    }
+    else if (strcmp(c, "BLACK") == 0) {
+        return BLACK;
+    }
+    else if (strcmp(c, "WHITE") == 0) {
+        return WHITE;
+    }
+    else if (strcmp(c, "GREEN") == 0) {
+        return GREEN;
+    }
+    else if (strcmp(c, "YELLOW") == 0) {
+        return YELLOW;
+    }
+    return BLUE;   // fallback if it matches nothing
+}
+
+const Texture2D NametoBackground(char *c) {
+    if (strcmp(c, "BLUE") == 0) {
+        return background_Blue;
+    }
+    else if (strcmp(c, "RED") == 0) {
+        return background_Red;
+    }
+    else if (strcmp(c, "GREEN") == 0) {
+        return background_Green;
+    }
+    else if (strcmp(c, "YELLOW") == 0) {
+        return background_Yellow;
+    }
+    return background_Blue;
+}
+
+bool State_ClearGameData(Game game) {
+    if (game.save == BATTERY) {
+        char save_path[512];
+        snprintf(save_path, sizeof(save_path), "%s.srm", game.romPath);
+
+        if (remove(save_path) == 0) {
+            printf("Cleared save data: %s\n", save_path);
+        } 
+        else {
+            // remove() fails if the file doesn't exist — that's not necessarily an error,
+            // it just means there was no save to clear
+            printf("No save data to clear (or delete failed): %s\n", save_path);
+        }
+    }
+    else if (game.save == EXTERNAL) {
+        char save_path[512];
+        if (strcmp(game.console, "Sony PlayStation") == 0) {
+            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/Desktop/Gaming-Console/assets/saves/%s.mcd", game.serial);
+        }
+        else if (strcmp(game.console, "Sega CD") == 0) {
+            char path[256];
+            snprintf(path, sizeof(path), "%s", game.romPath);
+            const char* filename = strrchr(path, '/');
+            filename = filename ? filename + 1 : path; 
+            char* dot = strrchr(filename, '.');   // find the LAST '.' in the copied name
+            if (dot) {
+                *dot = '\0';                 // terminate the string there, removing extension
+            }
+            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/Desktop/Gaming-Console/assets/saves/%s.brm", filename);
+        }
+
+        if (remove(save_path) == 0) {
+            printf("Cleared save data: %s\n", save_path);
+        } 
+        else {
+            // remove() fails if the file doesn't exist — that's not necessarily an error,
+            // it just means there was no save to clear
+            printf("No save data to clear (or delete failed): %s\n", save_path);
+        }
+    }
+}
 
 //Initialize the states
 void State_Init() {
@@ -42,18 +136,84 @@ void State_Init() {
     //Create thread for loading images
     pthread_create(&loadThread, NULL, Games_LoadImages, NULL);
     //Load the logo textures
-    spiderLogo = LoadTexture("./assets/covers/logo/SpiderLogo.png");
-    background = LoadTexture("./assets/covers/logo/image.png");
+    spiderLogo = LoadTexture("/home/tywebb1724/Desktop/Gaming-Console/assets/covers/logo/LogoBlack.png");
+    background_Blue = LoadTexture("./assets/covers/logo/BlueBackground.png");
+    background_Red= LoadTexture("./assets/covers/logo/RedBackground.png");
+    background_Green = LoadTexture("./assets/covers/logo/GreenBackground.png");
+    background_Yellow = LoadTexture("./assets/covers/logo/YellowBackground.png");
     //Start in a static position
     scrollGames = SCROLL_NO;
     scrollCategories = SCROLL_NO;
     //All textures not loaded
     allLoaded = false;
+    exitApp = false;
+    brightness = 0;
+    brightCircleX = BRIGHTNESS_LINE_X_END;
+    currentTheme = THEME_1;
+
+    char color1[10] = "", color2[10] = "", color3[10] = "", bright[32] = "", circX[32] = "", diag[5] = "";
+    FILE* f = fopen("/home/tywebb1724/Desktop/Gaming-Console/assets/system/ui.txt", "r");
+    if (f) {
+
+        if (fgets(color1, sizeof(color1), f)) {
+            color1[strcspn(color1, "\n")] = '\0';
+            themeColor1 = NametoColor(color1);
+            currentBackground = NametoBackground(color1);
+        }
+        else {
+            themeColor1 = BLUE;
+            currentBackground = background_Blue;
+        }
+        if (fgets(color2, sizeof(color2), f)) {
+            color2[strcspn(color2, "\n")] = '\0';
+            themeColor2 = NametoColor(color2);
+        }
+        else {
+            themeColor2 = BLACK;
+        }
+        if (fgets(color3, sizeof(color3), f)) {
+            color3[strcspn(color3, "\n")] = '\0';
+            themeColor3 = NametoColor(color3);
+        }
+        else {
+            themeColor3 = WHITE;
+        }
+        if (fgets(bright, sizeof(bright), f)) {
+            bright[strcspn(bright, "\n")] = '\0';
+            brightness = atof(bright);
+
+            if (fgets(circX, sizeof(circX), f)) { 
+                circX[strcspn(circX, "\n")] = '\0';
+                brightCircleX = atof(circX);
+            }
+            else {
+                brightness = MAX_BRIGHTNESS;
+                brightCircleX = BRIGHTNESS_CIRCLE_X;
+            }
+        }
+        else {
+            brightness = MAX_BRIGHTNESS;
+            brightCircleX = BRIGHTNESS_CIRCLE_X;
+        }
+        if (fgets(diag, sizeof(diag), f)) {
+            diag[strcspn(diag, "\n")] = '\0';
+            displayDiag = atoi(diag);
+        }
+        else {
+            displayDiag = false;
+        }
+        fclose(f);
+    }
+    char *mappings = LoadFileText("/home/tywebb1724/Desktop/Gaming-Console/assets/system/gamecontrollerdb.txt");  // raylib's file loader
+if (mappings != NULL) {
+    int count = SetGamepadMappings(mappings);
+    UnloadFileText(mappings);
+}
+    InitAudioDevice();
 }
 
 //Update states and variabels and draw the correct screen
 void State_UpdateAndDraw() {
-    
     //If all games aren't dont loading
     if (!allLoaded) {
         //Searc through all the games
@@ -85,57 +245,45 @@ void State_UpdateAndDraw() {
 
         //Drawing the main menu
         case STATE_MAIN_MENU:
-            //If not scrolling games to left, not scrolling categories, and the right input is pressed
-            if (scrollGames != SCROLL_LEFT && scrollCategories == SCROLL_NO && IsKeyDown(KEY_RIGHT)) {
-                //Scroll games to the right
-                scrollGames = SCROLL_RIGHT;
-            }
-            //If not scrolling games to right, not scrolling categories, and the right input is pressed
-            else if (scrollGames != SCROLL_RIGHT && scrollCategories == SCROLL_NO && IsKeyDown(KEY_LEFT)) {
-                //Scroll games to the left
-                scrollGames = SCROLL_LEFT;
-            }
-
-            //If not scrolling categories to left and right input is pressed
-            if (scrollCategories != SCROLL_LEFT && IsKeyDown(KEY_D)) {
-                //If not already scrolling cateogries
-                if (scrollCategories == SCROLL_NO) {
-                    //Scroll cateogries to right and don't scroll games
-                    scrollCategories = SCROLL_RIGHT;
-                    scrollGames = SCROLL_NO;
-                    //Get new games ready and reset the coordinates
-                    Game_New_Indexes();
-                    Games_NewRefresh();
-                    UI_ResetDisplayCoords_Scroll();
-                }
-            }
-            //If not scrolling categories to right and right input is pressed
-            else if (scrollCategories != SCROLL_RIGHT && IsKeyDown(KEY_A)) {
-                //If not already scrolling cateogries
-                if (scrollCategories == SCROLL_NO) {
-                    //Scroll cateogries to right and don't scroll games
-                    scrollCategories = SCROLL_LEFT;
-                    scrollGames = SCROLL_NO;
-                    //Get new games ready and reset the coordinates
-                    Game_New_Indexes();
-                    Games_NewRefresh();
-                    UI_ResetDisplayCoords_Scroll();
-                }
-            }
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            if (changeConsoleState == STATE_APP_LAUNCHER) {
                 currentConsoleState = STATE_APP_LAUNCHER;
-                Games_LaunchInit(gameLibrary[0]);
+                Games_LaunchInit(*gamesDisplayed[3]);
+                SetTargetFPS(0);
+            }
+            else if (changeConsoleState == STATE_LIST) {
+                currentConsoleState = STATE_LIST;
+            }
+            else if (changeConsoleState == STATE_VIEW_DIAG) {
+                currentConsoleState = STATE_VIEW_DIAG;
             }
             break;
 
         case STATE_APP_LAUNCHER:
+            if (gamesDisplayed[3]->libRetro == true) {
+                if (exitApp) {
+                    currentConsoleState = STATE_MAIN_MENU;
+                    exitApp = false;
+                    SetTargetFPS(60);
+                }
+            }    
+            else {
+                currentConsoleState = STATE_MAIN_MENU;
+                SetTargetFPS(60);
+            }
+            break;
+
+        case STATE_LIST:
             if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+                //mouseWasPressed = true;
                 currentConsoleState = STATE_MAIN_MENU;
             }
             break;
 
-        case STATE_DIAGNOSTICS:
-            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+        case STATE_VIEW_DIAG:
+            if (changeConsoleState == STATE_LIST) {
+                currentConsoleState = STATE_LIST;
+            }
+            else if (changeConsoleState == STATE_MAIN_MENU) {
                 currentConsoleState = STATE_MAIN_MENU;
             }
             break;
@@ -151,22 +299,31 @@ void State_UpdateAndDraw() {
             UI_DrawBootScreen();
             //Increment boot timer
             bootTimer += GetFrameTime();
+            DrawRectangle(0, 0, monitorWidth, monitorHeight, (Color){ 0, 0, 0, brightness });
             break;
 
         //Drawing the main menu
         case STATE_MAIN_MENU:
             //Draw UI for the menu
-            UI_DrawMainMenu();
+            changeConsoleState = MainMenu_Tick(currentConsoleState);
+            DrawRectangle(0, 0, monitorWidth, monitorHeight, (Color){ 0, 0, 0, brightness });
             break;
 
         case STATE_APP_LAUNCHER:
-            Games_LaunchRefresh(gameLibrary[0]);
+            if (gamesDisplayed[3]->libRetro == true) {
+                exitApp = Games_LaunchRefresh(*gamesDisplayed[3]);
+                DrawRectangle(0, 0, monitorWidth, monitorHeight, (Color){ 0, 0, 0, brightness });
+            }    
             break;
 
-        case STATE_DIAGNOSTICS:
-            
-            UI_DrawOptions();
+        case STATE_LIST:
+            DrawRectangle(0, 0, monitorWidth, monitorHeight, (Color){ 0, 0, 0, brightness });
             break;
-            
-    }
+
+        case STATE_VIEW_DIAG:
+            changeConsoleState = UI_DrawDiagnostics(currentConsoleState);
+            UI_DrawOptionsBtn();
+            DrawRectangle(0, 0, monitorWidth, monitorHeight, (Color){ 0, 0, 0, brightness });
+            break;
+   }
 }

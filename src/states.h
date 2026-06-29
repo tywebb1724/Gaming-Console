@@ -7,13 +7,6 @@ extern int monitorWidth;
 extern int monitorHeight;
 
 
-//States of the console
-typedef enum {
-    STATE_BOOT,
-    STATE_MAIN_MENU,
-    STATE_APP_LAUNCHER,
-    STATE_DIAGNOSTICS
-} ConsoleState;
 
 //Variable to keep track of the amount of games loaded
 extern int gamesLoaded;
@@ -22,7 +15,14 @@ extern pthread_t loadThread;
 //Spider logo texture
 extern Texture2D spiderLogo;
 
-extern Texture2D background;
+extern Texture2D background_Blue;
+extern Texture2D background_Red;
+extern Texture2D background_Green;
+extern Texture2D background_Yellow;
+extern Texture2D currentBackground;
+extern double d1;
+extern double d2;
+extern double d3;
 
 
 //Initialize the states

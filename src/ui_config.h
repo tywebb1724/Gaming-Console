@@ -1,7 +1,7 @@
 #pragma region UI_GENERAL
 //General setup definitions
 #define FPS 60
-#define BACKGROUND_CLR BLACK
+#define BACKGROUND_CLR themeColor2
 #define SCREEN_W monitorWidth
 #define SCREEN_H monitorHeight
 //Position macros
@@ -13,7 +13,7 @@
 
 #pragma region UI_BOOT
 //Width and length of logo
-#define LOGO_SIZE (SCREEN_H / 5 * 6)
+#define LOGO_SIZE (SCREEN_H / 8 * 9)
 #pragma endregion
 
 #pragma region UI_TOP_TXT
@@ -164,7 +164,7 @@
 #define BUMPER_R_TXT_X (BUMPER_R - bumperR_Size.x / 2)
 #define BUMPER_TXT_Y (TOP_Y - bumperR_Size.y / 2)
 
-#define SMALL_LOGO_SIZE (SCREEN_W / 12.0f)
+#define SMALL_LOGO_SIZE (SCREEN_W / 15.0f)
 
 
 #define START_SECTION_Y (TOP_Y + MeasureTextEx(fontBold, "L", CENTER_CATEG_SIZE, BOTTOM_TXT_SPACE).y / 2 + 2 * BOTTOM_TXT_SPACING_Y) 
@@ -224,43 +224,105 @@
 #define OPTIONS_TITLE_X (CENTER_X - optionsTitle_Size.x / 2)
 #define OPTIONS_TITLE_Y (OPTIONS_RECT_Y + OPTIONS_TXT_SPACING_Y - optionsTitle_Size.y / 2)
 
+#define OPTIONS_VIEW_LIST "View games/consoles list"
+#define OPTIONS_VIEW_LIST_SIZE (OPTIONS_TITLE_SIZE * (3.0f / 4))
+#define OPTIONS_VIEW_LIST_X (OPTIONS_RECT_X + OPTIONS_TXT_SPACING_Y)
+#define OPTIONS_VIEW_LIST_Y (OPTIONS_TITLE_Y + optionsTitle_Size.y + OPTIONS_TXT_SPACING_Y - optionsList_Size.y / 2)
+
+
 #define OPTIONS_BRIGHTNESS "Adjust brightness"
 #define OPTIONS_BRIGHTNESS_SIZE (OPTIONS_TITLE_SIZE * (3.0f / 4))
 #define OPTIONS_BRIGHTNESS_X (OPTIONS_RECT_X + OPTIONS_TXT_SPACING_Y)
-#define OPTIONS_BRIGHTNESS_Y (OPTIONS_TITLE_Y + optionsTitle_Size.y + OPTIONS_TXT_SPACING_Y * (4.0 / 3) - optionsBrightness_Size.y / 2)
+#define OPTIONS_BRIGHTNESS_Y (OPTIONS_VIEW_LIST_Y + optionsList_Size.y + OPTIONS_TXT_SPACING_Y * (7.0f / 6)  - optionsBrightness_Size.y / 2)
 
 #define OPTIONS_THEME "Select theme"
 #define OPTIONS_THEME_SIZE (OPTIONS_TITLE_SIZE * (3.0f / 4))
 #define OPTIONS_THEME_X (OPTIONS_RECT_X + OPTIONS_TXT_SPACING_Y)
-#define OPTIONS_THEME_Y (OPTIONS_BRIGHTNESS_Y + optionsBrightness_Size.y + OPTIONS_TXT_SPACING_Y * (4.0 / 3) - optionsTheme_Size.y / 2)
+#define OPTIONS_THEME_Y (OPTIONS_BRIGHTNESS_Y + optionsBrightness_Size.y + OPTIONS_TXT_SPACING_Y * (7.0f / 6) - optionsTheme_Size.y / 2)
 
 #define OPTIONS_DISPLAY_DIAGNOSTICS "Display diagnostics"
+#define OPTIONS_HIDE_DIAGNOSTICS "Hide diagnostics"
 #define OPTIONS_DISPLAY_DIAGNOSTICS_SIZE (OPTIONS_TITLE_SIZE * (3.0f / 4))
 #define OPTIONS_DISPLAY_DIAGNOSTICS_X (OPTIONS_RECT_X + OPTIONS_TXT_SPACING_Y)
-#define OPTIONS_DISPLAY_DIAGNOSTICS_Y (OPTIONS_THEME_Y + optionsTheme_Size.y + OPTIONS_TXT_SPACING_Y * (4.0 / 3) - optionsDisplayDiagnostics_Size.y / 2)
+#define OPTIONS_DISPLAY_DIAGNOSTICS_Y (OPTIONS_THEME_Y + optionsTheme_Size.y + OPTIONS_TXT_SPACING_Y * (7.0f / 6) - optionsDisplayDiagnostics_Size.y / 2)
 
 #define OPTIONS_DIAGNOSTICS "View diagnostics menu"
+#define OPTIONS_MAIN "View main menu"
 #define OPTIONS_DIAGNOSTICS_SIZE (OPTIONS_TITLE_SIZE * (3.0f / 4))
 #define OPTIONS_DIAGNOSTICS_X (OPTIONS_RECT_X + OPTIONS_TXT_SPACING_Y)
-#define OPTIONS_DIAGNOSTICS_Y (OPTIONS_DISPLAY_DIAGNOSTICS_Y + optionsDisplayDiagnostics_Size.y + OPTIONS_TXT_SPACING_Y * (4.0 / 3) - optionsDiagnostics_Size.y / 2)
+#define OPTIONS_DIAGNOSTICS_Y (OPTIONS_DISPLAY_DIAGNOSTICS_Y + optionsDisplayDiagnostics_Size.y + OPTIONS_TXT_SPACING_Y * (7.0f / 6) - optionsDiagnostics_Size.y / 2)
 
 #define OPTIONS_SELECT "[A/X] SELECT"
 #define OPTIONS_SELECT_SIZE (OPTIONS_TITLE_SIZE * (1.0f / 2))
 #define OPTIONS_SELECT_X (OPTIONS_RECT_X + OPTIONS_TXT_SPACING_Y)
 #define OPTIONS_SELECT_Y (OPTIONS_RECT_Y + OPTIONS_RECT_H - OPTIONS_TXT_SPACING_Y / 2 - optionsSelect_Size.y)
 
-#define OPTIONS_BACK "[B/?] BACK"
+#define OPTIONS_BACK "[B/O] BACK"
 #define OPTIONS_BACK_SIZE (OPTIONS_TITLE_SIZE * (1.0f / 2))
 #define OPTIONS_BACK_X (OPTIONS_RECT_X + OPTIONS_RECT_W - OPTIONS_TXT_SPACING_Y - optionsBack_Size.x)
 #define OPTIONS_BACK_Y (OPTIONS_RECT_Y + OPTIONS_RECT_H - OPTIONS_TXT_SPACING_Y / 2 - optionsBack_Size.y)
 
 #define OPTIONS_SELECT_RECT_X (OPTIONS_RECT_X + OPTIONS_TXT_SPACING_Y / 2)
 #define OPTIONS_SELECT_RECT_W (OPTIONS_RECT_W - OPTIONS_TXT_SPACING_Y)
-#define OPTIONS_SELECT_RECT_H (optionsBrightness_Size.y + OPTIONS_TXT_SPACING_Y / 4)
+#define OPTIONS_SELECT_RECT_H (optionsList_Size.y + OPTIONS_TXT_SPACING_Y / 4)
+#define OPTIONS_VIEW_LIST_RECT_Y (OPTIONS_VIEW_LIST_Y - OPTIONS_TXT_SPACING_Y / 16)
 #define OPTIONS_BRIGHTNESS_RECT_Y (OPTIONS_BRIGHTNESS_Y - OPTIONS_TXT_SPACING_Y / 16)
 #define OPTIONS_THEME_RECT_Y (OPTIONS_THEME_Y - OPTIONS_TXT_SPACING_Y / 16)
 #define OPTIONS_DISPLAY_DIAGNOSTICS_RECT_Y (OPTIONS_DISPLAY_DIAGNOSTICS_Y - OPTIONS_TXT_SPACING_Y / 16)
 #define OPTIONS_DIAGNOSTICS_RECT_Y (OPTIONS_DIAGNOSTICS_Y - OPTIONS_TXT_SPACING_Y / 16)
+
+#define BRIGHTNESS_TXT "Adjust brightness"
+#define BRIGHTNESS_TXT_SIZE (SCREEN_W / 40.0f)
+#define BRIGHTNESS_TXT_SPACE (SCREEN_W / 400.0f)
+#define BRIGHTNESS_TXT_X (CENTER_X - brightnessTxt_Size.x / 2)
+#define BRIGHTNESS_TXT_Y (OPTIONS_RECT_Y + OPTIONS_TXT_SPACING_Y - brightnessTxt_Size.y / 2)
+
+#define BRIGHTNESS_LINE_X_START (OPTIONS_RECT_X + OPTIONS_TXT_SPACING_Y * 2)
+#define BRIGHTNESS_LINE_X_END (OPTIONS_RECT_X + OPTIONS_RECT_W - OPTIONS_TXT_SPACING_Y * 2)
+#define BRIGHTNESS_LINE_Y (OPTIONS_RECT_Y + OPTIONS_RECT_H / 5 * 3)
+#define BRIGHTNESS_LINE_THICK (SCREEN_H / 650.0f)
+#define BRIGHTNESS_RADIUS (SCREEN_W / 90.0f)
+#define BRIGHTNESS_CIRCLE_X (BRIGHTNESS_LINE_X_END - (brightness * 100) * BRIGHTNESS_CIRCLE_INCREMENT)
+#define BRIGHTNESS_CIRCLE_INCREMENT ((BRIGHTNESS_LINE_X_END - BRIGHTNESS_LINE_X_START) / 100.0f)
+
+#define BRIGHT_LS_LEFT_X (CENTER_X - SCREEN_W / 55.0f)
+#define BRIGHT_LS_RIGHT_X (CENTER_X + SCREEN_W / 55.0f)
+#define BRIGHT_LS_Y (BRIGHTNESS_LINE_Y + BRIGHT_LS_RADIUS + OPTIONS_TXT_SPACING_Y)
+#define BRIGHT_LS_TRIANGLE_SIZE (SCREEN_W / 120.0f)
+#define BRIGHT_LS_RADIUS (SCREEN_W / 135.0f)
+
+#define BRIGHTNESS_PERCENT_SIZE (SCREEN_W / 60.0f)
+#define BRIGHTNESS_PERCENT_X (CENTER_X - brightnessPercent_Size.x / 2)
+#define BRIGHTNESS_PERCENT_Y (BRIGHTNESS_LINE_Y - 3 * OPTIONS_TXT_SPACING_Y / 2 - brightnessPercent_Size.y / 2)
+
+#define MAX_BRIGHTNESS 0
+#define MIN_BRIGHTNESS 200
+#define BRIGHTNESS_INCREMENT (MIN_BRIGHTNESS / 100)
+
+#define THEME_TXT "Select theme"
+#define THEME_TXT_SIZE (SCREEN_W / 40.0f)
+#define THEME_TXT_SPACE (SCREEN_W / 400.0f)
+#define THEME_TXT_X (CENTER_X - themeTxt_Size.x / 2)
+#define THEME_TXT_Y (OPTIONS_RECT_Y + OPTIONS_TXT_SPACING_Y - themeTxt_Size.y / 2)
+
+#define THEME_RECT_X (OPTIONS_RECT_X + 2 * OPTIONS_TXT_SPACING_Y)
+#define THEME_RECT_W (OPTIONS_RECT_W  - 4 * OPTIONS_TXT_SPACING_Y)
+#define THEME_RECT_H (themeTxt_Size.y * 6.0f / 5)
+#define THEME_RECT_1_Y (THEME_TXT_Y + themeTxt_Size.y + OPTIONS_TXT_SPACING_Y / 2.0f)
+#define THEME_X2 (THEME_RECT_X + THEME_RECT_W / 3)
+#define THEME_X3 (THEME_X2 + THEME_RECT_W / 3)
+#define THEME_RECT_2_Y (THEME_RECT_1_Y + THEME_RECT_H + OPTIONS_TXT_SPACING_Y / 4.0f * 3)
+#define THEME_RECT_3_Y (THEME_RECT_2_Y + THEME_RECT_H + OPTIONS_TXT_SPACING_Y / 4.0f * 3)
+#define THEME_RECT_4_Y (THEME_RECT_3_Y + THEME_RECT_H + OPTIONS_TXT_SPACING_Y / 4.0f * 3)
+
+#define DIAG_SIZE (SCREEN_W / 100.0f)
+#define DIAG_SPACING (SCREEN_W / 800.0f)
+#define DIAG_RES_X (DIAG_FPS_X)
+#define DIAG_RES_Y (SCREEN_H / 70.0f)
+
+
+#define DIAG_FPS_X (SCREEN_W / 70.0f)
+#define DIAG_FPS_Y (DIAG_RES_Y + SCREEN_H / 40.0f)
 #pragma endregion
 
 #pragma region GAME_LAUNCHER
@@ -268,19 +330,57 @@
 #define PATH_NES "assets/cores/fceumm_libretro.so"
 #define PATH_GENESIS "assets/cores/genesis_plus_gx_libretro.so"
 #define PATH_SNES "assets/cores/bsnes_libretro.so"
-#define PATH_GAMEBOY "assets/cores/gambatte_libretro.so"
-#define PATH_ARCADE "assets/cores/fbnea_libretro.so"
 #define PATH_PS1 "assets/cores/swanstation_libretro.so"
-#define PATH_N64 "assets/cores/mupen64plus_next_libretro.so"
-#define PATH_PSP "assets/cores/ppsspp_libretro.so"
-#define PATH_DS "assets/cores/melonds_libretro.so"
-#define PATH_DREAMCAST "assets/cores/flycast_libretro.so"
-#define PATH_SATURN "assets/cores/yabause_libretro.so"
-#define PATH_GBC "assets/cores/sameboy_libretro.so"
+#define PATH_GAMEBOY "assets/cores/gambatte_libretro.so"
+#define PATH_N64 "/home/tywebb1724/Desktop/Gaming-Console/assets/cores/parallel_n64_libretro.so"
 #define PATH_LYNX "assets/cores/handy_libretro.so"
 #define PATH_NGPC "assets/cores/mednafen_ngp_libretro.so"
-#define PATH_WSWAN "assets/cores/mednafen_wswan_libretro.so"
 #define PATH_TG16 "assets/cores/mednafen_pce_fast_libretro.so"
-#define PATH_ATARI2600 "assets/cores/stella_libretro.so"
 
-#pragma enregion
+#define PATH_ARCADE "assets/cores/fbneo_libretro.so"
+
+#define PATH_GAMECUBE "org.DolphinEmu.dolphin-emu"
+#define PATH_PSP "org.ppsspp.PPSSPP --fullscreen"
+#define PATH_DS "net.kuribo64.melonDS -f"
+#define PATH_DREAMCAST "org.flycast.Flycast"
+#define PATH_SATURN "io.github.strikerx3.ymir -f"
+
+
+#pragma endregion
+
+
+#pragma region CONTROLLER
+#define A_PRESS (IsGamepadButtonPressed(1, GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
+#define A_HOLD (IsGamepadButtonDown(1, GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
+#define B_PRESS (IsGamepadButtonPressed(1, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT))
+#define B_HOLD (IsGamepadButtonDown(1, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT))
+#define X_PRESS (IsGamepadButtonPressed(1, GAMEPAD_BUTTON_RIGHT_FACE_LEFT))
+#define X_HOLD (IsGamepadButtonDown(1, GAMEPAD_BUTTON_RIGHT_FACE_LEFT))
+#define Y_PRESS (IsGamepadButtonPressed(1, GAMEPAD_BUTTON_RIGHT_FACE_UP))
+#define Y_HOLD (IsGamepadButtonDown(1, GAMEPAD_BUTTON_RIGHT_FACE_UP))
+
+#define START_PRESS (IsGamepadButtonPressed(1, GAMEPAD_BUTTON_MIDDLE_RIGHT))
+#define START_HOLD (IsGamepadButtonDown(1, GAMEPAD_BUTTON_MIDDLE_RIGHT))
+#define BACK_PRESS (IsGamepadButtonPressed(1, GAMEPAD_BUTTON_MIDDLE_LEFT))
+#define BACK_HOLD (IsGamePadButtonDown(1, GAMEPAD_BUTTON_MIDDLE_LEFT))
+
+#define LS_THRESHOLD_POS (0.3f)
+#define LS_THRESHOLD_NEG (-0.3f)
+#define LS_UP_HELP (GetGamepadAxisMovement(1, GAMEPAD_AXIS_LEFT_Y) < LS_THRESHOLD_NEG)
+#define LS_RIGHT_HELP (GetGamepadAxisMovement(1, GAMEPAD_AXIS_LEFT_X) > LS_THRESHOLD_POS)
+#define LS_LEFT_HELP (GetGamepadAxisMovement(1, GAMEPAD_AXIS_LEFT_X) < LS_THRESHOLD_NEG)
+#define LS_DOWN_HELP (GetGamepadAxisMovement(1, GAMEPAD_AXIS_LEFT_Y) > LS_THRESHOLD_POS)
+#define LS_UP (LS_UP_HELP && !LS_RIGHT_HELP && !LS_LEFT_HELP)
+#define LS_RIGHT (LS_RIGHT_HELP && !LS_UP_HELP && !LS_DOWN_HELP)
+#define LS_LEFT (LS_LEFT_HELP && !LS_UP_HELP && !LS_DOWN_HELP)
+#define LS_DOWN (LS_DOWN_HELP && !LS_RIGHT_HELP && !LS_LEFT_HELP)
+
+#define RB_PRESS (IsGamepadButtonPressed(1, GAMEPAD_BUTTON_RIGHT_TRIGGER_1))
+#define RB_HOLD (IsGamepadButtonDown(1, GAMEPAD_BUTTON_RIGHT_TRIGGER_1))
+#define LB_PRESS (IsGamepadButtonPressed(1, GAMEPAD_BUTTON_LEFT_TRIGGER_1))
+#define LB_HOLD (IsGamepadButtonDown(1, GAMEPAD_BUTTON_LEFT_TRIGGER_1))
+
+#define HOME_PRESS (IsGamepadButtonPressed(1, GAMEPAD_BUTTON_MIDDLE))
+#define HOME_HOLD (IsGamepadButtonDown(1, GAMEPAD_BUTTON_MIDDLE))
+
+#pragma endregion
