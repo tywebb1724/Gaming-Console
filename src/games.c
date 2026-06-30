@@ -12,6 +12,7 @@
 #include "emulators/libretro/libretro.h"
 #include <string.h>
 #include <math.h>
+#include <unistd.h>
 
 //Arrays to hold all games, the games displayed, and the new games displayed
 Game gameLibrary[MAX_GAMES];
@@ -228,6 +229,7 @@ void Games_Handheld_Init() {
     gameLibrary[7].romPath = "assets/roms/psp/GTALibertyCity.iso";
     gameLibrary[7].libRetro = false;
     gameLibrary[7].save = EXTERNAL;
+    gameLibrary[7].serial = "ULUS10041S0";
 
     gameLibrary[8].title = "Mario Kart DS";
     gameLibrary[8].coverPath = "./assets/covers/handheld/mario_kart_ds.png";
@@ -288,6 +290,7 @@ void Games_Handheld_Init() {
     gameLibrary[13].romPath = "assets/roms/psp/MonsterHunterFreeUnite.iso";
     gameLibrary[13].libRetro = false;
     gameLibrary[13].save = EXTERNAL;
+    gameLibrary[13].serial = "ULUS10391";
 
     gameLibrary[14].title = "Super Mario Bros. Deluxe";
     gameLibrary[14].coverPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/covers/handheld/mario_bros_deluxe.png";
@@ -350,6 +353,8 @@ void Games_Nint3D_Init() {
     gameLibrary[19].corePath = PATH_GAMECUBE;
     gameLibrary[19].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/gamecube/MarioSunshine.ciso";
     gameLibrary[19].libRetro = false;
+    gameLibrary[19].save = EXTERNAL;
+    gameLibrary[19].serial = "01-GMSE-super_mario_sunshine";
 
     gameLibrary[20].title = "Starfox 64";
     gameLibrary[20].coverPath = "./assets/covers/nint_3d/starfox_64.png";
@@ -379,6 +384,8 @@ void Games_Nint3D_Init() {
     gameLibrary[22].corePath = PATH_GAMECUBE;
     gameLibrary[22].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/gamecube/WindWaker.ciso";
     gameLibrary[22].libRetro = false;
+    gameLibrary[22].save = EXTERNAL;
+    gameLibrary[22].serial = "01-GZLE-gczelda";
 
     gameLibrary[23].title = "Super Smash Bros: Melee";
     gameLibrary[23].coverPath = "./assets/covers/nint_3d/smash_bros_melee.png";
@@ -388,6 +395,8 @@ void Games_Nint3D_Init() {
     gameLibrary[23].corePath = PATH_GAMECUBE;
     gameLibrary[23].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/gamecube/SmashBrosMelee.ciso";
     gameLibrary[23].libRetro = false;
+    gameLibrary[23].save = EXTERNAL;
+    gameLibrary[23].serial = "01-GALE-SuperSmashBros0110290334";
 
     gameLibrary[24].title = "The Legend of Zelda: Twilight Princess";
     gameLibrary[24].coverPath = "./assets/covers/nint_3d/zelda_twilight.png";
@@ -397,6 +406,8 @@ void Games_Nint3D_Init() {
     gameLibrary[24].corePath = PATH_GAMECUBE;
     gameLibrary[24].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/gamecube/TwilightPrincess.ciso";
     gameLibrary[24].libRetro = false;
+    gameLibrary[24].save = EXTERNAL;
+    gameLibrary[24].serial = "01-GZ2E-gczelda2";
 }
 
 //Initialize retro Nintendo games
@@ -567,6 +578,7 @@ void Games_Sega_Init() {
     gameLibrary[42].romPath = "assets/roms/saturn/FightingVipers.chd";
     gameLibrary[42].libRetro = false;
     gameLibrary[42].save = EXTERNAL;
+    gameLibrary[42].serial = "B1334F8949ED55769416D83D7A19F1C5";
 
     gameLibrary[43].title = "Sonic the Hedgehog 3 & Knuckles";
     gameLibrary[43].coverPath = "./assets/covers/sega/sonic_3_and_knuckles.png";
@@ -596,7 +608,8 @@ void Games_Sega_Init() {
     gameLibrary[45].corePath = PATH_SATURN;
     gameLibrary[45].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/saturn/NBAJam.chd";
     gameLibrary[45].libRetro = false;
-    gameLibrary[46].save = EXTERNAL;
+    gameLibrary[45].save = EXTERNAL;
+    gameLibrary[45].serial = "DBA9351F1D9322E87F3D7F511992DEB3";
 
     gameLibrary[46].title = "Daytona USA";
     gameLibrary[46].coverPath = "./assets/covers/sega/daytona_usa.png";
@@ -607,6 +620,7 @@ void Games_Sega_Init() {
     gameLibrary[46].romPath = "assets/roms/saturn/DaytonaUSA.chd";
     gameLibrary[46].libRetro = false;
     gameLibrary[46].save = EXTERNAL;
+    gameLibrary[46].serial = "C8355C918C5A97B9E4AB9322DDAFDB1E";
 
     gameLibrary[47].title = "Gunstar Heroes";
     gameLibrary[47].coverPath = "./assets/covers/sega/gunstar_heroes.png";
@@ -944,10 +958,24 @@ void Games_LaunchInit(Game game) {
         saveTimeElapsed = 0;
     }
     else {
+
+        if (strcmp(game.corePath, PATH_DS) == 0) {
+            system("flatpak run io.github.antimicrox.antimicrox --profile /home/tywebb1724/Desktop/Gaming-Console/assets/antimicro/micro_ds.gamecontroller.amgp --hidden &");
+            usleep(4000000);
+        }
+        else if (strcmp(game.corePath, PATH_SATURN) == 0) {
+            system("flatpak run io.github.antimicrox.antimicrox --profile /home/tywebb1724/Desktop/Gaming-Console/assets/antimicro/micro_saturn.gamecontroller.amgp --hidden &");
+            usleep(4000000);
+        }
         char command[1024];
         snprintf(command, sizeof(command), "flatpak run %s \"%s\"", game.corePath, game.romPath);
-        printf("COMMAND: %s\n", command);
-        system(command); 
+        system(command);
+        if (strcmp(game.corePath, PATH_DS) == 0) {
+            system("flatpak kill io.github.antimicrox.antimicrox");
+        }
+        else if (strcmp(game.corePath, PATH_SATURN) == 0) {
+            system("flatpak kill io.github.antimicrox.antimicrox");
+        }
         SetWindowFocused();
     }
 }

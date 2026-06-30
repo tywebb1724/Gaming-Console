@@ -78,11 +78,10 @@ const Texture2D NametoBackground(char *c) {
     return background_Blue;
 }
 
-bool State_ClearGameData(Game game) {
+void State_ClearGameData(Game game) {
     if (game.save == BATTERY) {
         char save_path[512];
         snprintf(save_path, sizeof(save_path), "%s.srm", game.romPath);
-
         if (remove(save_path) == 0) {
             printf("Cleared save data: %s\n", save_path);
         } 
@@ -93,11 +92,20 @@ bool State_ClearGameData(Game game) {
         }
     }
     else if (game.save == EXTERNAL) {
-        char save_path[512];
         if (strcmp(game.console, "Sony PlayStation") == 0) {
+            char save_path[512];
             snprintf(save_path, sizeof(save_path), "/home/tywebb1724/Desktop/Gaming-Console/assets/saves/%s.mcd", game.serial);
+            if (remove(save_path) == 0) {
+                printf("Cleared save data: %s\n", save_path);
+            } 
+            else {
+                // remove() fails if the file doesn't exist — that's not necessarily an error,
+                // it just means there was no save to clear
+                printf("No save data to clear (or delete failed): %s\n", save_path);
+            }
         }
         else if (strcmp(game.console, "Sega CD") == 0) {
+            char save_path[512];
             char path[256];
             snprintf(path, sizeof(path), "%s", game.romPath);
             const char* filename = strrchr(path, '/');
@@ -107,16 +115,70 @@ bool State_ClearGameData(Game game) {
                 *dot = '\0';                 // terminate the string there, removing extension
             }
             snprintf(save_path, sizeof(save_path), "/home/tywebb1724/Desktop/Gaming-Console/assets/saves/%s.brm", filename);
+            if (remove(save_path) == 0) {
+                printf("Cleared save data: %s\n", save_path);
+            } 
+            else {
+                // remove() fails if the file doesn't exist — that's not necessarily an error,
+                // it just means there was no save to clear
+                printf("No save data to clear (or delete failed): %s\n", save_path);
+            }
         }
-
-        if (remove(save_path) == 0) {
-            printf("Cleared save data: %s\n", save_path);
-        } 
-        else {
-            // remove() fails if the file doesn't exist — that's not necessarily an error,
-            // it just means there was no save to clear
-            printf("No save data to clear (or delete failed): %s\n", save_path);
+        else if (strcmp(game.console, "Sony PlayStation Portable") == 0) {
+            char command[1024] = "";
+            snprintf(command, sizeof(command), "rm -rf \"/home/tywebb1724/.var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SAVEDATA/%s\"", game.serial);
+            int result = system(command);
+            if (result == 0) {
+                printf("Cleared PSP save data for %s\n", game.serial);
+            } 
+            else {
+                printf("Failed to clear PSP save (or none existed)\n");
+            }
         }
+        else if (strcmp(game.console, "Sega Saturn") == 0) {
+            char command[1024] = "";
+            snprintf(command, sizeof(command), "rm -rf \"/home/tywebb1724/.var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates/%s\"", game.serial);
+            int result = system(command);
+            if (result == 0) {
+                printf("Cleared Saturn save data for %s\n", game.serial);
+            } 
+            else {
+                printf("Failed to clear Saturn save (or none existed)\n");
+            }
+        }
+        else if (strcmp(game.console, "Nintendo DS") == 0) {
+            char save_path[512];
+            char path[256];
+            snprintf(path, sizeof(path), "%s", game.romPath);
+            const char* filename = strrchr(path, '/');
+            filename = filename ? filename + 1 : path; 
+            char* dot = strrchr(filename, '.');   // find the LAST '.' in the copied name
+            if (dot) {
+                *dot = '\0';                 // terminate the string there, removing extension
+            }
+            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/ds/%s.sav", filename);
+            if (remove(save_path) == 0) {
+                printf("Cleared save data: %s\n", save_path);
+            } 
+            else {
+                // remove() fails if the file doesn't exist — that's not necessarily an error,
+                // it just means there was no save to clear
+                printf("No save data to clear (or delete failed): %s\n", save_path);
+            }
+        }
+        else if (strcmp(game.console, "Nintendo GameCube") == 0) {
+            char save_path[512];
+            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/USA/Card A/%s.gci", game.serial);
+            if (remove(save_path) == 0) {
+                printf("Cleared save data: %s\n", save_path);
+            } 
+            else {
+                // remove() fails if the file doesn't exist — that's not necessarily an error,
+                // it just means there was no save to clear
+                printf("No save data to clear (or delete failed): %s\n", save_path);
+            }
+        }
+        
     }
 }
 
@@ -304,6 +366,9 @@ void State_UpdateAndDraw() {
 
         //Drawing the main menu
         case STATE_MAIN_MENU:
+            if (IsKeyPressed(KEY_M)) {
+                State_ClearGameData(*gamesDisplayed[3]);
+            }
             //Draw UI for the menu
             changeConsoleState = MainMenu_Tick(currentConsoleState);
             DrawRectangle(0, 0, monitorWidth, monitorHeight, (Color){ 0, 0, 0, brightness });
