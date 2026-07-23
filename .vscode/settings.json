@@ -1,0 +1,11 @@
+{
+    "files.exclude": {
+        "**/assets/roms": true,
+        "**/assets/cores": true,
+        "**/assets/system": true
+    },
+    "C_Cpp.files.exclude": {
+        "**/assets": true,
+        "**/*.sh": true
+    }
+}

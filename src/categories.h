@@ -1,27 +1,14 @@
 #ifndef CATEGORIES_H
 #define CATEGORIES_H
 
-#include <stdio.h>
-#include <pthread.h>
-#include "raylib.h"
-#include "games.h"
-#include "states.h"
-
 //Macros for the categories
 #define CATEGORIES_ON_SCREEN 3
 #define CATEGORIES_LEN 7
 
-//Struct for the categories
-typedef struct {
-    char *name;
-    Categories id;
-} Category;
-
-//Arrays to hold all categories and those displayed on the screen
-extern Category categories[CATEGORIES_LEN];
-extern Category categoriesDisplayed[CATEGORIES_ON_SCREEN + 2];
-
-
+//Get a single category from the main array
+const char* Categories_Get(int i);
+//Get a single category from the displayed array
+const char* Categories_GetDisplayed(int i);
 //Init function for the categories
 void Categories_Init();
 //Shift the order of the categories to the right

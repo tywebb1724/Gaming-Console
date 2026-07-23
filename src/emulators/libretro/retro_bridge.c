@@ -135,6 +135,8 @@ void StartRetroAudio(void) {
 }
 
 void StopRetroAudio(void) {
+    size_t sram_size = core_get_memory_size(RETRO_MEMORY_SAVE_RAM);
+printf("DEBUG: CORE SRAM SIZE: %zu\n", sram_size);
     if (audioStreamReady) {
         StopAudioStream(retroStream);
         UnloadAudioStream(retroStream);
@@ -323,24 +325,26 @@ static int16_t input_state_cb(unsigned port, unsigned device, unsigned index, un
 
     bool padOK = (g_controllerIndex >= 0 && IsGamepadAvailable(g_controllerIndex));
 
+    // ---- DIGITAL BUTTONS (JOYPAD) ----
     if (device == RETRO_DEVICE_JOYPAD) {
-    int key = your_key_map[id];
-    int pad = your_pad_map[id];
-    if (key != 0 && IsKeyDown(key)) return 1;
-    if (pad != 0 && padOK && IsGamepadButtonDown(g_controllerIndex, pad)) return 1;
+        int key = your_key_map[id];
+        int pad = your_pad_map[id];
+        if (key != 0 && IsKeyDown(key)) return 1;
+        if (pad != 0 && padOK && IsGamepadButtonDown(g_controllerIndex, pad)) return 1;
 
-    // ALSO let the left stick act as the D-pad for directional buttons:
-    if (padOK) {
-        float lx = GetGamepadAxisMovement(g_controllerIndex, GAMEPAD_AXIS_LEFT_X);
-        float ly = GetGamepadAxisMovement(g_controllerIndex, GAMEPAD_AXIS_LEFT_Y);
-        if (id == RETRO_DEVICE_ID_JOYPAD_LEFT  && lx < -0.5f) return 1;
-        if (id == RETRO_DEVICE_ID_JOYPAD_RIGHT && lx >  0.5f) return 1;
-        if (id == RETRO_DEVICE_ID_JOYPAD_UP    && ly < -0.5f) return 1;
-        if (id == RETRO_DEVICE_ID_JOYPAD_DOWN  && ly >  0.5f) return 1;
+        // Left stick also acts as the D-pad for directional buttons:
+        if (padOK) {
+            float lx = GetGamepadAxisMovement(g_controllerIndex, GAMEPAD_AXIS_LEFT_X);
+            float ly = GetGamepadAxisMovement(g_controllerIndex, GAMEPAD_AXIS_LEFT_Y);
+            if (id == RETRO_DEVICE_ID_JOYPAD_LEFT  && lx < -0.5f) return 1;
+            if (id == RETRO_DEVICE_ID_JOYPAD_RIGHT && lx >  0.5f) return 1;
+            if (id == RETRO_DEVICE_ID_JOYPAD_UP    && ly < -0.5f) return 1;
+            if (id == RETRO_DEVICE_ID_JOYPAD_DOWN  && ly >  0.5f) return 1;
+        }
+        return 0;
     }
-    return 0;
-}
 
+    // ---- LEFT ANALOG STICK (movement for N64/PS1) ----
     if (device == RETRO_DEVICE_ANALOG && index == RETRO_DEVICE_INDEX_ANALOG_LEFT) {
         if (id == RETRO_DEVICE_ID_ANALOG_X) {
             if (IsKeyDown(KEY_LEFT))  return -32767;
@@ -356,6 +360,29 @@ static int16_t input_state_cb(unsigned port, unsigned device, unsigned index, un
             if (IsKeyDown(KEY_DOWN)) return  32767;
             if (padOK) {
                 float v = GetGamepadAxisMovement(g_controllerIndex, GAMEPAD_AXIS_LEFT_Y);
+                if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
+            }
+            return 0;
+        }
+        return 0;
+    }
+
+    // ---- RIGHT ANALOG STICK (N64 C-buttons / PS1 right stick) ----
+    if (device == RETRO_DEVICE_ANALOG && index == RETRO_DEVICE_INDEX_ANALOG_RIGHT) {
+        if (id == RETRO_DEVICE_ID_ANALOG_X) {
+            if (IsKeyDown(KEY_J)) return -32767;   // C-left
+            if (IsKeyDown(KEY_L)) return  32767;   // C-right
+            if (padOK) {
+                float v = GetGamepadAxisMovement(g_controllerIndex, GAMEPAD_AXIS_RIGHT_X);
+                if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
+            }
+            return 0;
+        }
+        if (id == RETRO_DEVICE_ID_ANALOG_Y) {
+            if (IsKeyDown(KEY_I)) return -32767;   // C-up
+            if (IsKeyDown(KEY_K)) return  32767;   // C-down
+            if (padOK) {
+                float v = GetGamepadAxisMovement(g_controllerIndex, GAMEPAD_AXIS_RIGHT_Y);
                 if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
             }
             return 0;
@@ -579,6 +606,7 @@ bool LoadRetroCore(const char* path) {
         return false;
     }
 
+    
     // 2. Pass your callbacks to the core
     core_set_environment(retro_environment_cb);
     core_set_video_refresh(video_refresh_cb);
@@ -586,12 +614,6 @@ bool LoadRetroCore(const char* path) {
     core_set_audio_sample(audio_sample_cb);
     core_set_input_poll(input_poll_cb);
     core_set_input_state(input_state_cb);
-
-    struct retro_variable var_cpu = { "flycast_cpu_mode", "interpreter" };
-    retro_environment_cb(RETRO_ENVIRONMENT_SET_VARIABLE, &var_cpu);
-
-    struct retro_variable var_hle = { "flycast_hle", "disabled" };
-    retro_environment_cb(RETRO_ENVIRONMENT_SET_VARIABLE, &var_hle);
 
     // 3. Now, the core is fully configured. Initialize it.
     core_init();
@@ -663,7 +685,6 @@ bool LoadGame(const char* path) {
 
     printf("DEBUG: Loading %s (need_fullpath=%d, size=%zu)\n",
            current_game_info.path, sys_info.need_fullpath, current_game_info.size);
-
     return core_load_game(&current_game_info);
 }
 

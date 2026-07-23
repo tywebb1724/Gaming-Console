@@ -2,34 +2,34 @@
 #define GAMES_H
 
 #include "raylib.h"
-#include "ui.h"
 
 //Max amount of games console can hold
 #define MAX_GAMES 60
+//Size of the current games library
 #define GAMES_LEN 56
-
+//Number of games displayed on the screen at once
 #define GAMES_ON_SCREEN 5
+//Paths for each console
+#define PATH_GBA "assets/cores/mgba_libretro.so"
+#define PATH_NES "assets/cores/fceumm_libretro.so"
+#define PATH_GENESIS "assets/cores/genesis_plus_gx_libretro.so"
+#define PATH_SNES "assets/cores/bsnes_libretro.so"
+#define PATH_PS1 "assets/cores/swanstation_libretro.so"
+#define PATH_GAMEBOY "assets/cores/gambatte_libretro.so"
+#define PATH_N64 "/home/tywebb1724/Desktop/Gaming-Console/assets/cores/parallel_n64_libretro.so"
+#define PATH_LYNX "assets/cores/handy_libretro.so"
+#define PATH_NGPC "assets/cores/mednafen_ngp_libretro.so"
+#define PATH_TG16 "assets/cores/mednafen_pce_fast_libretro.so"
+#define PATH_ARCADE "assets/cores/fbneo_libretro.so"
+#define PATH_GAMECUBE "org.DolphinEmu.dolphin-emu"
+#define PATH_PSP "org.ppsspp.PPSSPP --fullscreen"
+#define PATH_DS "net.kuribo64.melonDS -f"
+#define PATH_DREAMCAST "org.flycast.Flycast"
+#define PATH_SATURN "io.github.strikerx3.ymir -f"
+#define PATH_PRBOOM "/home/tywebb1724/Desktop/Gaming-Console/assets/cores/prboom_libretro.so"
 
-extern int start_LeftIndex;
-extern int end_LeftIndex;
-extern int start_RightIndex;
-extern int end_RightIndex;
 
-extern float maxLen;
-
-extern bool is_game_running;
-
-//Category identifiers
-typedef enum {
-    ARCADE,
-    HANDHELD,
-    NINTENDO_3D,
-    NINTENDO_RETRO,
-    PC_INDIE,
-    SEGA,
-    PLAYSTATION
-} Categories;
-
+//Types of game saves
 typedef enum {
     BATTERY,
     EXTERNAL,
@@ -46,52 +46,44 @@ typedef struct {
     float y;
     float w;
     float h;
-    Categories category;
+    char *category;
     char *romPath;
     char *corePath;
     bool libRetro;
     save_t save;
     char *serial;
-    float aspect;
-} Game;
+} game_t;
 
-//Arrays to hold all games, the games displayed, and the new games displayed
-extern Game gameLibrary[MAX_GAMES];
-extern Game* gamesDisplayed[GAMES_ON_SCREEN + 2];
-extern Game* newGamesDisplayed[GAMES_ON_SCREEN];
-//Array to hold loaded images during boot up
-extern Image LoadedImages[GAMES_LEN];
-//Variables to keep track of which images and textures are loaded
-extern bool isLoaded[GAMES_LEN];
-extern bool isTextureUploaded[GAMES_LEN];
+//State of game after it has been launched
+typedef enum {
+    GAME_RESTART,
+    GAME_GO,
+    GAME_PAUSE,
+    GAME_EXIT
+} GameState;
 
-// -1 = none found
-
-void Games_DetectController(void);
-//Update the indexes for the new game category
-void Game_New_Indexes();
-//Update the indexes of the current game category
-void Games_UpdateIndexes(Categories categ);
-//Update the array of the new games displayed
-void Games_NewRefresh();
-//Update the indexes of the current game category
-void Games_UpdateIndexes(Categories categ);
-//Update the games displayed for the new category
-void Games_Refresh();
+//Get a game from the main array
+game_t* Games_Get(int i);
+//Get a game from the displayed array
+game_t* Games_GetDisplayed(int i);
+//Get a game from the new array
+game_t* Games_GetNew(int i);
+//Clear game data
+void Game_ClearData(game_t game);
 //Initialize game library
 void Games_Init();
-//Load game cover textures
-void *Games_LoadImages(void *args);
 //Shift the order of the games to the right
 void Games_ScrollRight();
 //Shift the order of the games to the left
 void Games_ScrollLeft();
+//Get one of the loaded images
+Image* Games_GetLoadedImage(int i);
+//Get whether an image is loaded
+bool Games_GetIsLoaded(int i);
+//Load game cover textures
+void* Games_LoadImages(void *args);
 //Unload game cover textures
 void Games_UnloadTextures();
 
-void Games_LaunchInit(Game game);
-void Games_StopGame(Game game);
-
-bool Games_LaunchRefresh(Game game);
 
 #endif

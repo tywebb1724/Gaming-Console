@@ -1,6 +1,9 @@
 #ifndef UI_H
 #define UI_H
+#include "ui_config.h"
 #include "games.h"
+#include "config.h"
+
 
 
 typedef enum {
@@ -9,7 +12,16 @@ typedef enum {
     THEME,
     DISPLAY_DIAGNOSTICS,
     VIEW_DIAGNOSTICS
-} optionsState;
+} OptionsState;
+
+typedef enum {
+    RESTART,
+    PAUSED_BRIGHTNESS,
+    PAUSED_CONTROLS,
+    PAUSED_DIAGNOSTICS,
+    EXIT
+} PausedState;
+
 
 typedef enum {
     SCREEN_MAIN,
@@ -18,21 +30,21 @@ typedef enum {
     SCREEN_THEME,
     SCREEN_DISPLAY_DIAG,
     SCREEN_VIEW_DIAG
-} screenState;
+} ScreenState;
 
 typedef enum {
     NORMAL,
     SCROLL_GAMES,
     SCROLL_CATEGORIES,
     OPTIONS
-} mainMenuState;
+} MainMenuState;
 
 //Scrolling states
 typedef enum {
     SCROLL_NO,
     SCROLL_LEFT,
     SCROLL_RIGHT
-} Scroll;
+} ScrollState;
 
 typedef enum {
     THEME_1,
@@ -45,12 +57,12 @@ typedef enum {
     NEITHER,
     LEFT_PRESS,
     RIGHT_PRESS
-} brightPressed;
+} BrightPressed;
 
 typedef enum {
     DIAG_NORMAL,
     DIAG_OPTIONS
-} diagState;
+} DiagState;
 
 //States of the console
 typedef enum {
@@ -61,26 +73,8 @@ typedef enum {
     STATE_VIEW_DIAG
 } ConsoleState;
 
-//Types of font
-extern Font fontRegular;
-extern Font fontBold;
-//Variables to show whether user is scrolling
-extern Scroll scrollGames;
-extern Scroll scrollCategories;
-//Different alphas
-extern float alphaCategories_Out;
-extern float alphaCategories_In;
 
-extern float brightness;
-extern float brightCircleX;
-
-extern Color themeColor1;
-extern Color themeColor2;
-extern Color themeColor3;
-extern theme_t currentTheme;
-extern bool displayDiag;
-extern bool mouseWasPressed;
-
+GameState UI_DrawPaused_Menu(bool start);
 //Reset the coordinates for the displayed games after games scroll
 void UI_ResetDisplayCoords_Games();
 //Reset the coordinates for the displayed games after category scroll
@@ -96,10 +90,15 @@ float UI_CenterText_X(char *text, int fontSize, int position);
 void UI_DrawOptionsBtn();
 //Function for drawing the boot up screen
 void UI_DrawBootScreen();
-
+void MainMenu_DrawDiagnostics();
+//void Paused_DrawController(Game game);
 void UI_DrawOptions();
 ConsoleState MainMenu_Tick(ConsoleState currentConsoleState) ;
 //Function for drawing the diagnostics screen
 ConsoleState UI_DrawDiagnostics(ConsoleState currentConsoleState);
+
+void UI_Init();
+
+
 
 #endif

@@ -2,14 +2,25 @@
 
 
 //Arrays to hold all categories and those displayed on the screen
-Category categories[CATEGORIES_LEN];
-Category categoriesDisplayed[CATEGORIES_ON_SCREEN + 2];
+static char *categories[CATEGORIES_LEN];
+static char *categoriesDisplayed[CATEGORIES_ON_SCREEN + 2];
 
 //Index for the current category
-int categoriesIndex;
+static int categoriesIndex;
 
-//Update the categories 
-void Categories_Refresh() {
+
+//Get a single category from the main array
+const char* Categories_Get(int i) {
+    return categories[i];
+}
+
+//Get a single category from the displayed array
+const char* Categories_GetDisplayed(int i) {
+    return categoriesDisplayed[i];
+}
+
+//Update the displayed categories 
+static void Categories_Refresh() {
     int offset;
     int targetIndex;
     //Cycle through the categories
@@ -20,36 +31,25 @@ void Categories_Refresh() {
         if (targetIndex < 0) {
             targetIndex += CATEGORIES_LEN;
         }
+        //Update the displayed array given the index
         categoriesDisplayed[i] = categories[targetIndex];
     }
 }
 
 //Init function for the consoles
 void Categories_Init() {
-
-    categories[0].name = "Retro PC & Indie";
-    categories[0].id = PC_INDIE;
-
-    categories[1].name = "Retro Nintendo";
-    categories[1].id = NINTENDO_RETRO;
-
-    categories[2].name = "Nintendo 3D";
-    categories[2].id = NINTENDO_3D;
-
-    categories[3].name = "Handheld Classics";
-    categories[3].id = HANDHELD;
-
-    categories[4].name = "Arcade";
-    categories[4].id = ARCADE;
-
-    categories[5].name = "Playstation";
-    categories[5].id = PLAYSTATION;
-
-    categories[6].name = "Sega";
-    categories[6].id = SEGA;
+    //Set all the categories
+    categories[0] = "Arcade";
+    categories[1] = "Handheld Classics";
+    categories[2] = "Nintendo 3D";
+    categories[3] = "Retro Nintendo";
+    categories[4] = "TurboGrafx/PC/Other";
+    categories[5] = "Sega";
+    categories[6] = "PlayStation";
 
     //Start with the Nintendo 3D category
     categoriesIndex = 2;
+    //Update the initial displayed categories
     Categories_Refresh();
 }
 
@@ -57,14 +57,10 @@ void Categories_Init() {
 void Categories_ScrollRight() {
     categoriesIndex = (categoriesIndex + 1) % CATEGORIES_LEN;
     Categories_Refresh();
-    Games_UpdateIndexes(categoriesDisplayed[2].id);
-    Games_Refresh();
 }
 
 //Shift the order of the consoles to the left
 void Categories_ScrollLeft() {
     categoriesIndex = (categoriesIndex - 1 + CATEGORIES_LEN) % CATEGORIES_LEN;
     Categories_Refresh();
-    Games_UpdateIndexes(categoriesDisplayed[2].id);
-    Games_Refresh();
 }
