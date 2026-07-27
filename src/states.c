@@ -55,8 +55,6 @@ void State_LoadGameImages() {
 
 //Initialize the states
 void State_Init() {
-    monitorWidth = GetMonitorWidth(0);
-    monitorHeight = GetMonitorHeight(0);
     //Console starts in boot state
     currentConsoleState = STATE_BOOT;
     //Boot timer starts at 0
@@ -66,13 +64,11 @@ void State_Init() {
     //Create thread for loading images
     pthread_create(&loadThread, NULL, Games_LoadImages, NULL);
     //Start in a static position
-    scrollGames = SCROLL_NO;
-    scrollCategories = SCROLL_NO;
+    Var_SetScrollGames(SCROLL_NO);
+    Var_SetScrollCateg(SCROLL_NO);
     //All textures not loaded
     allLoaded = false;
     exitApp = false;
-    brightness = 0;
-    brightCircleX = BRIGHTNESS_LINE_X_END;
 
     is_game_running = false;
 
@@ -103,7 +99,7 @@ void State_UpdateAndDraw() {
         case STATE_MAIN_MENU:
             if (changeConsoleState == STATE_APP_LAUNCHER) {
                 currentConsoleState = STATE_APP_LAUNCHER;
-                Games_LaunchInit(*Games_GetDisplayed(3));
+                Play_Init(*Games_GetDisplayed(3));
                 SetTargetFPS(0);
             }
             else if (changeConsoleState == STATE_LIST) {
@@ -120,12 +116,12 @@ void State_UpdateAndDraw() {
                 if (!is_game_running) {
                     currentConsoleState = STATE_MAIN_MENU;
                     is_game_running = false;
-                    SetTargetFPS(60);
+                    SetTargetFPS(FPS);
                 }
             }    
             else {
                 currentConsoleState = STATE_MAIN_MENU;
-                SetTargetFPS(60);
+                SetTargetFPS(FPS);
             }
             break;
 

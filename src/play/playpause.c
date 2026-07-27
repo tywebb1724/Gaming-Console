@@ -5,15 +5,10 @@
 #include "raylib.h"
 #include "config.h"
 #include "games.h"
+#include "var.h"
 
 //Current state of the pause screen
 static PlayPauseState currentPlayPauseState;
-//Monitor width and height
-static int monitorWidth;
-static int monitorHeight;
-//Fonts
-static Font fontRegular;
-static Font fontBold;
 //Controller image
 static Texture2D controlsImg;
 //Variable to keep track of if controls are being displayed
@@ -68,29 +63,29 @@ static void PlayPause_DrawControls(game_t game) {
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "MODE");
-        Vector2 back_Size = MeasureTextEx(fontBold, back_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
-        DrawTextEx(fontBold, back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rLeft_Txt, sizeof(rLeft_Txt), "C");
-        Vector2 rLeft_Size = MeasureTextEx(fontBold, rLeft_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rLeft = {RIGHT_FACE_LEFT_TXT_X, RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(fontBold, rLeft_Txt, rLeft, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(lb_Txt,    sizeof(lb_Txt),    "X");
-        Vector2 lb_Size = MeasureTextEx(fontBold, lb_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 lb = {LB_TXT_X, LB_TXT_Y};
-        DrawTextEx(fontBold, lb_Txt, lb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rUp_Txt,   sizeof(rUp_Txt),   "Y");
-        Vector2 rUp_Size = MeasureTextEx(fontBold, rUp_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rUp = {RIGHT_FACE_UP_TXT_X, RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(fontBold, rUp_Txt, rUp, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rb_Txt,    sizeof(rb_Txt),    "Z");
-        Vector2 rb_Size = MeasureTextEx(fontBold, rb_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rb = {RB_TXT_X, RB_TXT_Y};
-        DrawTextEx(fontBold, rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
     else if (strcmp(game.console, "Sega Game Gear") == 0 || strcmp(game.console, "Sega Master System") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
@@ -107,9 +102,9 @@ static void PlayPause_DrawControls(game_t game) {
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(fontBold, back_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
-        DrawTextEx(fontBold, back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
     else if (strcmp(game.console, "Neo Geo Pocket Color") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "OPTION");
@@ -126,9 +121,9 @@ static void PlayPause_DrawControls(game_t game) {
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(fontBold, back_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
-        DrawTextEx(fontBold, back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
     else if (strcmp(game.console, "Game Boy Color") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
@@ -138,9 +133,9 @@ static void PlayPause_DrawControls(game_t game) {
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(fontBold, back_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
-        DrawTextEx(fontBold, back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
     else if (strcmp(game.console, "Atari Lynx") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
@@ -150,9 +145,9 @@ static void PlayPause_DrawControls(game_t game) {
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(fontBold, back_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
-        DrawTextEx(fontBold, back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
     else if (strcmp(game.console, "Super Nintendo Entertainment System") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
@@ -162,29 +157,29 @@ static void PlayPause_DrawControls(game_t game) {
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(fontBold, back_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
-        DrawTextEx(fontBold, back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rLeft_Txt, sizeof(rLeft_Txt), "%s", "Y");
-        Vector2 rLeft_Size = MeasureTextEx(fontBold, rLeft_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rLeft = {RIGHT_FACE_LEFT_TXT_X, RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(fontBold, rLeft_Txt, rLeft, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rUp_Txt,   sizeof(rUp_Txt),   "%s", "X");
-        Vector2 rUp_Size = MeasureTextEx(fontBold, rUp_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rUp = {RIGHT_FACE_UP_TXT_X, RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(fontBold, rUp_Txt, rUp, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "L");
-        Vector2 lb_Size = MeasureTextEx(fontBold, lb_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 lb = {LB_TXT_X, LB_TXT_Y};
-        DrawTextEx(fontBold, lb_Txt, lb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "R");
-        Vector2 rb_Size = MeasureTextEx(fontBold, rb_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rb = {RB_TXT_X, RB_TXT_Y};
-        DrawTextEx(fontBold, rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
     else if (strcmp(game.console, "Game Boy Advance") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
@@ -194,19 +189,19 @@ static void PlayPause_DrawControls(game_t game) {
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
         
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(fontBold, back_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
-        DrawTextEx(fontBold, back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "L");
-        Vector2 lb_Size = MeasureTextEx(fontBold, lb_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 lb = {LB_TXT_X, LB_TXT_Y};
-        DrawTextEx(fontBold, lb_Txt, lb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "R");
-        Vector2 rb_Size = MeasureTextEx(fontBold, rb_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rb = {RB_TXT_X, RB_TXT_Y};
-        DrawTextEx(fontBold, rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
     else if (strcmp(game.console, "Sony PlayStation") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
@@ -216,39 +211,39 @@ static void PlayPause_DrawControls(game_t game) {
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(fontBold, back_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
-        DrawTextEx(fontBold, back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rLeft_Txt, sizeof(rLeft_Txt), "%s", "[]");
-        Vector2 rLeft_Size = MeasureTextEx(fontBold, rLeft_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rLeft = {RIGHT_FACE_LEFT_TXT_X, RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(fontBold, rLeft_Txt, rLeft, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rUp_Txt,   sizeof(rUp_Txt),   "%s", "/\\");
-        Vector2 rUp_Size = MeasureTextEx(fontBold, rUp_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rUp = {RIGHT_FACE_UP_TXT_X, RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(fontBold, rUp_Txt, rUp, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "L1");
-        Vector2 lb_Size = MeasureTextEx(fontBold, lb_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 lb = {LB_TXT_X, LB_TXT_Y};
-        DrawTextEx(fontBold, lb_Txt, lb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "R1");
-        Vector2 rb_Size = MeasureTextEx(fontBold, rb_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rb = {RB_TXT_X, RB_TXT_Y};
-        DrawTextEx(fontBold, rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(lt_Txt,    sizeof(lt_Txt),    "%s", "L2");
-        Vector2 lt_Size = MeasureTextEx(fontBold, lt_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 lt_Size = MeasureTextEx(Var_GetFontBold(), lt_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 lt = {LT_TXT_X, LT_TXT_Y};
-        DrawTextEx(fontBold, lt_Txt, lt, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), lt_Txt, lt, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rt_Txt,    sizeof(rt_Txt),    "%s", "R2");
-        Vector2 rt_Size = MeasureTextEx(fontBold, rt_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rt_Size = MeasureTextEx(Var_GetFontBold(), rt_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rt = {RT_TXT_X, RT_TXT_Y};
-        DrawTextEx(fontBold, rt_Txt, rt, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rt_Txt, rt, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
     else if (strcmp(game.console, "Nintendo 64") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
@@ -258,24 +253,24 @@ static void PlayPause_DrawControls(game_t game) {
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "L");
-        Vector2 lb_Size = MeasureTextEx(fontBold, lb_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 lb = {LB_TXT_X, LB_TXT_Y};
-        DrawTextEx(fontBold, lb_Txt, lb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "R");
-        Vector2 rb_Size = MeasureTextEx(fontBold, rb_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rb = {RB_TXT_X, RB_TXT_Y};
-        DrawTextEx(fontBold, rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(lt_Txt,    sizeof(lt_Txt),    "%s", "Z");
-        Vector2 lt_Size = MeasureTextEx(fontBold, lt_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 lt_Size = MeasureTextEx(Var_GetFontBold(), lt_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 lt = {LT_TXT_X, LT_TXT_Y};
-        DrawTextEx(fontBold, lt_Txt, lt, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), lt_Txt, lt, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rs_Txt,    sizeof(rs_Txt),    "%s", "C");
-        Vector2 rs_Size = MeasureTextEx(fontBold, rs_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rs_Size = MeasureTextEx(Var_GetFontBold(), rs_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rs = {RS_TXT_X, RS_TXT_Y};
-        DrawTextEx(fontBold, rs_Txt, rs, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rs_Txt, rs, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
     else if (strcmp(game.console, "Arcade") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
@@ -285,29 +280,29 @@ static void PlayPause_DrawControls(game_t game) {
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "JOY");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "COIN");
-        Vector2 back_Size = MeasureTextEx(fontBold, back_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
-        DrawTextEx(fontBold, back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rLeft_Txt, sizeof(rLeft_Txt), "%s", "3");
-        Vector2 rLeft_Size = MeasureTextEx(fontBold, rLeft_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rLeft = {RIGHT_FACE_LEFT_TXT_X, RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(fontBold, rLeft_Txt, rLeft, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rUp_Txt,   sizeof(rUp_Txt),   "%s", "4");
-        Vector2 rUp_Size = MeasureTextEx(fontBold, rUp_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rUp = {RIGHT_FACE_UP_TXT_X, RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(fontBold, rUp_Txt, rUp, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "5");
-        Vector2 lb_Size = MeasureTextEx(fontBold, lb_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 lb = {LB_TXT_X, LB_TXT_Y};
-        DrawTextEx(fontBold, lb_Txt, lb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "6");
-        Vector2 rb_Size = MeasureTextEx(fontBold, rb_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rb = {RB_TXT_X, RB_TXT_Y};
-        DrawTextEx(fontBold, rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
     else if (strcmp(game.console, "PC") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "ENTER");
@@ -317,76 +312,76 @@ static void PlayPause_DrawControls(game_t game) {
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "MOVE");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "MAP");
-        Vector2 back_Size = MeasureTextEx(fontBold, back_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
-        DrawTextEx(fontBold, back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rt_Txt, sizeof(rDown_Txt), "%s", "FIRE");
-        Vector2 rt_Size = MeasureTextEx(fontBold, rt_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rt_Size = MeasureTextEx(Var_GetFontBold(), rt_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rt = {RT_TXT_X, RT_TXT_Y};
-        DrawTextEx(fontBold, rt_Txt, rt, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rt_Txt, rt, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "WPN-");
-        Vector2 lb_Size = MeasureTextEx(fontBold, lb_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 lb = {LB_TXT_X, LB_TXT_Y};
-        DrawTextEx(fontBold, lb_Txt, lb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
         snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "WPN+");
-        Vector2 rb_Size = MeasureTextEx(fontBold, rb_Txt, CONTROL_SIZE, CONTROL_SPACE);
+        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rb = {RB_TXT_X, RB_TXT_Y};
-        DrawTextEx(fontBold, rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
 
     //Controls all games use
-    Vector2 rDown_Size = MeasureTextEx(fontBold, rDown_Txt, CONTROL_SIZE, CONTROL_SPACE);
+    Vector2 rDown_Size = MeasureTextEx(Var_GetFontBold(), rDown_Txt, CONTROL_SIZE, CONTROL_SPACE);
     Vector2 rDown = {RIGHT_FACE_DOWN_TXT_X, RIGHT_FACE_DOWN_TXT_Y};
-    DrawTextEx(fontBold, rDown_Txt, rDown, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+    DrawTextEx(Var_GetFontBold(), rDown_Txt, rDown, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
-    Vector2 rRight_Size = MeasureTextEx(fontBold, rRight_Txt, CONTROL_SIZE, CONTROL_SPACE);
+    Vector2 rRight_Size = MeasureTextEx(Var_GetFontBold(), rRight_Txt, CONTROL_SIZE, CONTROL_SPACE);
     Vector2 rRight = {RIGHT_FACE_RIGHT_TXT_X, RIGHT_FACE_RIGHT_TXT_Y};
-    DrawTextEx(fontBold, rRight_Txt, rRight, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+    DrawTextEx(Var_GetFontBold(), rRight_Txt, rRight, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
-    Vector2 home_Size = MeasureTextEx(fontBold, home_Txt, CONTROL_SIZE, CONTROL_SPACE);
+    Vector2 home_Size = MeasureTextEx(Var_GetFontBold(), home_Txt, CONTROL_SIZE, CONTROL_SPACE);
     Vector2 home = {HOME_TXT_X, HOME_TXT_Y};
-    DrawTextEx(fontBold, home_Txt, home, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+    DrawTextEx(Var_GetFontBold(), home_Txt, home, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
-    Vector2 d_Size = MeasureTextEx(fontBold, d_Txt, CONTROL_SIZE, CONTROL_SPACE);
+    Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, CONTROL_SIZE, CONTROL_SPACE);
     Vector2 d = {D_TXT_X, D_TXT_Y};
-    DrawTextEx(fontBold, d_Txt, d, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+    DrawTextEx(Var_GetFontBold(), d_Txt, d, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
-    Vector2 start_Size = MeasureTextEx(fontBold, start_Txt, CONTROL_SIZE, CONTROL_SPACE);
+    Vector2 start_Size = MeasureTextEx(Var_GetFontBold(), start_Txt, CONTROL_SIZE, CONTROL_SPACE);
     Vector2 start = {START_TXT_X, START_TXT_Y};
-    DrawTextEx(fontBold, start_Txt, start, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+    DrawTextEx(Var_GetFontBold(), start_Txt, start, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
-    Vector2 ls_Size = MeasureTextEx(fontBold, ls_Txt, CONTROL_SIZE, CONTROL_SPACE);
+    Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, CONTROL_SIZE, CONTROL_SPACE);
     Vector2 ls = {LS_TXT_X, LS_TXT_Y};
-    DrawTextEx(fontBold, ls_Txt, ls, CONTROL_SIZE, CONTROL_SPACE, BLACK);
+    DrawTextEx(Var_GetFontBold(), ls_Txt, ls, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 }
 
 //Draw the pause screen
-static void PlayPause_Draw(bool *displayDiag, Color *themeColor1, Color *themeColor2, Color *themeColor3) {
+static void PlayPause_Draw() {
     //Draw whole section
     Rectangle rectSection = {
         PLAYPAUSE_RECT_X,
         PLAYPAUSE_RECT_Y,
         PLAYPAUSE_RECT_W,
         PLAYPAUSE_RECT_H};
-    DrawRectangleRoundedLinesEx(rectSection, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, *themeColor3);
-    DrawRectangleRounded(rectSection, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, *themeColor2);
+    DrawRectangleRoundedLinesEx(rectSection, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, Var_GetColor3());
+    DrawRectangleRounded(rectSection, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, Var_GetColor2());
     //Draw title
-    Vector2 titleSize = MeasureTextEx(fontBold, PLAYPAUSE_TITLE, PLAYPAUSE_TITLE_SIZE, PLAYPAUSE_SPACE);
+    Vector2 titleSize = MeasureTextEx(Var_GetFontBold(), PLAYPAUSE_TITLE, PLAYPAUSE_TITLE_SIZE, PLAYPAUSE_SPACE);
     Vector2 title = {PLAYPAUSE_TITLE_X, PLAYPAUSE_TITLE_Y};
-    DrawTextEx(fontBold, PLAYPAUSE_TITLE, title, PLAYPAUSE_TITLE_SIZE, PLAYPAUSE_SPACE, *themeColor3);
+    DrawTextEx(Var_GetFontBold(), PLAYPAUSE_TITLE, title, PLAYPAUSE_TITLE_SIZE, PLAYPAUSE_SPACE, Var_GetColor3());
     //Draw resume
-    Vector2 resumeSize = MeasureTextEx(fontRegular, RESUME_TXT, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE);
+    Vector2 resumeSize = MeasureTextEx(Var_GetFontRegular(), RESUME_TXT, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE);
     Vector2 resume = {PLAYPAUSE_X, RESUME_Y};
     Rectangle rectResume = {
         PLAYPAUSE_SELECT_RECT_X,
         PLAYPAUSE_RESUME_RECT_Y,
         PLAYPAUSE_SELECT_RECT_W,
         PLAYPAUSE_SELECT_RECT_H};
-    DrawRectangleRoundedLinesEx(rectResume, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, *themeColor3);
-    DrawTextEx(fontRegular, RESUME_TXT, resume, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE, *themeColor3);
+    DrawRectangleRoundedLinesEx(rectResume, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, Var_GetColor3());
+    DrawTextEx(Var_GetFontRegular(), RESUME_TXT, resume, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE, Var_GetColor3());
     //Draw restart
     Vector2 restart = {PLAYPAUSE_X, RESTART_Y};
     Rectangle rectRestart = {
@@ -394,8 +389,8 @@ static void PlayPause_Draw(bool *displayDiag, Color *themeColor1, Color *themeCo
         PLAYPAUSE_RESTART_RECT_Y,
         PLAYPAUSE_SELECT_RECT_W,
         PLAYPAUSE_SELECT_RECT_H};
-    DrawRectangleRoundedLinesEx(rectRestart, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, *themeColor3);
-    DrawTextEx(fontRegular, RESTART_TXT, restart, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE, *themeColor3);
+    DrawRectangleRoundedLinesEx(rectRestart, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, Var_GetColor3());
+    DrawTextEx(Var_GetFontRegular(), RESTART_TXT, restart, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE, Var_GetColor3());
     //Draw controls
     Vector2 controls = {PLAYPAUSE_X, CONTROLS_Y};
     Rectangle rectControls = {
@@ -403,8 +398,8 @@ static void PlayPause_Draw(bool *displayDiag, Color *themeColor1, Color *themeCo
         PLAYPAUSE_CONTROLS_RECT_Y,
         PLAYPAUSE_SELECT_RECT_W,
         PLAYPAUSE_SELECT_RECT_H};
-    DrawRectangleRoundedLinesEx(rectControls, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, *themeColor3);
-    DrawTextEx(fontRegular, CONTROLS_TXT, controls, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE, *themeColor3);
+    DrawRectangleRoundedLinesEx(rectControls, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, Var_GetColor3());
+    DrawTextEx(Var_GetFontRegular(), CONTROLS_TXT, controls, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE, Var_GetColor3());
     //Draw display/hide diagnostics
     Vector2 diagnostics = {PLAYPAUSE_X, DIAGNOSTICS_Y};
     Rectangle rectDiag = {
@@ -412,9 +407,9 @@ static void PlayPause_Draw(bool *displayDiag, Color *themeColor1, Color *themeCo
         PLAYPAUSE_DIAGNOSTICS_RECT_Y,
         PLAYPAUSE_SELECT_RECT_W,
         PLAYPAUSE_SELECT_RECT_H};
-    DrawRectangleRoundedLinesEx(rectDiag, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, *themeColor3);
+    DrawRectangleRoundedLinesEx(rectDiag, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, Var_GetColor3());
     char *diagTxt;
-    if (*displayDiag)
+    if (Var_GetDiag())
     {
         diagTxt = HIDE_DIAGNOSTICS_TXT;
     }
@@ -422,67 +417,63 @@ static void PlayPause_Draw(bool *displayDiag, Color *themeColor1, Color *themeCo
     {
         diagTxt = DISPLAY_DIAGNOSTICS_TXT;
     }
-    DrawTextEx(fontRegular, diagTxt, diagnostics, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE, *themeColor3);
+    DrawTextEx(Var_GetFontRegular(), diagTxt, diagnostics, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE, Var_GetColor3());
     //Draw exit
-    Vector2 exitSize = MeasureTextEx(fontRegular, EXIT_TXT, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE);
+    Vector2 exitSize = MeasureTextEx(Var_GetFontRegular(), EXIT_TXT, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE);
     Vector2 exit = {PLAYPAUSE_X, EXIT_Y};
     Rectangle rectExit = {
         PLAYPAUSE_SELECT_RECT_X,
         PLAYPAUSE_EXIT_RECT_Y,
         PLAYPAUSE_SELECT_RECT_W,
         PLAYPAUSE_SELECT_RECT_H};
-    DrawRectangleRoundedLinesEx(rectExit, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, *themeColor3);
-    DrawTextEx(fontRegular, EXIT_TXT, exit, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE, *themeColor3);
+    DrawRectangleRoundedLinesEx(rectExit, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, Var_GetColor3());
+    DrawTextEx(Var_GetFontRegular(), EXIT_TXT, exit, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE, Var_GetColor3());
    
     //Draw select
-    Vector2 selectSize = MeasureTextEx(fontRegular, SELECT_TXT, SELECT_SIZE, PLAYPAUSE_SPACE);
+    Vector2 selectSize = MeasureTextEx(Var_GetFontRegular(), SELECT_TXT, SELECT_SIZE, PLAYPAUSE_SPACE);
     Vector2 select = {SELECT_X, SELECT_Y};
-    DrawTextEx(fontRegular, SELECT_TXT, select, SELECT_SIZE, PLAYPAUSE_SPACE, *themeColor3);
+    DrawTextEx(Var_GetFontRegular(), SELECT_TXT, select, SELECT_SIZE, PLAYPAUSE_SPACE, Var_GetColor3());
     //Draw back
-    Vector2 backSize = MeasureTextEx(fontRegular, BACK_TXT, BACK_SIZE, PLAYPAUSE_SPACE);
+    Vector2 backSize = MeasureTextEx(Var_GetFontRegular(), BACK_TXT, BACK_SIZE, PLAYPAUSE_SPACE);
     Vector2 back = {BACK_X, BACK_Y};
-    DrawTextEx(fontRegular, BACK_TXT, back, BACK_SIZE, PLAYPAUSE_SPACE, *themeColor3);
+    DrawTextEx(Var_GetFontRegular(), BACK_TXT, back, BACK_SIZE, PLAYPAUSE_SPACE, Var_GetColor3());
     //Draw an outline around the selected section
     if (currentPlayPauseState == PLAYPAUSE_RESUME)
     {
-        DrawRectangleRoundedLinesEx(rectResume, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, *themeColor1);
+        DrawRectangleRoundedLinesEx(rectResume, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, Var_GetColor1());
     }
     else if (currentPlayPauseState == PLAYPAUSE_RESTART)
     {
-        DrawRectangleRoundedLinesEx(rectRestart, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, *themeColor1);
+        DrawRectangleRoundedLinesEx(rectRestart, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, Var_GetColor1());
     }
     else if (currentPlayPauseState == PLAYPAUSE_CONTROLS)
     {
-        DrawRectangleRoundedLinesEx(rectControls, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, *themeColor1);
+        DrawRectangleRoundedLinesEx(rectControls, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, Var_GetColor1());
     }
     else if (currentPlayPauseState == PLAYPAUSE_DIAGNOSTICS)
     {
-        DrawRectangleRoundedLinesEx(rectDiag, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, *themeColor1);
+        DrawRectangleRoundedLinesEx(rectDiag, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, Var_GetColor1());
     }
     else
     {
-        DrawRectangleRoundedLinesEx(rectExit, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, *themeColor1);
+        DrawRectangleRoundedLinesEx(rectExit, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, Var_GetColor1());
     }
 }
 
 //PlayPause initialization
 void PlayPause_Init() {
-    //Get width and height of the monitor
-    monitorWidth = GetMonitorWidth(0);
-    monitorHeight = GetMonitorHeight(0);
-    //Load the fonts into this file
-    fontRegular = LoadFont("assets/fonts/Exo2-Regular.ttf");
-    fontBold = LoadFont("assets/fonts/Exo2-Bold.ttf");
     //Load controller image
     controlsImg = LoadTexture("/home/tywebb1724/Desktop/Gaming-Console/assets/covers/logo/controller.png");
     //Time elapsed on selected section
     playPauseTimeElapsed = 0.0f;
     //Start pause menu at top section
     currentPlayPauseState = PLAYPAUSE_RESUME;
+    //Don't display the controls
+    displayControls = false;
 }
 
 //PlayPause tick
-PlayState PlayPause_Tick(bool *displayDiag, Color *themeColor1, Color *themeColor2, Color *themeColor3) {
+PlayState PlayPause_Tick() {
     //static bool wasHomePressed;
 
     //if (!HOME_HOLD) {
@@ -567,15 +558,19 @@ PlayState PlayPause_Tick(bool *displayDiag, Color *themeColor1, Color *themeColo
             //Resume game
             if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !A_DOWN) {
                 // mouseWasPressed = false;
+                //Unload controls image texture
+                UnloadTexture(controlsImg);
                 return PLAY_RESUME;
             }
             //Resume game
             if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
                 /// mouseWasPressed = true;
+                //Unload controls image texture
+                UnloadTexture(controlsImg);
                 return PLAY_RESUME;
             }
             //Draw menu and update time
-            PlayPause_Draw(displayDiag, themeColor1, themeColor2, themeColor3);
+            PlayPause_Draw();
             PlayPause_UpdateTime();
             break;
 
@@ -588,16 +583,20 @@ PlayState PlayPause_Tick(bool *displayDiag, Color *themeColor1, Color *themeColo
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) {
                 /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
+                //Unload controls image texture
+                UnloadTexture(controlsImg);
                 return PLAY_RESTART;
             }
             //Resume game
             if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
                 /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
+                //Unload controls image texture
+                UnloadTexture(controlsImg);
                 return PLAY_RESUME;
             }
             //Draw menu and update time
-            PlayPause_Draw(displayDiag, themeColor1, themeColor2, themeColor3);
+            PlayPause_Draw();
             PlayPause_UpdateTime();
             break;
 
@@ -617,6 +616,8 @@ PlayState PlayPause_Tick(bool *displayDiag, Color *themeColor1, Color *themeColo
                 if (displayControls == false) {
                     /// mouseWasPressed = true;
                     currentPlayPauseState = PLAYPAUSE_RESUME;
+                    //Unload controls image texture
+                    UnloadTexture(controlsImg);
                     return PLAY_RESUME;
                 }
                 else {
@@ -628,7 +629,7 @@ PlayState PlayPause_Tick(bool *displayDiag, Color *themeColor1, Color *themeColo
                 PlayPause_DrawControls(*Games_GetDisplayed(3));
             }
             else {
-                PlayPause_Draw(displayDiag, themeColor1, themeColor2, themeColor3);
+                PlayPause_Draw();
             }
             //Update time
             PlayPause_UpdateTime();
@@ -641,17 +642,19 @@ PlayState PlayPause_Tick(bool *displayDiag, Color *themeColor1, Color *themeColo
             }
             //Stop or start displaying diagnostics
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) {
-                *displayDiag = !(*displayDiag);
-                ///////////Update_UI_Txt();
+                Var_SetDiag(!(Var_GetDiag()));
+                Var_UpdateUIFile();
             }
             //Resume game
             if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
                 /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
+                //Unload controls image texture
+                UnloadTexture(controlsImg);
                 return PLAY_RESUME;
             }
             //Draw menu and update time
-            PlayPause_Draw(displayDiag, themeColor1, themeColor2, themeColor3);
+            PlayPause_Draw();
             PlayPause_UpdateTime();
             break;
 
@@ -663,16 +666,20 @@ PlayState PlayPause_Tick(bool *displayDiag, Color *themeColor1, Color *themeColo
             //Exit game
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) {
                 currentPlayPauseState = PLAYPAUSE_RESUME;
+                //Unload controls image texture
+                UnloadTexture(controlsImg);
                 return PLAY_EXIT;
             }
             //Resume game
             if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
                 /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
+                //Unload controls image texture
+                UnloadTexture(controlsImg);
                 return PLAY_RESUME;
             }
             //Draw menu and update time
-            PlayPause_Draw(displayDiag, themeColor1, themeColor2, themeColor3);
+            PlayPause_Draw();
             PlayPause_UpdateTime();
             break;
     }

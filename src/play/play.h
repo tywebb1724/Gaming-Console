@@ -17,11 +17,7 @@
 #define RESUME_RECT_H (resumeSize.y + SCREEN_H / 40.0f)
 
 //Play initialization
-void Play_Init();
-//Launch the game
-void Play_Launch(game_t game);
-//Stop the game
-void Play_Stop(game_t game);
+void Play_Init(game_t game);
 //Refresh the game
 bool Play_Tick(game_t game);
 

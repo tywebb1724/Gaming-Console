@@ -24,8 +24,9 @@ int main(void)
     State_Init();
     Play_Init();
     UI_Init();
+    Var_Init();
     //Set target FPS to 60
-    SetTargetFPS(60);
+    SetTargetFPS(FPS);
     //Main game loop
     while (!IsKeyPressed(KEY_ESCAPE) && (!HOME_PRESS || !START_PRESS)) {
         //Start drawing

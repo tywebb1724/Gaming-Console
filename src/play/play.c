@@ -5,10 +5,11 @@
 #include "playpause.h"
 #include "controller_config.h"
 #include "raylib.h"
+#include "var.h"
 
 //Monitor width and height
-static int monitorWidth;
-static int monitorHeight;
+static int Var_GetMonitorWidth();
+static int Var_GetMonitorHeight();
 //Key and pad maps
 static int your_key_map[RETRO_DEVICE_ID_JOYPAD_MASK];
 static int your_pad_map[RETRO_DEVICE_ID_JOYPAD_MASK];
@@ -18,9 +19,6 @@ static Texture2D emulator_texture;
 static double accumulator;
 //FPS of the game
 static double core_fps;
-//Fonts
-static Font fontRegular;
-static Font fontBold;
 //Current state of the game after being launce
 static PlayState currentPlayState;
 static PlayState pauseState;
@@ -212,26 +210,112 @@ static float Play_GetConsoleAspect(const char* console) {
     return 4.0f / 3.0f;
 }
 
-//Play initialization
-void Play_Init() {
-    //Get width and height of the monitor
-    monitorWidth = GetMonitorWidth(0);
-    monitorHeight = GetMonitorHeight(0);
-    //Load the fonts into this file
-    fontRegular = LoadFont("assets/fonts/Exo2-Regular.ttf");
-    fontBold = LoadFont("assets/fonts/Exo2-Bold.ttf");
-    //Initialize variables
-    currentPlayState = PLAY_GO;
-    saveTimeElapsed = 0.0f;
-    resuming = false;
-    resumeTimer = 0.0f;
-    is_game_running = false;
-    //PlayPause initialization
-    PlayPause_Init();
+//Stop the game
+static void Play_Stop(game_t game) {
+    //If a game is currently running
+    if (is_game_running) {
+        //If the game saves by battery, save before closing game
+        if (game.save == BATTERY) {
+            SaveBattery(game.romPath);
+        }
+        //Stop game audio
+        StopRetroAudio();
+        //Unload game
+        if (core_unload_game) {
+            core_unload_game();
+        }
+        //Release/destroy GPU resources
+        TriggerContextDestroy();
+        //Close the core
+        CloseRetroCore();
+        //Mark that the game is no longer running
+        is_game_running = false;
+    }
 }
 
-//Launch the game
-void Play_Launch(game_t game) {
+//Advance the game
+static void Play_Advance() {
+    //How long one frame should take
+    double step = 1.0 / core_fps;
+    //How long last frame took
+    double frameTime = GetFrameTime();
+    //Guard against stalls
+    if (frameTime > 0.25) {
+        frameTime = 0.25;
+    }
+    //Keep track how long this frame has been up
+    accumulator += frameTime;
+    //Wait for the time on the frame to be greater than or equal to the frame target time
+    while (accumulator >= step) {
+        //Run the core
+        if (is_game_running && core_run) {
+            core_run();
+        }
+        //Subtract the target time for each frame
+        accumulator -= step;
+    }
+    //Present the frame
+    PresentFrame();
+}
+
+//Draw the game
+static void Play_Draw(game_t game) {
+    ClearBackground(BLACK);
+    //Determine whether game must be rotated
+    unsigned game_rotation = GetGameRotation();
+    //If game is rotated sideways (rotated 90 or 270 degrees)
+    bool swapped = (game_rotation == 1 || game_rotation == 3);
+    //Width and height of the texture
+    float texW = (float)emulator_texture.width;
+    float texH = (float)emulator_texture.height;
+    //Define target aspect ration
+    float targetAspect;
+    //Get target aspect ratio depending on the console
+    if (strcmp(game.console, "Arcade") == 0) {
+        targetAspect = texW / texH;
+    }
+    else {
+        targetAspect = Play_GetConsoleAspect(game.console);
+    }
+    //If game is rotated sideways, flip the aspect ratio
+    if (swapped) {
+        targetAspect = 1.0f / targetAspect;
+    }
+    //Fit image to the screen
+    float destHeight = Var_GetMonitorHeight();
+    float destWidth  = destHeight * targetAspect;
+    //If the width it too much, fit the width to the screen and recompute height
+    if (destWidth > Var_GetMonitorWidth()) {
+        destWidth  = Var_GetMonitorWidth();
+        destHeight = destWidth / targetAspect;
+    }
+    //Get how much the game needs to be rotated
+    float rot = -(game_rotation * 90.0f);
+    //Height and width to drawing, depending on rotation
+    float drawW = swapped ? destHeight : destWidth;
+    float drawH = swapped ? destWidth  : destHeight;
+    //Source, destination, and origin rectangles
+    Rectangle src  = { 0.0f, 0.0f, texW, texH };
+    Rectangle dest = { Var_GetMonitorWidth() / 2.0f, Var_GetMonitorHeight() / 2.0f, drawW, drawH };
+    Vector2  origin = { drawW / 2.0f, drawH / 2.0f };
+    //Draw texture on the screen
+    DrawTexturePro(emulator_texture, src, dest, origin, rot, WHITE);
+    //Draw diganostics (if applys)
+    MainMenu_DrawDiagnostics();
+}
+
+//Play initialization
+void Play_Init(game_t game) {
+    //Start by running the game
+    currentPlayState = PLAY_GO;
+    //No time since last saved
+    saveTimeElapsed = 0.0f;
+    //Not resuming from pause menu
+    resuming = false;
+    //Resume timer set at 0
+    resumeTimer = 0.0f;
+    //Not running the game yet
+    is_game_running = false;
     //If the game is libretro
     if (Play_IsLibRetro(game)) {
         //Reset previous rotation settings
@@ -308,102 +392,8 @@ void Play_Launch(game_t game) {
     }
 }
 
-//Stop the game
-void Play_Stop(game_t game) {
-    //If a game is currently running
-    if (is_game_running) {
-        //If the game saves by battery, save before closing game
-        if (game.save == BATTERY) {
-            SaveBattery(game.romPath);
-        }
-        //Stop game audio
-        StopRetroAudio();
-        //Unload game
-        if (core_unload_game) {
-            core_unload_game();
-        }
-        //Release/destroy GPU resources
-        TriggerContextDestroy();
-        //Close the core
-        CloseRetroCore();
-        //Mark that the game is no longer running
-        is_game_running = false;
-    }
-}
-
-//Advance the game
-void Play_Advance() {
-    //How long one frame should take
-    double step = 1.0 / core_fps;
-    //How long last frame took
-    double frameTime = GetFrameTime();
-    //Guard against stalls
-    if (frameTime > 0.25) {
-        frameTime = 0.25;
-    }
-    //Keep track how long this frame has been up
-    accumulator += frameTime;
-    //Wait for the time on the frame to be greater than or equal to the frame target time
-    while (accumulator >= step) {
-        //Run the core
-        if (is_game_running && core_run) {
-            core_run();
-        }
-        //Subtract the target time for each frame
-        accumulator -= step;
-    }
-    //Present the frame
-    PresentFrame();
-}
-
-//Draw the game
-void Play_Draw(game_t game) {
-    ClearBackground(BLACK);
-    //Determine whether game must be rotated
-    unsigned game_rotation = GetGameRotation();
-    //If game is rotated sideways (rotated 90 or 270 degrees)
-    bool swapped = (game_rotation == 1 || game_rotation == 3);
-    //Width and height of the texture
-    float texW = (float)emulator_texture.width;
-    float texH = (float)emulator_texture.height;
-    //Define target aspect ration
-    float targetAspect;
-    //Get target aspect ratio depending on the console
-    if (strcmp(game.console, "Arcade") == 0) {
-        targetAspect = texW / texH;
-    }
-    else {
-        targetAspect = Play_GetConsoleAspect(game.console);
-    }
-    //If game is rotated sideways, flip the aspect ratio
-    if (swapped) {
-        targetAspect = 1.0f / targetAspect;
-    }
-    //Fit image to the screen
-    float destHeight = monitorHeight;
-    float destWidth  = destHeight * targetAspect;
-    //If the width it too much, fit the width to the screen and recompute height
-    if (destWidth > monitorWidth) {
-        destWidth  = monitorWidth;
-        destHeight = destWidth / targetAspect;
-    }
-    //Get how much the game needs to be rotated
-    float rot = -(game_rotation * 90.0f);
-    //Height and width to drawing, depending on rotation
-    float drawW = swapped ? destHeight : destWidth;
-    float drawH = swapped ? destWidth  : destHeight;
-    //Source, destination, and origin rectangles
-    Rectangle src  = { 0.0f, 0.0f, texW, texH };
-    Rectangle dest = { monitorWidth / 2.0f, monitorHeight / 2.0f, drawW, drawH };
-    Vector2  origin = { drawW / 2.0f, drawH / 2.0f };
-    //Draw texture on the screen
-    DrawTexturePro(emulator_texture, src, dest, origin, rot, WHITE);
-    //Draw diganostics (if applys)
-    MainMenu_DrawDiagnostics();
-}
-
 //Play game tick function
-bool Play_Tick(game_t game, bool *displayDiag, Color *themeColor1, Color *themeColor2, Color *themeColor3) {
+bool Play_Tick(game_t game) {
 
     //Transition
     switch (currentPlayState) {
@@ -412,6 +402,7 @@ bool Play_Tick(game_t game, bool *displayDiag, Color *themeColor1, Color *themeC
             if (IsKeyPressed(KEY_P) || HOME_PRESS) {
                 currentPlayState = PLAY_PAUSE;
                 pauseState = PLAY_PAUSE;
+                PlayPause_Init();
             }
             break;
 
@@ -438,12 +429,11 @@ bool Play_Tick(game_t game, bool *displayDiag, Color *themeColor1, Color *themeC
         case PLAY_RESTART:
             ClearBackground(BLACK);
             Play_Stop(game);
-            Play_Launch(game);
+            Play_Init(game);
             currentPlayState = PLAY_GO;
             break;
 
         case PLAY_EXIT:
-
             break;
     }
 
@@ -471,7 +461,7 @@ bool Play_Tick(game_t game, bool *displayDiag, Color *themeColor1, Color *themeC
             //Draw the game
             Play_Draw(game);
             //Draw pause menu
-            pauseState = PlayPause_Tick(displayDiag, themeColor1, themeColor2, themeColor3);
+            pauseState = PlayPause_Tick();
             break;
 
         case PLAY_RESUME:
@@ -480,11 +470,11 @@ bool Play_Tick(game_t game, bool *displayDiag, Color *themeColor1, Color *themeC
             //See how long since started resuming
             resumeTimer += GetFrameTime();
             //Draw resuming text
-            Vector2 resumeSize = MeasureTextEx(fontRegular, RESUME_TXT, RESUME_SIZE, RESUME_SPACE);
+            Vector2 resumeSize = MeasureTextEx(Var_GetFontRegular(), RESUME_TXT, RESUME_SIZE, RESUME_SPACE);
             Vector2 resume = {RESUME_X, RESUME_Y};
             DrawRectangle(RESUME_RECT_X, RESUME_RECT_Y, RESUME_RECT_W, RESUME_RECT_H, BLACK);
             DrawRectangleLines(RESUME_RECT_X, RESUME_RECT_Y, RESUME_RECT_W, RESUME_RECT_H, WHITE);
-            DrawTextEx(fontRegular, RESUME_TXT, resume, RESUME_SIZE, RESUME_SPACE, WHITE);
+            DrawTextEx(Var_GetFontRegular(), RESUME_TXT, resume, RESUME_SIZE, RESUME_SPACE, WHITE);
             break;
         
         case PLAY_RESTART:

@@ -1,70 +1,4 @@
-#ifndef UI_CONFIG_H
-#define UI_CONFIG_H
 
-#pragma region UI_GENERAL
-//General setup definitions
-#define FPS 60
-
-
-#define MENU_IMG_Y_CENTER (SCREEN_H * (11.0f / 20))
-#pragma endregion
-
-#pragma region UI_BOOT
-//Width and length of logo
-#define LOGO_SIZE (SCREEN_H / 8 * 9)
-#pragma endregion
-
-
-
-#pragma region UI_CATEGORIES_SCROLL
-#define SCROLL_CATEG_IN_SPEED 0.15f
-#define SCROLL_CATEG_OUT_SPEED 0.225f
-#define SCROLL_CATEG_THRESHOLD (SCREEN_W / 80.0f)
-
-#define LEFT2_SCROLLR (LEFT1_SCROLLR - (SIDE2_GAME_W * (19 / 20.0f)))
-#define LEFT1_SCROLLR (CENTER_SCROLLR - (SIDE1_GAME_W * (19 / 20.0f)))
-#define CENTER_SCROLLR (- SCREEN_W * (1.0f / 4))
-#define RIGHT1_SCROLLR (CENTER_SCROLLR + (SIDE1_GAME_W * (19 / 20.0f)))
-#define RIGHT2_SCROLLR (RIGHT1_SCROLLR + (SIDE2_GAME_W * (19 / 20.0f)))
-
-#define LEFT2_SCROLLR_X (UI_CenterImg_X(SIDE2_GAME_W, LEFT2_SCROLLR))
-#define LEFT1_SCROLLR_X (UI_CenterImg_X(SIDE1_GAME_W, LEFT1_SCROLLR))
-#define CENTER_SCROLLR_X (UI_CenterImg_X(CENTER_GAME_W, CENTER_SCROLLR))
-#define RIGHT1_SCROLLR_X (UI_CenterImg_X(SIDE1_GAME_W, RIGHT1_SCROLLR))
-#define RIGHT2_SCROLLR_X (UI_CenterImg_X(SIDE2_GAME_W, RIGHT2_SCROLLR))
-
-#define LEFT2_SCROLLL (LEFT1_SCROLLL - (SIDE2_GAME_W * (19 / 20.0f)))
-#define LEFT1_SCROLLL (CENTER_SCROLLL - (SIDE1_GAME_W * (19 / 20.0f)))
-#define CENTER_SCROLLL (SCREEN_W * (5.0f / 4))
-#define RIGHT1_SCROLLL (CENTER_SCROLLL + (SIDE1_GAME_W * (19 / 20.0f)))
-#define RIGHT2_SCROLLL (RIGHT1_SCROLLL + (SIDE2_GAME_W * (19 / 20.0f)))
-
-#define LEFT2_SCROLLL_X (UI_CenterImg_X(SIDE2_GAME_W, LEFT2_SCROLLL))
-#define LEFT1_SCROLLL_X (UI_CenterImg_X(SIDE1_GAME_W, LEFT1_SCROLLL))
-#define CENTER_SCROLLL_X (UI_CenterImg_X(CENTER_GAME_W, CENTER_SCROLLL))
-#define RIGHT1_SCROLLL_X (UI_CenterImg_X(SIDE1_GAME_W, RIGHT1_SCROLLL))
-#define RIGHT2_SCROLLL_X (UI_CenterImg_X(SIDE2_GAME_W, RIGHT2_SCROLLL))
-#pragma endregion
-
-
-
-#pragma region UI_DIAGNOSTICS
-#define DIAGNOSTICS_TITLE "System Diagnostics"
-#define DIAGNOSTICS_TITLE_SIZE (SCREEN_W / 25.0f)
-#define DIAGNOSTICS_TITLE_X (CENTER_X - diagnosticsTitle_Size.x / 2)
-#define DIAGNOSTICS_TITLE_Y (SCREEN_H / 12.0f)
-#define DIAGNOSTICS_TITLE_TXT_Y (DIAGNOSTICS_TITLE_Y - diagnosticsTitle_Size.x / 2)
-
-#define DIAGNOSTICS_SIZE (SCREEN_W / 35.0f)
-#define DIAGNOSTICS_SPACING (SCREEN_W / 400.0f)
-#define RESOLUTION_TXT_X (FPS_TXT_X)
-#define RESOLUTION_TXT_Y (SCREEN_H / 4.0f)
-
-
-#define FPS_TXT_X (SCREEN_W / 10.0f)
-#define FPS_TXT_Y (RESOLUTION_TXT_Y + SCREEN_H / 12.0f)
-
-#pragma endregion
 
 
 #pragma region UI_OPTIONS_MENU
@@ -173,14 +107,7 @@
 #define THEME_RECT_3_Y (THEME_RECT_2_Y + THEME_RECT_H + OPTIONS_TXT_SPACING_Y / 4.0f * 3)
 #define THEME_RECT_4_Y (THEME_RECT_3_Y + THEME_RECT_H + OPTIONS_TXT_SPACING_Y / 4.0f * 3)
 
-#define DIAG_SIZE (SCREEN_W / 100.0f)
-#define DIAG_SPACING (SCREEN_W / 800.0f)
-#define DIAG_RES_X (DIAG_FPS_X)
-#define DIAG_RES_Y (SCREEN_H / 70.0f)
 
-
-#define DIAG_FPS_X (SCREEN_W / 70.0f)
-#define DIAG_FPS_Y (DIAG_RES_Y + SCREEN_H / 40.0f)
 #pragma endregion
 
 
@@ -252,6 +179,3 @@
 
 
 
-
-
-#endif

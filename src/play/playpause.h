@@ -24,6 +24,6 @@ typedef enum {
 //PlayPause initialization
 void PlayPause_Init();
 //PlayPause tick
-PlayState PlayPause_Tick(bool *displayDiag, Color *themeColor1, Color *themeColor2, Color *themeColor3);
+PlayState PlayPause_Tick();
 
 #endif

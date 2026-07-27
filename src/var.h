@@ -10,6 +10,16 @@ typedef enum {
     SCROLL_RIGHT
 } ScrollState;
 
+//States of the console
+typedef enum {
+    STATE_BOOT,
+    STATE_MAIN_MENU,
+    STATE_APP_LAUNCHER,
+    STATE_LIST,
+    STATE_VIEW_DIAG
+} ConsoleState;
+
+
 
 //Get brightness value
 float Vars_GetBright();
@@ -43,5 +53,31 @@ ScrollState Var_GetScrollCateg();
 void Var_SetScrollGames(ScrollState state);
 //Set scroll categories
 void Var_SetScrollCateg(ScrollState state);
+//Get display diagnostics
+bool Var_GetDiag();
+//Set display diagnostics
+void Var_SetDiag(bool value);
+//Get alpha select text
+float Var_GetAlphaSelect();
+//Set alpha select text
+void Var_SetAlphaSelect(float value);
+//Set alpha select text
+void Var_AddAlphaSelect(float value);
+//Get the current background
+Texture2D Var_GetBackground();
+//Set the current background
+void Var_SetBackground(Texture2D background);
+//Extract a background from a color name
+const Texture2D Var_NametoBackground(char *c);
+//Update the UI text file
+void Var_UpdateUIFile();
+//Get bold font
+Font Var_GetFontBold();
+//Get regular font
+Font Var_GetFontRegular();
+//Get monitor width
+float Var_GetMonitorWidth();
+//Get monitor height
+float Var_GetMonitorHeight();
 
 #endif
