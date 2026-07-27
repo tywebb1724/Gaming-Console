@@ -16,22 +16,8 @@ static int end_index;
 static int games_range;
 static int start_index_new;
 
-//Arrays to hold all games, the games displayed, and the new games displayed
-static game_t gamesLibrary[MAX_GAMES];
-static game_t* gamesDisplayed[GAMES_ON_SCREEN + 2];
-static game_t* newGamesDisplayed[GAMES_ON_SCREEN];
-//Array to hold loaded images during boot up
-static Image LoadedImages[GAMES_LEN];
-//Indexes and range to keep track of current and new games
-static int games_index;
-static int start_index;
-static int end_index;
-static int games_range;
-static int start_index_new;
-
 //Variables to keep track of which images and textures are loaded
 static bool isLoaded[GAMES_LEN] = { false };
-static bool isTextureUploaded[GAMES_LEN] = { false };
 
 
 //Get a game from the main array
@@ -50,7 +36,7 @@ game_t* Games_GetNew(int i) {
 }
 
 //Update the indexes for the new game category
-void Game_UpdateNewIndexes(int direction) {
+static void Games_UpdateNewIndexes(int direction) {
     char categ[30];
     //If scrolling to the left
     if (direction == LEFT) {
@@ -764,6 +750,7 @@ void* Games_LoadImages(void *args) {
         LoadedImages[i] = LoadImage(gamesLibrary[i].coverPath);
         isLoaded[i] = true;
     }
+    return NULL;
 }
 
 //Unload game cover textures

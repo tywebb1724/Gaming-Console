@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include "var.h"
 #include "config.h"
+#include "ui/diagnostics.h"
 
 //State of the console
 static ConsoleState currentConsoleState;

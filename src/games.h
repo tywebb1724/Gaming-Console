@@ -68,8 +68,14 @@ game_t* Games_Get(int i);
 game_t* Games_GetDisplayed(int i);
 //Get a game from the new array
 game_t* Games_GetNew(int i);
+//Update the indexes of the current game category
+void Games_UpdateIndexes(const char *categ);
+//Update the array of the new games displayed
+void Games_NewRefresh();
+//Update the games displayed for the new category
+void Games_Refresh();
 //Clear game data
-void Game_ClearData(game_t game);
+void Games_ClearData(game_t game);
 //Initialize game library
 void Games_Init();
 //Shift the order of the games to the right
