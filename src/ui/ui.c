@@ -11,43 +11,36 @@
 #include "var.h"
 #include "controller_config.h"
 #include "uipause.h"
+#include "brightness.h"
+#include "uipause_config.h"
+#include "ui_config.h"
+#include "games.h"
+#include "config.h"
 
+//Length of longest text line in the select box
 static float maxLen;
-
-char brightnessPercent_Txt[5];
-
-bool mouseLeftWasPressed = false;
-bool mouseRightWasPressed = false;
-
+//Text for the brightness percentage
+static char brightnessPercent_Txt[5];
+//Whether the mouse buttons were previously pressed
+static bool mouseLeftWasPressed = false;
+static bool mouseRightWasPressed = false;
+//Current state of the UI
 static UIState currentUIState;
-
+//Spider logo
 static Texture2D spiderLogo;
-
-static Texture2D controls;
-
-
-// Variable to hold the current image to draw
+//Variable to hold the current image to draw
 Texture2D img;
-// Variables to hold information about the current image to draw
-int img_X, img_Y, img_W, img_H;
-// Different alphas
-float alphaGames;
-float alphaCategories_Out;
-float alphaCategories_In;
-float alphaSelectBox;
-float alphaSelectTxt_TimeElapsed = 0.0f;
-bool alphaSelectTxt_Blink = true;
+//Variables to hold information about the current image to draw
+static int img_X, img_Y, img_W, img_H;
+//Different alphas
+static float alphaGames;
+static float alphaCategories_Out;
+static float alphaCategories_In;
+static float alphaSelectBox;
+static float alphaSelectTxt_TimeElapsed = 0.0f;
+//Whether the text is blinking on or not
+static bool alphaSelectTxt_Blink = true;
 
-
-float themeTimeElapsed;
-
-static bool displayBrightness;
-static bool displayTheme;
-
-
-/////////////////////
-////DONE///////////
-///////////////////
 
 //Extract a color from the color name
 static const Color UI_NametoColor(char *c) {
@@ -774,22 +767,8 @@ static void UI_DrawGames_Normal() {
         Fade(Var_GetColor1(), alphaGames));
 }
 
-
-//////////////////
-////NOT DONE///////
-//////////////////
-
-
-
-
-
-
-
-
-
-
 //Tick function for the main UI
-UIState UI_Tick(ConsoleState* currentConsoleState) {
+void UI_Tick(ConsoleState* currentConsoleState) {
 
     // Transition
     switch (currentUIState) {
@@ -837,7 +816,7 @@ UIState UI_Tick(ConsoleState* currentConsoleState) {
             }
         }
         if (IsKeyPressed(KEY_TAB) || START_PRESS) {
-            UIPause_Init(&displayBrightness, &displayTheme);
+            UIPause_Init();
             currentUIState = OPTIONS;
         }
         break;
@@ -849,7 +828,7 @@ UIState UI_Tick(ConsoleState* currentConsoleState) {
             alphaSelectTxt_TimeElapsed = 0.0f;
         }
         if (IsKeyPressed(KEY_TAB) || START_PRESS) {
-            UIPause_Init(&displayBrightness, &displayTheme);
+            UIPause_Init();
             currentUIState = OPTIONS;
         }
         if (IsKeyPressed(KEY_A) || LB_PRESS) {
@@ -885,13 +864,13 @@ UIState UI_Tick(ConsoleState* currentConsoleState) {
             alphaSelectTxt_TimeElapsed = 0.0f;
         }
         if (IsKeyPressed(KEY_TAB) || START_PRESS) {
-            UIPause_Init(&displayBrightness, &displayTheme);
+            UIPause_Init();
             currentUIState = OPTIONS;
         }
         break;
 
     case OPTIONS:
-        if (IsKeyPressed(KEY_TAB) || START_PRESS || ((IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) && displayBrightness == false && displayTheme == false)) {
+        if (IsKeyPressed(KEY_TAB) || START_PRESS || ((IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) && Var_GetDisplayBrightness() == false && Var_GetDisplayTheme() == false)) {
             currentUIState = NORMAL;
         }
         break;
@@ -910,9 +889,8 @@ UIState UI_Tick(ConsoleState* currentConsoleState) {
         UI_DrawBottom();
         UI_DrawDiagnostics();
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) {
-            return STATE_APP_LAUNCHER;
+            *currentConsoleState = STATE_APP_LAUNCHER;
         }
-        return STATE_MAIN_MENU;
         break;
 
     case SCROLL_GAMES:
@@ -934,7 +912,6 @@ UIState UI_Tick(ConsoleState* currentConsoleState) {
         //Draw bottom section of screen
         UI_DrawBottom();
         UI_DrawDiagnostics();
-        return STATE_MAIN_MENU;
         break;
 
     case SCROLL_CATEGORIES:
@@ -947,7 +924,6 @@ UIState UI_Tick(ConsoleState* currentConsoleState) {
         //Draw bottom section of screen
         UI_DrawBottom();
         UI_DrawDiagnostics();
-        return STATE_MAIN_MENU;
         break;
 
     case OPTIONS:
@@ -981,99 +957,102 @@ UIState UI_Tick(ConsoleState* currentConsoleState) {
         //Draw bottom section of screen
         UI_DrawBottom();
         UI_DrawDiagnostics();
-        UIPause_Tick(currentConsoleState, &displayBrightness, &displayTheme);
+        UIPause_Tick(currentConsoleState);
         break;
     }
 }
 
-
+//Init function for the main UI
 void UI_Init() {
     //Load the logo textures
     spiderLogo = LoadTexture("/home/tywebb1724/Desktop/Gaming-Console/assets/covers/logo/LogoBlack.png");
     //Initialize the alphas
     alphaCategories_Out = 1.0f;
     alphaCategories_In = 0.0f;
-
-
     //Reset the coordinates for the games
     UI_ResetDisplayCoords_Games();
-    float tempLen1;
-    float tempLen2;
-    for (int i = 0; i < GAMES_LEN; i++) {
-        (*Games_Get(i)).cover.id = 0;
-        tempLen1 = MeasureTextEx(Var_GetFontBold(), (*Games_Get(i)).title, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x;
-        tempLen2 = MeasureTextEx(Var_GetFontBold(), (*Games_Get(i)).console, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x;
-        if (tempLen1 > maxLen) {
-            maxLen = tempLen1;
-        }
-        if (tempLen2 > maxLen) {
-            maxLen = tempLen2;
-        }
-    }
+    UI_ResetCoords_Categ();
+    //Strings to hold the text in the file
     char color1[10] = "", color2[10] = "", color3[10] = "", bright[32] = "", circX[32] = "", diag[5] = "";
+    //Open the file
     FILE* f = fopen("/home/tywebb1724/Desktop/Gaming-Console/assets/system/ui.txt", "r");
+    //Chech if the file opened successfully
     if (f) {
-
+        //Get theme color 1 and set the variables for the color and the background
         if (fgets(color1, sizeof(color1), f)) {
             color1[strcspn(color1, "\n")] = '\0';
             Var_SetColor1(UI_NametoColor(color1));
             Var_SetBackground(Var_NametoBackground(color1));
         }
+        //If no text, set default case (blue)
         else {
             Var_SetColor1(BLUE);
             Var_SetBackground(Var_NametoBackground("BLUE"));
         }
+        //Get theme color 2 and set the variable
         if (fgets(color2, sizeof(color2), f)) {
             color2[strcspn(color2, "\n")] = '\0';
             Var_SetColor2(UI_NametoColor(color2));;
         }
+        //If no text, set default case (black)
         else {
             Var_SetColor2(BLACK);
         }
+        //Get theme color 3 and set the variable
         if (fgets(color3, sizeof(color3), f)) {
             color3[strcspn(color3, "\n")] = '\0';
             Var_SetColor3(UI_NametoColor(color3));;
         }
+        //If no text, set default case (white)
         else {
             Var_SetColor3(WHITE);
         }
+        //Get brightness and set the variable
         if (fgets(bright, sizeof(bright), f)) {
             bright[strcspn(bright, "\n")] = '\0';
             Var_SetBright(atof(bright));
-
+            //Get position of brightness circle and set the variable
             if (fgets(circX, sizeof(circX), f)) { 
                 circX[strcspn(circX, "\n")] = '\0';
                 Var_SetBrightX(atof(circX));
             }
+            //If no text, set default brightness and brightness circle position
             else {
                 Var_SetBright(MAX_BRIGHTNESS);
                 Var_SetBrightX(BRIGHTNESS_CIRCLE_X);
             }
         }
+        //If no text, set default brightness and brightness circle position
         else {
             Var_SetBright(MAX_BRIGHTNESS);
             Var_SetBrightX(BRIGHTNESS_CIRCLE_X);
         }
+        //Get whether diagnostics are being displayed and set the variable
         if (fgets(diag, sizeof(diag), f)) {
             diag[strcspn(diag, "\n")] = '\0';
             Var_SetDiag(atoi(diag));
         }
+        //If no text, set default (don't display)
         else {
             Var_SetDiag(false);
         }
+        //Close the file
         fclose(f);
     }
+    //Set max length to start at 0
     maxLen = 0;
+    //Go through all games
     for (int i = 0; i < GAMES_LEN; i++) {
+        //If game title is larger than max length, set new max length
         if (MeasureTextEx(Var_GetFontBold(), Games_Get(i)->title, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x > maxLen) {
             maxLen = MeasureTextEx(Var_GetFontBold(), Games_Get(i)->title, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x;
         }
-    }
-    for (int i = 0; i < CATEGORIES_LEN; i++) {
-        if (MeasureTextEx(Var_GetFontBold(), Categories_Get(i), BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x > maxLen) {
-            maxLen = MeasureTextEx(Var_GetFontBold(), Categories_Get(i), BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x;
+        //If console title is larger than max length, set new max length
+        if (MeasureTextEx(Var_GetFontBold(), Games_Get(i)->console, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x > maxLen) {
+            maxLen = MeasureTextEx(Var_GetFontBold(), Games_Get(i)->console, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x;
         }
     }
+    //If length of bottom text is larger than max length, set new max length
     if (MeasureTextEx(Var_GetFontBold(), BOTTOM_TXT, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x > maxLen) {
         maxLen = MeasureTextEx(Var_GetFontBold(), BOTTOM_TXT, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x;
     }

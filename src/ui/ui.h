@@ -1,10 +1,10 @@
 #ifndef UI_H
 #define UI_H
-#include "ui_config.h"
+
 #include "games.h"
-#include "config.h"
+#include "var.h"
 
-
+//State of the main UI
 typedef enum {
     NORMAL,
     SCROLL_GAMES,
@@ -12,8 +12,17 @@ typedef enum {
     OPTIONS
 } UIState;
 
-
-
-
+//Draw options button at top right of screen
+void UI_DrawOptions();
+//Draw the boot screen
+void UI_DrawBootScreen() ;
+//Draw launching screen
+void UI_DrawLaunch(game_t game);
+//Display diagnostics on top left
+void UI_DrawDispDiag();
+//Tick function for the main UI
+void UI_Tick(ConsoleState* currentConsoleState);
+//Init function for the main UI
+void UI_Init();
 
 #endif

@@ -20,7 +20,6 @@ typedef enum {
 } ConsoleState;
 
 
-
 //Get brightness value
 float Vars_GetBright();
 //Set brightness value
@@ -79,5 +78,13 @@ Font Var_GetFontRegular();
 float Var_GetMonitorWidth();
 //Get monitor height
 float Var_GetMonitorHeight();
+//Get whether brightness options are being displayed
+bool Var_GetDisplayBright();
+//Set whether brightness options are being displayed
+void Var_SetDisplayBright(bool value);
+//Get whether theme options are being displayed
+bool Var_GetDisplayTheme();
+//Set whether theme options are being displayed
+void Var_SetDisplayTheme(bool value);
 
 #endif

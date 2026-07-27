@@ -1,11 +1,10 @@
 #include "raylib.h"
-#include "ui_config.h"
 #include "states.h"
-#include "ui.h"
+#include "ui/ui.h"
 #include "games.h"
 #include "categories.h"
-#include "play.h"
 #include "controller_config.h"
+#include "config.h"
 
 
 //Main function
@@ -21,8 +20,7 @@ int main(void)
     //Initialize state machines
     Games_Init();
     Categories_Init();
-    State_Init();
-    Play_Init();
+    States_Init();
     UI_Init();
     Var_Init();
     //Set target FPS to 60
@@ -35,7 +33,7 @@ int main(void)
         State_UpdateAndDraw();
         //Stop drawing
         EndDrawing();
-        //Load game imaagesd (if not already loaded)
+        //Load game images (if not already loaded)
         State_LoadGameImages();
     }
     //Stop any possibly running game

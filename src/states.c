@@ -1,16 +1,17 @@
 #include "states.h"
 #include "raylib.h"
-#include "ui.h"
+#include "ui/ui.h"
 #include "games.h"
-#include "ui_config.h"
+#include "ui/ui_config.h"
 #include "categories.h"
-#include "play.h"
+#include "play/play.h"
 #include <pthread.h>
 #include "var.h"
+#include "config.h"
 
 //State of the console
 static ConsoleState currentConsoleState;
-static ConsoleState changeConsoleState;
+static ConsoleState newConsoleState;
 //Timer to keep track of the time on the boot screen
 static float bootTimer;
 //Variable to keep track of the amount of games loaded
@@ -19,15 +20,9 @@ static int gamesLoaded;
 static bool allLoaded;
 //Thread for loaded images
 static pthread_t loadThread;
-
-static Texture2D controls;
-
-
+//All textures start not uploaded yet
 static bool isTextureUploaded[GAMES_LEN] = { false };
-
-static int monitorWidth;
-static int monitorHeight;
-
+//Variable to indicate if game is running
 static bool is_game_running;
 
 //Load all game images (if not loaded already)
@@ -57,6 +52,7 @@ void State_LoadGameImages() {
 void State_Init() {
     //Console starts in boot state
     currentConsoleState = STATE_BOOT;
+    newConsoleState = STATE_MAIN_MENU;
     //Boot timer starts at 0
     bootTimer = 0.0f;
     //Initially no games loaded
@@ -68,18 +64,17 @@ void State_Init() {
     Var_SetScrollCateg(SCROLL_NO);
     //All textures not loaded
     allLoaded = false;
-    exitApp = false;
-
+    //Game starts not running
     is_game_running = false;
-
-    
-    char *mappings = LoadFileText("/home/tywebb1724/Desktop/Gaming-Console/assets/system/gamecontrollerdb.txt");  // raylib's file loader
-if (mappings != NULL) {
-    SetGamepadMappings(mappings);
-    UnloadFileText(mappings);
-}
+    //Load mappings file
+    char *mappings = LoadFileText("/home/tywebb1724/Desktop/Gaming-Console/assets/system/gamecontrollerdb.txt");
+    //If file loaded successfully, set mappings and unload file
+    if (mappings != NULL) {
+        SetGamepadMappings(mappings);
+        UnloadFileText(mappings);
+    }
+    //Initialize audio
     InitAudioDevice();
-    controls = LoadTexture("/home/tywebb1724/Desktop/Gaming-Console/assets/covers/logo/controller.png");
 }
 
 //Update states and variabels and draw the correct screen
@@ -97,30 +92,38 @@ void State_UpdateAndDraw() {
 
         //Drawing the main menu
         case STATE_MAIN_MENU:
-            if (changeConsoleState == STATE_APP_LAUNCHER) {
+            //Check if console is transitioning to a new state, and transition accordingly
+            if (newConsoleState == STATE_APP_LAUNCHER) {
                 currentConsoleState = STATE_APP_LAUNCHER;
+                //Initialize the game and free up the FPS
                 Play_Init(*Games_GetDisplayed(3));
                 SetTargetFPS(0);
             }
-            else if (changeConsoleState == STATE_LIST) {
+            else if (newConsoleState == STATE_LIST) {
                 currentConsoleState = STATE_LIST;
             }
-            else if (changeConsoleState == STATE_VIEW_DIAG) {
+            else if (newConsoleState == STATE_VIEW_DIAG) {
                 currentConsoleState = STATE_VIEW_DIAG;
             }
             break;
 
         //Launching/running app
         case STATE_APP_LAUNCHER:
+            //If game is libretro
             if (Games_GetDisplayed(3)->libRetro == true) {
+                //If game is no longer running, transition back to main menu
                 if (!is_game_running) {
                     currentConsoleState = STATE_MAIN_MENU;
-                    is_game_running = false;
+                    newConsoleState = STATE_MAIN_MENU;
+                    //Set target FPS again
                     SetTargetFPS(FPS);
                 }
-            }    
+            }   
+            //If game is not libretro, immediately transition back to main menu 
             else {
                 currentConsoleState = STATE_MAIN_MENU;
+                newConsoleState = STATE_MAIN_MENU;
+                //Set target FPS again
                 SetTargetFPS(FPS);
             }
             break;
@@ -135,10 +138,11 @@ void State_UpdateAndDraw() {
 
         //View diagnostics menu
         case STATE_VIEW_DIAG:
-            if (changeConsoleState == STATE_LIST) {
+            //Check if console is transitioning to a new state, and transition accordingly
+            if (newConsoleState == STATE_LIST) {
                 currentConsoleState = STATE_LIST;
             }
-            else if (changeConsoleState == STATE_MAIN_MENU) {
+            else if (newConsoleState == STATE_MAIN_MENU) {
                 currentConsoleState = STATE_MAIN_MENU;
             }
             break;
@@ -153,36 +157,44 @@ void State_UpdateAndDraw() {
             UI_DrawBootScreen();
             //Increment boot timer
             bootTimer += GetFrameTime();
+            //Draw brightness
             DrawRectangle(0, 0, SCREEN_W, SCREEN_H, (Color){ 0, 0, 0, Var_GetBrightness() });
             break;
 
         //Drawing the main menu
         case STATE_MAIN_MENU:
+            //If user pressed M, clear the game data
             if (IsKeyPressed(KEY_M)) {
                 Games_ClearData(*Games_GetDisplayed(3));
             }
             //Draw UI for the menu
-            changeConsoleState = MainMenu_Tick(currentConsoleState);
+            UI_Tick(&newConsoleState);
+            //Draw brightness
             DrawRectangle(0, 0, SCREEN_W, SCREEN_H, (Color){ 0, 0, 0, Var_GetBrightness() });
             break;
 
         //Launching/running app
         case STATE_APP_LAUNCHER:
+            //If the game is libretro
             if (Games_GetDisplayed(3)->libRetro == true) {
+                //Call play tick function and check if game is still running
                 is_game_running = Play_Tick(*Games_GetDisplayed(3));
+                //Draw brightness
                 DrawRectangle(0, 0, SCREEN_W, SCREEN_H, (Color){ 0, 0, 0, Var_GetBrightness() });
             }    
             break;
 
         //View consoles/games list
         case STATE_LIST:
+            //Draw brightness
             DrawRectangle(0, 0, SCREEN_W, SCREEN_H, (Color){ 0, 0, 0, Var_GetBrightness() });
             break;
 
         //View diagnostics menu
         case STATE_VIEW_DIAG:
-            changeConsoleState = UI_DrawDiagnostics(currentConsoleState);
-            UI_DrawOptionsBtn();
+            //Call diagnostics tick function
+            Diagnostics_Tick(&newConsoleState);
+            //Draw brightness
             DrawRectangle(0, 0, SCREEN_W, SCREEN_H, (Color){ 0, 0, 0, Var_GetBrightness() });
             break;
    }

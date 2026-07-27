@@ -22,8 +22,8 @@ typedef enum {
 } ConsoleState;
 
 //Init function for pause menu
-void UIPause_Init(bool *displayBrightness, bool *displayTheme);
+void UIPause_Init();
 //Tick function for pause menu
-void UIPause_Tick(ConsoleState* currentConsoleState, bool *displayBrightness, bool *displayTheme);
+void UIPause_Tick(ConsoleState* currentConsoleState);
 
 #endif

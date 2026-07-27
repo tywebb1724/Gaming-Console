@@ -131,18 +131,18 @@ static void UIPause_Draw(UIPauseState currentUIPauseState, ConsoleState currentC
 }
 
 //Init function for pause menu
-void UIPause_Init(bool *displayBrightness, bool *displayTheme) {
+void UIPause_Init() {
     //Start with the list option selected
     currentUIPauseState = LIST;
     //Start with no time on the selected option
     uipauseTimeElapsed = 0.0f;
     //Not display brightness or theme options
-    *displayBrightness = false;
-    *displayTheme = false;
+    Var_SetDisplayBrightness(false);
+    Var_SetDisplayTheme(false);
 }
 
 //Tick function for pause menu
-void UIPause_Tick(ConsoleState* currentConsoleState, bool *displayBrightness, bool *displayTheme) {
+void UIPause_Tick(ConsoleState* currentConsoleState) {
     //Transition
     switch (currentUIPauseState) {
         case LIST:
@@ -159,43 +159,43 @@ void UIPause_Tick(ConsoleState* currentConsoleState, bool *displayBrightness, bo
 
         case BRIGHTNESS:
             //Move selected option up or down depending on input
-            if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && *displayBrightness == false) {
+            if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBrightness() == false) {
                 currentUIPauseState = THEME;
                 uipauseTimeElapsed = 0.0f;
             }
-            else if (((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) && *displayBrightness == false) {
+            else if (((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBrightness() == false) {
                 currentUIPauseState = LIST;
                 uipauseTimeElapsed = 0.0f;
             }
             //Display or stop displaying brightness options
-            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && *displayBrightness == false) {
+            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && Var_GetDisplayBrightness() == false) {
                 Brightness_Init();
-                *displayBrightness = true;
+                Var_SetDisplayBrightness(true);
             }
             else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
-                *displayBrightness = false;
+                Var_SetDisplayBrightness(false);
             }
             break;
 
         case THEME:
             //Move selected option up or down depending on input
-            if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && *displayTheme == false) {
+            if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayTheme() == false) {
                 currentUIPauseState = DISPLAY_DIAGNOSTICS;
                 uipauseTimeElapsed = 0.0f;
             }
-            else if (((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) && *displayTheme == false) {
+            else if (((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayTheme() == false) {
                 currentUIPauseState = BRIGHTNESS;
                 uipauseTimeElapsed = 0.0f;
             }
             //Display or stop displaying theme options
-            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && *displayTheme == false) {
+            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && Var_GetDisplayTheme() == false) {
                 Theme_Init();
-                *displayTheme = true;
+                Var_SetDisplayTheme(true);
                 //currentTheme = THEME_1;
                 //mouseLeftWasPressed = true;
             }
             else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
-                *displayTheme = false;
+                Var_SetDisplayTheme(false);
             }
             break;
 
@@ -250,7 +250,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState, bool *displayBrightness, bo
                 //mouseWasPressed = false;
             }
             //Display brightness options or normal options
-            if (*displayBrightness == true) {
+            if (Var_GetDisplayBrightness() == true) {
                 Brightness_Tick();
             }
             else {
@@ -265,7 +265,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState, bool *displayBrightness, bo
                 //mouseWasPressed = false;
             }
             //Display theme options or normal options
-            if (*displayTheme == true) {
+            if (Var_GetDisplayTheme() == true) {
                 MainMenu_DrawTheme();
             }
             else {

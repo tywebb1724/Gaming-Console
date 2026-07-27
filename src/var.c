@@ -1,34 +1,37 @@
 #include "var.h"
 #include <stdio.h>
 
+//Variables for brightness and brightness circle position
 static float brightness;
 static float brightCircleX;
-
+//Theme color variables
 static Color themeColor1;
 static Color themeColor2;
 static Color themeColor3;
-
+//Background variables
 static Texture2D currentBackground;
 static Texture2D backgroundBlue;
 static Texture2D backgroundRed;
 static Texture2D backgroundGreen;
 static Texture2D backgroundYellow;
-
-// Variables to show whether user is scrolling
+//Variables to show whether user is scrolling
 static ScrollState scrollGames;
 static ScrollState scrollCategories;
-
 //Monitor width and height
 static float monitorWidth;
 static float monitorHeight;
-// Types of font
+//Types of font
 static Font fontRegular;
 static Font fontBold;
+//Alpha for the select text
+static float alphaSelectTxt;
+//Variables to indicate whether things are being displayed
+static bool displayBrightness;
+static bool displayTheme;
+static bool displayDiag;
 
-bool displayDiag;
 
-float alphaSelectTxt;
-
+//Initialize the variables
 void Var_Init() {
     //Get monitor width and height
     monitorWidth = GetMonitorWidth(0);
@@ -36,11 +39,14 @@ void Var_Init() {
     //Load the fonts into this file
     fontRegular = LoadFont("assets/fonts/Exo2-Regular.ttf");
     fontBold = LoadFont("assets/fonts/Exo2-Bold.ttf");
-
+    //Load the backgrounds
     backgroundBlue = LoadTexture("./assets/covers/logo/BlueBackground.png");
     backgroundRed = LoadTexture("./assets/covers/logo/RedBackground.png");
     backgroundGreen = LoadTexture("./assets/covers/logo/GreenBackground.png");
     backgroundYellow = LoadTexture("./assets/covers/logo/YellowBackground.png");
+    //Set display variables as false
+    displayBrightness = false;
+    displayTheme = false;
 }
 
 
@@ -213,4 +219,24 @@ float Var_GetMonitorWidth() {
 //Get monitor height
 float Var_GetMonitorHeight() {
     return monitorHeight;
+}
+
+//Get whether brightness options are being displayed
+bool Var_GetDisplayBright() {
+    return displayBrightness;
+}
+
+//Set whether brightness options are being displayed
+void Var_SetDisplayBright(bool value) {
+    displayBrightness = value;
+}
+
+//Get whether theme options are being displayed
+bool Var_GetDisplayTheme() {
+    return displayTheme;
+}
+
+//Set whether theme options are being displayed
+void Var_SetDisplayTheme(bool value) {
+    displayTheme = value;
 }
