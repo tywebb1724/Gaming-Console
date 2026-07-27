@@ -21,7 +21,7 @@ typedef enum {
 
 
 //Get brightness value
-float Vars_GetBright();
+float Var_GetBright();
 //Set brightness value
 void Var_SetBright(float value);
 //Set brightness value

@@ -159,7 +159,7 @@ void State_UpdateAndDraw() {
             //Increment boot timer
             bootTimer += GetFrameTime();
             //Draw brightness
-            DrawRectangle(0, 0, SCREEN_W, SCREEN_H, (Color){ 0, 0, 0, Var_GetBrightness() });
+            DrawRectangle(0, 0, Var_GetScreenWidth(), Var_GetScreenHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
 
         //Drawing the main menu
@@ -171,7 +171,7 @@ void State_UpdateAndDraw() {
             //Draw UI for the menu
             UI_Tick(&newConsoleState);
             //Draw brightness
-            DrawRectangle(0, 0, SCREEN_W, SCREEN_H, (Color){ 0, 0, 0, Var_GetBrightness() });
+            DrawRectangle(0, 0, Var_GetScreenWidth(), Var_GetScreenHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
 
         //Launching/running app
@@ -181,14 +181,14 @@ void State_UpdateAndDraw() {
                 //Call play tick function and check if game is still running
                 is_game_running = Play_Tick(*Games_GetDisplayed(3));
                 //Draw brightness
-                DrawRectangle(0, 0, SCREEN_W, SCREEN_H, (Color){ 0, 0, 0, Var_GetBrightness() });
+                DrawRectangle(0, 0, Var_GetScreenWidth(), Var_GetScreenHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             }    
             break;
 
         //View consoles/games list
         case STATE_LIST:
             //Draw brightness
-            DrawRectangle(0, 0, SCREEN_W, SCREEN_H, (Color){ 0, 0, 0, Var_GetBrightness() });
+            DrawRectangle(0, 0, Var_GetScreenWidth(), Var_GetScreenHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
 
         //View diagnostics menu
@@ -196,7 +196,7 @@ void State_UpdateAndDraw() {
             //Call diagnostics tick function
             Diagnostics_Tick(&newConsoleState);
             //Draw brightness
-            DrawRectangle(0, 0, SCREEN_W, SCREEN_H, (Color){ 0, 0, 0, Var_GetBrightness() });
+            DrawRectangle(0, 0, Var_GetScreenWidth(), Var_GetScreenHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
    }
 }

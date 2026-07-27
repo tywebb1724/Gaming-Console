@@ -12,15 +12,6 @@ typedef enum {
     VIEW_DIAGNOSTICS
 } UIPauseState;
 
-//States of the console
-typedef enum {
-    STATE_BOOT,
-    STATE_MAIN_MENU,
-    STATE_APP_LAUNCHER,
-    STATE_LIST,
-    STATE_VIEW_DIAG
-} ConsoleState;
-
 //Init function for pause menu
 void UIPause_Init();
 //Tick function for pause menu

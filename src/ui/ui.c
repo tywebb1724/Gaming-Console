@@ -307,7 +307,7 @@ void UI_DrawBootScreen() {
     ClearBackground(BACKGROUND_CLR);
     //Draw logo
     Rectangle sourceRect = {0.0f, 0.0f, (float)spiderLogo.width, (float)spiderLogo.height};
-    Rectangle destRect = {UI_CenterImg_X(LOGO_SIZE, CENTER_X), UI_CenterImg_Y(LOGO_SIZE, SCREEN_H / 2), LOGO_SIZE, LOGO_SIZE};
+    Rectangle destRect = {UI_CenterImg_X(LOGO_SIZE, CENTER_X), UI_CenterImg_Y(LOGO_SIZE, Var_GetScreenHeight() / 2), LOGO_SIZE, LOGO_SIZE};
     Vector2 origin = {0.0f, 0.0f};
     DrawTexturePro(spiderLogo, sourceRect, destRect, origin, 0.0f, WHITE);
 }
@@ -350,16 +350,16 @@ static void UI_DrawBase() {
     ClearBackground(BACKGROUND_CLR);
     //Draw background
     Rectangle sourceRect = {0.0f, 0.0f, (float)Var_GetBackground().width, (float)Var_GetBackground().height};
-    Rectangle destRect = {UI_CenterImg_X(BACKGROUND_W, CENTER_X), UI_CenterImg_Y(BACKGROUND_H, SCREEN_H / 2), BACKGROUND_W, BACKGROUND_H};
+    Rectangle destRect = {UI_CenterImg_X(BACKGROUND_W, CENTER_X), UI_CenterImg_Y(BACKGROUND_H, Var_GetScreenHeight() / 2), BACKGROUND_W, BACKGROUND_H};
     Vector2 origin = {0.0f, 0.0f};
     DrawTexturePro(Var_GetBackground(), sourceRect, destRect, origin, 0.0f, Fade(WHITE, BACKGROUND_ALPHA));
     //Draw sections
-    DrawRectangle(0, 0, SCREEN_W, START_SECTION_Y, Fade(Var_GetColor2(), TOP_ALPHA));
+    DrawRectangle(0, 0, Var_GetScreenWidth(), START_SECTION_Y, Fade(Var_GetColor2(), TOP_ALPHA));
     Vector2 startSection1 = {0, START_SECTION_Y};
-    Vector2 endSection1 = {SCREEN_W, START_SECTION_Y};
+    Vector2 endSection1 = {Var_GetScreenWidth(), START_SECTION_Y};
     DrawLineEx(startSection1, endSection1, THICKNESS_BASE, Var_GetColor3());
     Vector2 startSection2 = {0, END_SECTION_Y};
-    Vector2 endSection2 = {SCREEN_W, END_SECTION_Y};
+    Vector2 endSection2 = {Var_GetScreenWidth(), END_SECTION_Y};
     DrawLineEx(startSection2, endSection2, THICKNESS_BASE, Var_GetColor3());
 }
 

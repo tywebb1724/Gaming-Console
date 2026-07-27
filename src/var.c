@@ -51,7 +51,7 @@ void Var_Init() {
 
 
 //Get brightness value
-float Vars_GetBright() {
+float Var_GetBright() {
     return brightness;
 }
 
@@ -196,7 +196,7 @@ void Var_UpdateUIFile() {
         fprintf(f, "%s\n", ColorToName(Var_GetColor3()));
         fprintf(f, "%f\n", Var_GetBright());
         fprintf(f, "%f\n", Var_GetBrightX());
-        fprintf(f, "%d\n", Var_GetDia());
+        fprintf(f, "%d\n", Var_GetDiag());
         fclose(f);
     }
 }

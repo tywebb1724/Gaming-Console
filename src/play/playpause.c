@@ -29,7 +29,7 @@ static void PlayPause_UpdateTime() {
 static void PlayPause_DrawControls(game_t game) {
     //Draw controller image
     Rectangle sourceRect = {0.0f, 0.0f, (float)controlsImg.width, (float)controlsImg.height};
-    Rectangle destRect = {SCREEN_W / 5, SCREEN_H / 5, SCREEN_W / 5 * 3, SCREEN_H / 5 * 3};
+    Rectangle destRect = {Var_GetScreenWidth() / 5, Var_GetScreenHeight() / 5, Var_GetScreenWidth() / 5 * 3, Var_GetScreenHeight() / 5 * 3};
     Vector2 origin = {0.0f, 0.0f};
     DrawTexturePro(controlsImg, sourceRect, destRect, origin, 0.0f, WHITE);
     //Initialize the text variables for all the controls

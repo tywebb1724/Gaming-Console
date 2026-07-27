@@ -5,11 +5,8 @@
 #define FPS 60
 //Background color
 #define BACKGROUND_CLR Var_GetColor2()
-//Screen width and height
-#define SCREEN_W Var_GetMonitorWidth()
-#define SCREEN_H Var_GetMonitorHeight()
 //Direction/position macros
-#define CENTER_X (SCREEN_W / 2)
+#define CENTER_X (Var_GetScreenWidth() / 2)
 #define LEFT 0
 #define RIGHT 1
 
