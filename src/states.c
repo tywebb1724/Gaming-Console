@@ -27,7 +27,7 @@ static bool isTextureUploaded[GAMES_LEN] = { false };
 static bool is_game_running;
 
 //Load all game images (if not loaded already)
-void State_LoadGameImages() {
+void States_LoadGameImages() {
     //If all games aren't dont loading
     if (!allLoaded) {
         //Searc through all the games
@@ -50,7 +50,7 @@ void State_LoadGameImages() {
 }
 
 //Initialize the states
-void State_Init() {
+void States_Init() {
     //Console starts in boot state
     currentConsoleState = STATE_BOOT;
     newConsoleState = STATE_MAIN_MENU;
@@ -79,7 +79,7 @@ void State_Init() {
 }
 
 //Update states and variabels and draw the correct screen
-void State_UpdateAndDraw() {
+void States_UpdateAndDraw() {
 
     //Transition
     switch(currentConsoleState) {

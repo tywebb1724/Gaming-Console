@@ -16,6 +16,8 @@
 #define RESUME_RECT_W (resumeSize.x + Var_GetScreenWidth() / 40.0f)
 #define RESUME_RECT_H (resumeSize.y + Var_GetScreenHeight() / 40.0f)
 
+//Stop the game
+void Play_Stop(game_t game);
 //Play initialization
 void Play_Init(game_t game);
 //Refresh the game

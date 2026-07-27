@@ -19,7 +19,8 @@ typedef enum {
     STATE_VIEW_DIAG
 } ConsoleState;
 
-
+//Initialize the variables
+void Var_Init();
 //Get brightness value
 float Var_GetBright();
 //Set brightness value

@@ -5,10 +5,10 @@
 #define BOOT_TIME 3.0f
 
 //Load all game images (if not loaded already)
-void State_LoadGameImages();
+void States_LoadGameImages();
 //Initialize the states
-void State_Init();
+void States_Init();
 //Update states and variabels and draw the correct screen
-void State_UpdateAndDraw();
+void States_UpdateAndDraw();
 
 #endif

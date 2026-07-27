@@ -211,7 +211,7 @@ static float Play_GetConsoleAspect(const char* console) {
 }
 
 //Stop the game
-static void Play_Stop(game_t game) {
+void Play_Stop(game_t game) {
     //If a game is currently running
     if (is_game_running) {
         //If the game saves by battery, save before closing game

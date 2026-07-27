@@ -18,23 +18,23 @@ int main(void)
     //Go fullscreen
     ToggleFullscreen();
     //Initialize state machines
+    Var_Init();
     Games_Init();
     Categories_Init();
     States_Init();
     UI_Init();
-    Var_Init();
     //Set target FPS to 60
     SetTargetFPS(FPS);
     //Main game loop
-    while (!IsKeyPressed(KEY_ESCAPE) && (!HOME_PRESS || !START_PRESS)) {
+    while (!IsKeyPressed(KEY_ESCAPE) && (!HOME_DOWN || !START_DOWN)) {
         //Start drawing
         BeginDrawing();
         //Update console and draw
-        State_UpdateAndDraw();
+        States_UpdateAndDraw();
         //Stop drawing
         EndDrawing();
         //Load game images (if not already loaded)
-        State_LoadGameImages();
+        States_LoadGameImages();
     }
     //Stop any possibly running game
     Play_Stop(*Games_GetDisplayed(3));
