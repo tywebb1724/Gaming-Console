@@ -1,3 +1,6 @@
+#ifndef UI_CONFIG_H
+#define UI_CONFIG_H
+
 
 //Macros for drawing boot screen
 #pragma region UI_BOOT
@@ -62,9 +65,7 @@
 //Small logo macros
 #define SMALL_LOGO_SIZE (Var_GetMonitorWidth() / 15.0f)
 #define SMALL_LOGO_Y (Var_GetMonitorHeight() / 18.0f + Var_GetMonitorHeight() / 125.0f)
-//Draw lines for the start and end of the top section
-#define START_SECTION_Y (TOP_Y + MeasureTextEx(Var_GetFontBold(), "L", CENTER_CATEG_SIZE, BOTTOM_TXT_SPACE).y / 2 + 2 * BOTTOM_TXT_SPACING_Y) 
-#define END_SECTION_Y (CENTER_CATEG_Y - 2 * BOTTOM_TXT_SPACING_Y)
+//Thickness for top section
 #define THICKNESS_TOP_SECTION (Var_GetMonitorHeight() / 500.0f)
 #pragma endregion
 
@@ -207,3 +208,4 @@
 //Y coordinate for bottom section
 //#define BOTTOM_Y (Var_GetMonitorHeight() * (7.0f / 8))
 
+#endif
