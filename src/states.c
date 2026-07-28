@@ -28,24 +28,30 @@ static bool is_game_running;
 
 //Load all game images (if not loaded already)
 void States_LoadGameImages() {
-    //If all games aren't dont loading
-    if (!allLoaded) {
-        //Searc through all the games
-        for (int i = 0; i < GAMES_LEN; i++) {
-            //If iamge is loaded but texture isn't uplaoded yet
-            if (Games_GetIsLoaded(i) && !isTextureUploaded[i]) {
-                //Load texture and unload image
-                game_t* game = Games_Get(i);
-                Image* image = Games_GetLoadedImage(i);
-                (*game).cover = LoadTextureFromImage(*image);
-                UnloadImage((*image));
-                isTextureUploaded[i] = true;
-                //If on the last game, all games are loaded
-                if (i == GAMES_LEN - 1) {
-                    allLoaded = true;
-                }
-            }
+    if (allLoaded) {
+        return;
+    }
+    bool pending = false;
+    //Search through all the games
+    for (int i = 0; i < GAMES_LEN; i++) {
+        if (isTextureUploaded) {
+            continue;
         }
+        //If image is loaded
+        if (Games_GetIsLoaded(i)) {
+            //Load texture and unload image
+            game_t* game = Games_Get(i);
+            Image* image = Games_GetLoadedImage(i);
+            (*game).cover = LoadTextureFromImage(*image);
+            UnloadImage(*image);
+            isTextureUploaded[i] = true;
+        }
+        else {
+            pending = true;
+        }
+    }
+    if (!pending) {
+        allLoaded = true;
     }
 }
 
@@ -97,7 +103,7 @@ void States_UpdateAndDraw() {
             if (newConsoleState == STATE_APP_LAUNCHER) {
                 currentConsoleState = STATE_APP_LAUNCHER;
                 //Initialize the game and free up the FPS
-                Play_Init(*Games_GetDisplayed(3));
+                Play_Init(Games_GetDisplayed(3));
                 SetTargetFPS(0);
             }
             else if (newConsoleState == STATE_LIST) {
@@ -167,7 +173,7 @@ void States_UpdateAndDraw() {
         case STATE_MAIN_MENU:
             //If user pressed M, clear the game data
             if (IsKeyPressed(KEY_M)) {
-                Games_ClearData(*Games_GetDisplayed(3));
+                Games_ClearData(Games_GetDisplayed(3));
             }
             //Draw UI for the menu
             UI_Tick(&newConsoleState);
@@ -180,7 +186,7 @@ void States_UpdateAndDraw() {
             //If the game is libretro
             if (Games_GetDisplayed(3)->libRetro == true) {
                 //Call play tick function and check if game is still running
-                is_game_running = Play_Tick(*Games_GetDisplayed(3));
+                is_game_running = Play_Tick(Games_GetDisplayed(3));
                 //Draw brightness
                 DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             }    

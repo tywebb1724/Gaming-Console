@@ -13,8 +13,8 @@
 #include "ui/ui.h"
 
 //Key and pad maps
-static int your_key_map[RETRO_DEVICE_ID_JOYPAD_MASK];
-static int your_pad_map[RETRO_DEVICE_ID_JOYPAD_MASK];
+static int your_key_map[RETRO_DEVICE_ID_JOYPAD_R3 + 1];
+static int your_pad_map[RETRO_DEVICE_ID_JOYPAD_R3 + 1];
 //Textures for drawing the games
 static Texture2D emulator_texture;
 //Time on the current frame
@@ -58,9 +58,9 @@ static void Play_DetectController() {
 */
 
 //Tells whether the game uses libretro
-static bool Play_IsLibRetro(game_t game) {
+static bool Play_IsLibRetro(const game_t* game) {
     //Check if the game is uses libretro or not
-    if (game.libRetro == true) {
+    if ((*game).libRetro == true) {
         return true;
     }
     else {
@@ -70,7 +70,7 @@ static bool Play_IsLibRetro(game_t game) {
 
 //Apply the key and pad maps
 static void Play_ApplyMaps(char* corePath) {
-    for (int i = 0; i < 32; i++) { your_key_map[i] = 0; your_pad_map[i] = 0; }
+    for (int i = 0; i < RETRO_DEVICE_ID_JOYPAD_R3 + 1; i++) { your_key_map[i] = 0; your_pad_map[i] = 0; }
 
         //Common controls
         your_key_map[RETRO_DEVICE_ID_JOYPAD_UP]     = KEY_UP;
@@ -210,12 +210,12 @@ static float Play_GetConsoleAspect(const char* console) {
 }
 
 //Stop the game
-void Play_Stop(game_t game) {
+void Play_Stop(const game_t* game) {
     //If a game is currently running
     if (is_game_running) {
         //If the game saves by battery, save before closing game
-        if (game.save == BATTERY) {
-            SaveBattery(game.romPath);
+        if ((*game).save == BATTERY) {
+            SaveBattery((*game).romPath);
         }
         //Stop game audio
         StopRetroAudio();
@@ -258,7 +258,7 @@ static void Play_Advance() {
 }
 
 //Draw the game
-static void Play_Draw(game_t game) {
+static void Play_Draw(const game_t* game) {
     ClearBackground(BLACK);
     //Determine whether game must be rotated
     unsigned game_rotation = GetGameRotation();
@@ -270,11 +270,11 @@ static void Play_Draw(game_t game) {
     //Define target aspect ration
     float targetAspect;
     //Get target aspect ratio depending on the console
-    if (strcmp(game.console, "Arcade") == 0) {
+    if (strcmp((*game).console, "Arcade") == 0) {
         targetAspect = texW / texH;
     }
     else {
-        targetAspect = Play_GetConsoleAspect(game.console);
+        targetAspect = Play_GetConsoleAspect((*game).console);
     }
     //If game is rotated sideways, flip the aspect ratio
     if (swapped) {
@@ -304,7 +304,7 @@ static void Play_Draw(game_t game) {
 }
 
 //Play initialization
-void Play_Init(game_t game) {
+void Play_Init(const game_t* game) {
     //Start by running the game
     currentPlayState = PLAY_GO;
     //No time since last saved
@@ -317,6 +317,8 @@ void Play_Init(game_t game) {
     is_game_running = false;
     //If the game is libretro
     if (Play_IsLibRetro(game)) {
+        UI_DrawLaunch(game);
+        sleep(2);
         //Reset previous rotation settings
         SetGameRotation(0);
         //Unload the previous texture from the last emulator ran
@@ -328,11 +330,11 @@ void Play_Init(game_t game) {
         //Keep pixels sharp
         SetTextureFilter(emulator_texture, TEXTURE_FILTER_POINT);
         //Apply controls depending on the game
-        Play_ApplyMaps(game.corePath);
+        Play_ApplyMaps((*game).corePath);
         //Load the libretro core
-        if (LoadRetroCore(game.corePath)) {
+        if (LoadRetroCore((*game).corePath)) {
             //Load the game
-            if (LoadGame(game.romPath)) {
+            if (LoadGame((*game).romPath)) {
                 //Mark that the game is running
                 is_game_running = true;
                 //For hardware rendered games
@@ -343,8 +345,8 @@ void Play_Init(game_t game) {
                 //Reinitialize GPU resources
                 TriggerContextReset();
                 //If game saves through battery, load the last save
-                if (game.save == BATTERY) {
-                    LoadBattery(game.romPath);
+                if ((*game).save == BATTERY) {
+                    LoadBattery((*game).romPath);
                 }
                 //Get the FPS for the game
                 core_fps = GetCoreTargetFPS();
@@ -367,23 +369,23 @@ void Play_Init(game_t game) {
     //If the game is through an external application
     else {
         //If it is a DS or Saturn game, start the script for exiting the applcication when the right button is pressed
-        if (strcmp(game.corePath, PATH_DS) == 0) {
+        if (strcmp((*game).corePath, PATH_DS) == 0) {
             system("flatpak run io.github.antimicrox.antimicrox --profile /home/tywebb1724/Desktop/Gaming-Console/assets/antimicro/micro_ds.gamecontroller.amgp --hidden &");
             sleep(4);
         }
-        else if (strcmp(game.corePath, PATH_SATURN) == 0) {
+        else if (strcmp((*game).corePath, PATH_SATURN) == 0) {
             system("flatpak run io.github.antimicrox.antimicrox --profile /home/tywebb1724/Desktop/Gaming-Console/assets/antimicro/micro_saturn.gamecontroller.amgp --hidden &");
             sleep(4);
         }
         //Run the correct command depending on the console
         char command[1024];
-        snprintf(command, sizeof(command), "flatpak run %s \"%s\"", game.corePath, game.romPath);
+        snprintf(command, sizeof(command), "flatpak run %s \"%s\"", (*game).corePath, (*game).romPath);
         system(command);
         //If it is a DS or Saturn game, kill the script
-        if (strcmp(game.corePath, PATH_DS) == 0) {
+        if (strcmp((*game).corePath, PATH_DS) == 0) {
             system("flatpak kill io.github.antimicrox.antimicrox");
         }
-        else if (strcmp(game.corePath, PATH_SATURN) == 0) {
+        else if (strcmp((*game).corePath, PATH_SATURN) == 0) {
             system("flatpak kill io.github.antimicrox.antimicrox");
         }
         //Focus the menu window again
@@ -392,7 +394,7 @@ void Play_Init(game_t game) {
 }
 
 //Play game tick function
-bool Play_Tick(game_t game) {
+bool Play_Tick(const game_t* game) {
 
     //Transition
     switch (currentPlayState) {
@@ -448,8 +450,8 @@ bool Play_Tick(game_t game) {
             //If it has been a minute since last saved
             if (saveTimeElapsed >= 60.0f) {
                 //If game saves by battery, save correctly
-                if (game.save == BATTERY) {
-                    SaveBattery(game.romPath);
+                if ((*game).save == BATTERY) {
+                    SaveBattery((*game).romPath);
                 }
                 //Reset save timer
                 saveTimeElapsed = 0.0f;
@@ -469,11 +471,11 @@ bool Play_Tick(game_t game) {
             //See how long since started resuming
             resumeTimer += GetFrameTime();
             //Draw resuming text
-            Vector2 resumeSize = MeasureTextEx(Var_GetFontRegular(), RESUME_TXT, RESUME_SIZE, RESUME_SPACE);
-            Vector2 resume = {RESUME_X, RESUME_Y};
-            DrawRectangle(RESUME_RECT_X, RESUME_RECT_Y, RESUME_RECT_W, RESUME_RECT_H, BLACK);
-            DrawRectangleLines(RESUME_RECT_X, RESUME_RECT_Y, RESUME_RECT_W, RESUME_RECT_H, WHITE);
-            DrawTextEx(Var_GetFontRegular(), RESUME_TXT, resume, RESUME_SIZE, RESUME_SPACE, WHITE);
+            Vector2 resumeSize = MeasureTextEx(Var_GetFontRegular(), PLAY_RESUME_TXT, PLAY_RESUME_SIZE, PLAY_RESUME_SPACE);
+            Vector2 resume = {PLAY_RESUME_X, PLAY_RESUME_Y};
+            DrawRectangle(PLAY_RESUME_RECT_X, PLAY_RESUME_RECT_Y, PLAY_RESUME_RECT_W, PLAY_RESUME_RECT_H, BLACK);
+            DrawRectangleLines(PLAY_RESUME_RECT_X, PLAY_RESUME_RECT_Y, PLAY_RESUME_RECT_W, PLAY_RESUME_RECT_H, WHITE);
+            DrawTextEx(Var_GetFontRegular(), PLAY_RESUME_TXT, resume, PLAY_RESUME_SIZE, PLAY_RESUME_SPACE, WHITE);
             break;
         
         case PLAY_RESTART:

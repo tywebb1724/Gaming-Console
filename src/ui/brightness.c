@@ -74,6 +74,8 @@ void Brightness_Tick() {
             //If no longer pressing to the left, stop changing brightness
             if (!IsKeyDown(KEY_LEFT) && !LS_LEFT) {
                 currentBrightnessState = NEITHER;
+                //Update the UI file
+                Var_UpdateUIFile();
             }
             break;
 
@@ -82,6 +84,8 @@ void Brightness_Tick() {
             //If no longer pressing to the right, stop changing brightness
             if (!IsKeyDown(KEY_RIGHT) && !LS_RIGHT) {
                 currentBrightnessState = NEITHER;
+                //Update the UI file
+                Var_UpdateUIFile();
             }
             break;
     }
@@ -116,8 +120,6 @@ void Brightness_Tick() {
                 Var_SetBright(MIN_BRIGHTNESS);
                 Var_SetBrightX(BRIGHTNESS_LINE_X_START);
             }
-            //Update the UI file
-            Var_UpdateUIFile();
             break;
 
         //Increasing brightness
@@ -133,8 +135,6 @@ void Brightness_Tick() {
                 Var_SetBright(MAX_BRIGHTNESS);
                 Var_SetBrightX(BRIGHTNESS_CIRCLE_X);
             }
-            //Update the UI file
-            Var_UpdateUIFile();
             break;
     }
 }

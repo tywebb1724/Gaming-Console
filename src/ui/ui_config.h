@@ -116,8 +116,8 @@
 //Game screen constants
 #define GAME_ASPECT_RATIO (3.0f / 4)
 //Macros for scrolling animation
-#define SCROLL_GAMES_SPEED 0.225f
-#define SCROLL_GAMES_THRESHOLD 10.0f
+#define SCROLL_GAMES_SPEED (0.225f * GetFrameTime() * 60.0f)
+#define SCROLL_GAMES_THRESHOLD (Var_GetMonitorWidth() / 192.0f)
 //Game screen coordinates
 #define LEFT2_GAME (LEFT1_GAME - (SIDE2_GAME_W * (19 / 20.0f)))
 #define LEFT1_GAME (CENTER_X - (SIDE1_GAME_W * (19 / 20.0f)))

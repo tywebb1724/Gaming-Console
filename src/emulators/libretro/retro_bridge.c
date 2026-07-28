@@ -5,7 +5,7 @@
 #include "libretro.h"
 #include "raylib.h"
 #include <string.h>
-#include <sys/stat.h> // Make sure this is included
+#include <sys/stat.h>
 
 #include <limits.h>
 #include <unistd.h>

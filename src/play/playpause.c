@@ -28,7 +28,7 @@ static void PlayPause_UpdateTime() {
 }
 
 //Draw the controls for the game
-static void PlayPause_DrawControls(game_t game) {
+static void PlayPause_DrawControls(const game_t* game) {
     //Draw controller image
     Rectangle sourceRect = {0.0f, 0.0f, (float)controlsImg.width, (float)controlsImg.height};
     Rectangle destRect = {Var_GetMonitorWidth() / 5, Var_GetMonitorHeight() / 5, Var_GetMonitorWidth() / 5 * 3, Var_GetMonitorHeight() / 5 * 3};
@@ -57,7 +57,7 @@ static void PlayPause_DrawControls(game_t game) {
     DrawRectangle(LS_RECT_X, LS_RECT_Y, LS_RECT_W, LS_RECT_H, GRAY);
 
     //Set the text variables for the console and draw the non-shared ones
-    if (strcmp(game.console, "Sega Genesis") == 0 || strcmp(game.console, "Sega CD") == 0) {
+    if (strcmp((*game).console, "Sega Genesis") == 0 || strcmp((*game).console, "Sega CD") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "START");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"B");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "A");
@@ -89,14 +89,14 @@ static void PlayPause_DrawControls(game_t game) {
         Vector2 rb = {RB_TXT_X, RB_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
-    else if (strcmp(game.console, "Sega Game Gear") == 0 || strcmp(game.console, "Sega Master System") == 0) {
+    else if (strcmp((*game).console, "Sega Game Gear") == 0 || strcmp((*game).console, "Sega Master System") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "1");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "2");
         snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
     }
-    else if (strcmp(game.console, "TurboGrafx-16") == 0 || strcmp(game.console, "TurboGrafx-CD") == 0) {
+    else if (strcmp((*game).console, "TurboGrafx-16") == 0 || strcmp((*game).console, "TurboGrafx-CD") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "RUN");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "I");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "II");
@@ -108,14 +108,14 @@ static void PlayPause_DrawControls(game_t game) {
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
         DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
-    else if (strcmp(game.console, "Neo Geo Pocket Color") == 0) {
+    else if (strcmp((*game).console, "Neo Geo Pocket Color") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "OPTION");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "B");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "A");
         snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
     }
-    else if (strcmp(game.console, "Nintendo Entertainment System") == 0) {
+    else if (strcmp((*game).console, "Nintendo Entertainment System") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
@@ -127,7 +127,7 @@ static void PlayPause_DrawControls(game_t game) {
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
         DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
-    else if (strcmp(game.console, "Game Boy Color") == 0) {
+    else if (strcmp((*game).console, "Game Boy Color") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
@@ -139,7 +139,7 @@ static void PlayPause_DrawControls(game_t game) {
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
         DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
-    else if (strcmp(game.console, "Atari Lynx") == 0) {
+    else if (strcmp((*game).console, "Atari Lynx") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
@@ -151,7 +151,7 @@ static void PlayPause_DrawControls(game_t game) {
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
         DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
-    else if (strcmp(game.console, "Super Nintendo Entertainment System") == 0) {
+    else if (strcmp((*game).console, "Super Nintendo Entertainment System") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
@@ -183,7 +183,7 @@ static void PlayPause_DrawControls(game_t game) {
         Vector2 rb = {RB_TXT_X, RB_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
-    else if (strcmp(game.console, "Game Boy Advance") == 0) {
+    else if (strcmp((*game).console, "Game Boy Advance") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
@@ -205,7 +205,7 @@ static void PlayPause_DrawControls(game_t game) {
         Vector2 rb = {RB_TXT_X, RB_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
-    else if (strcmp(game.console, "Sony PlayStation") == 0) {
+    else if (strcmp((*game).console, "Sony PlayStation") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "X");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "O");
@@ -247,7 +247,7 @@ static void PlayPause_DrawControls(game_t game) {
         Vector2 rt = {RT_TXT_X, RT_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rt_Txt, rt, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
-    else if (strcmp(game.console, "Nintendo 64") == 0) {
+    else if (strcmp((*game).console, "Nintendo 64") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
@@ -274,7 +274,7 @@ static void PlayPause_DrawControls(game_t game) {
         Vector2 rs = {RS_TXT_X, RS_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rs_Txt, rs, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
-    else if (strcmp(game.console, "Arcade") == 0) {
+    else if (strcmp((*game).console, "Arcade") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "1");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "2");
@@ -306,10 +306,10 @@ static void PlayPause_DrawControls(game_t game) {
         Vector2 rb = {RB_TXT_X, RB_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rb_Txt, rb, CONTROL_SIZE, CONTROL_SPACE, BLACK);
     }
-    else if (strcmp(game.console, "PC") == 0) {
+    else if (strcmp((*game).console, "PC") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "ENTER");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "USE");
-        snprintf(rDown_Txt,   sizeof(rUp_Txt),   "%s", "RUN");
+        snprintf(rDown_Txt,   sizeof(rDown_Txt),   "%s", "RUN");
         snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "MOVE");
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "MOVE");
 
@@ -318,7 +318,7 @@ static void PlayPause_DrawControls(game_t game) {
         Vector2 back = {BACK_TXT_X, BACK_TXT_Y};
         DrawTextEx(Var_GetFontBold(), back_Txt, back, CONTROL_SIZE, CONTROL_SPACE, BLACK);
 
-        snprintf(rt_Txt, sizeof(rDown_Txt), "%s", "FIRE");
+        snprintf(rt_Txt, sizeof(rt_Txt), "%s", "FIRE");
         Vector2 rt_Size = MeasureTextEx(Var_GetFontBold(), rt_Txt, CONTROL_SIZE, CONTROL_SPACE);
         Vector2 rt = {RT_TXT_X, RT_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rt_Txt, rt, CONTROL_SIZE, CONTROL_SPACE, BLACK);
@@ -625,7 +625,7 @@ PlayState PlayPause_Tick() {
             }
             //Draw controls or pause menu
             if (displayControls == true) {
-                PlayPause_DrawControls(*Games_GetDisplayed(3));
+                PlayPause_DrawControls(Games_GetDisplayed(3));
             }
             else {
                 PlayPause_Draw();

@@ -3,6 +3,8 @@
 #include "config.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdatomic.h>
 
 
 //Arrays to hold all games, the games displayed, and the new games displayed
@@ -19,7 +21,7 @@ static int games_range;
 static int start_index_new;
 
 //Variables to keep track of which images and textures are loaded
-static bool isLoaded[GAMES_LEN] = { false };
+static atomic_bool isLoaded[GAMES_LEN] = { false };
 
 
 //Get a game from the main array
@@ -120,12 +122,12 @@ void Games_Refresh() {
 }
 
 //Clear game data
-void Games_ClearData(game_t game) {
+void Games_ClearData(const game_t* game) {
     //If saves through battery method
-    if (game.save == BATTERY) {
+    if ((*game).save == BATTERY) {
         //Get file path
         char save_path[512];
-        snprintf(save_path, sizeof(save_path), "%s.srm", game.romPath);
+        snprintf(save_path, sizeof(save_path), "%s.srm", (*game).romPath);
         //Remove save file
         if (remove(save_path) == 0) {
             printf("Cleared save data: %s\n", save_path);
@@ -135,12 +137,12 @@ void Games_ClearData(game_t game) {
         }
     }
     //If saves through other method
-    else if (game.save == EXTERNAL) {
+    else if ((*game).save == EXTERNAL) {
         //Check which console
-        if (strcmp(game.console, "Sony PlayStation") == 0) {
+        if (strcmp((*game).console, "Sony PlayStation") == 0) {
             //Get file path
             char save_path[512];
-            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/Desktop/Gaming-Console/assets/saves/%s.mcd", game.serial);
+            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/Desktop/Gaming-Console/assets/saves/%s.mcd", (*game).serial);
             //Remove save file
             if (remove(save_path) == 0) {
                 printf("Cleared save data: %s\n", save_path);
@@ -149,11 +151,11 @@ void Games_ClearData(game_t game) {
                 printf("No save data to clear (or delete failed): %s\n", save_path);
             }
         }
-        else if (strcmp(game.console, "Sega CD") == 0) {
+        else if (strcmp((*game).console, "Sega CD") == 0) {
             //Get file path
             char save_path[512];
             char path[256];
-            snprintf(path, sizeof(path), "%s", game.romPath);
+            snprintf(path, sizeof(path), "%s", (*game).romPath);
             const char* filename = strrchr(path, '/');
             filename = filename ? filename + 1 : path; 
             char* dot = strrchr(filename, '.');
@@ -169,39 +171,39 @@ void Games_ClearData(game_t game) {
                 printf("No save data to clear (or delete failed): %s\n", save_path);
             }
         }
-        else if (strcmp(game.console, "Sony PlayStation Portable") == 0) {
+        else if (strcmp((*game).console, "Sony PlayStation Portable") == 0) {
             //Create command for removing file
             char command[1024] = "";
-            snprintf(command, sizeof(command), "rm -rf \"/home/tywebb1724/.var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SAVEDATA/%s\"", game.serial);
+            snprintf(command, sizeof(command), "rm -rf \"/home/tywebb1724/.var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SAVEDATA/%s\"", (*game).serial);
             //Run command
             int result = system(command);
             //Check if command worked
             if (result == 0) {
-                printf("Cleared PSP save data for %s\n", game.serial);
+                printf("Cleared PSP save data for %s\n", (*game).serial);
             } 
             else {
                 printf("Failed to clear PSP save (or none existed)\n");
             }
         }
-        else if (strcmp(game.console, "Sega Saturn") == 0) {
+        else if (strcmp((*game).console, "Sega Saturn") == 0) {
             //Create command for removing file
             char command[1024] = "";
-            snprintf(command, sizeof(command), "rm -rf \"/home/tywebb1724/.var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates/%s\"", game.serial);
+            snprintf(command, sizeof(command), "rm -rf \"/home/tywebb1724/.var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates/%s\"", (*game).serial);
             //Run command
             int result = system(command);
             //Check if command worked
             if (result == 0) {
-                printf("Cleared Saturn save data for %s\n", game.serial);
+                printf("Cleared Saturn save data for %s\n", (*game).serial);
             } 
             else {
                 printf("Failed to clear Saturn save (or none existed)\n");
             }
         }
-        else if (strcmp(game.console, "Nintendo DS") == 0) {
+        else if (strcmp((*game).console, "Nintendo DS") == 0) {
             //Get file path
             char save_path[512];
             char path[256];
-            snprintf(path, sizeof(path), "%s", game.romPath);
+            snprintf(path, sizeof(path), "%s", (*game).romPath);
             const char* filename = strrchr(path, '/');
             filename = filename ? filename + 1 : path; 
             char* dot = strrchr(filename, '.');
@@ -217,10 +219,10 @@ void Games_ClearData(game_t game) {
                 printf("No save data to clear (or delete failed): %s\n", save_path);
             }
         }
-        else if (strcmp(game.console, "Nintendo GameCube") == 0) {
+        else if (strcmp((*game).console, "Nintendo GameCube") == 0) {
             //Get file path
             char save_path[512];
-            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/USA/Card A/%s.gci", game.serial);
+            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/USA/Card A/%s.gci", (*game).serial);
             //Remove save file
             if (remove(save_path) == 0) {
                 printf("Cleared save data: %s\n", save_path);
@@ -229,10 +231,10 @@ void Games_ClearData(game_t game) {
                 printf("No save data to clear (or delete failed): %s\n", save_path);
             }
         }
-        else if (strcmp(game.console, "Sega Dreamcast") == 0) {
+        else if (strcmp((*game).console, "Sega Dreamcast") == 0) {
             //Get file path
             char save_path[512];
-            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/.var/app/org.flycast.Flycast/data/flycast/%s_vmu_save_A1.bin", game.serial);
+            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/.var/app/org.flycast.Flycast/data/flycast/%s_vmu_save_A1.bin", (*game).serial);
             //Remove save file
             if (remove(save_path) == 0) {
                 printf("Cleared save data: %s\n", save_path);
@@ -730,7 +732,7 @@ Image* Games_GetLoadedImage(int i) {
 
 //Get whether an image is loaded
 bool Games_GetIsLoaded(int i) {
-    return isLoaded[i];
+    return atomic_load_explicit(&isLoaded[i], memory_order_acquire);
 }
 
 //Load game cover textures
@@ -738,19 +740,20 @@ void* Games_LoadImages(void *args) {
     //Detach the thread
     pthread_detach(pthread_self());
     //Load the images of the current category first
-    for (int i = start_index; i <= end_index; i++) {
+    int s = start_index, e = end_index;
+    for (int i = s; i <= e; i++) {
         LoadedImages[i] = LoadImage(gamesLibrary[i].coverPath);
-        isLoaded[i] = true;
+        atomic_store_explicit(&isLoaded[i], true, memory_order_release);
     }
     //Load the images at beginning of array
-    for (int i = 0; i < start_index; i++) {
+    for (int i = 0; i < s; i++) {
         LoadedImages[i] = LoadImage(gamesLibrary[i].coverPath);
-        isLoaded[i] = true;
+        atomic_store_explicit(&isLoaded[i], true, memory_order_release);
     }
     //Load then images at end of array
-    for (int i = end_index + 1; i < GAMES_LEN; i++) {
+    for (int i = e + 1; i < GAMES_LEN; i++) {
         LoadedImages[i] = LoadImage(gamesLibrary[i].coverPath);
-        isLoaded[i] = true;
+        atomic_store_explicit(&isLoaded[i], true, memory_order_release);
     }
     return NULL;
 }

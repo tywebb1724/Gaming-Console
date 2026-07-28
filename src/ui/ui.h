@@ -17,7 +17,7 @@ void UI_DrawOptions();
 //Draw the boot screen
 void UI_DrawBootScreen() ;
 //Draw launching screen
-void UI_DrawLaunch(game_t game);
+void UI_DrawLaunch(const game_t* game);
 //Display diagnostics on top left
 void UI_DrawDispDiag();
 //Tick function for the main UI

@@ -287,7 +287,7 @@ void UI_DrawBootScreen() {
 }
 
 //Draw launching screen
-void UI_DrawLaunch(game_t game) {
+void UI_DrawLaunch(game_t* game) {
     //Clear background
     ClearBackground(BLACK);
     //Launching text
@@ -295,9 +295,9 @@ void UI_DrawLaunch(game_t game) {
     Vector2 launchTxt_Pos = {LAUNCH_TITLE_X, LAUNCH_TITLE_Y};
     DrawTextEx(Var_GetFontRegular(), LAUNCH_TXT, launchTxt_Pos, LAUNCH_TXT_SIZE, LAUNCH_SPACE, WHITE);
     //Name of game
-    Vector2 gameTxt_Size = MeasureTextEx(Var_GetFontBold(), game.title, LAUNCH_TXT_SIZE, LAUNCH_SPACE);
+    Vector2 gameTxt_Size = MeasureTextEx(Var_GetFontBold(), (*game).title, LAUNCH_TXT_SIZE, LAUNCH_SPACE);
     Vector2 gameTxt_Pos = {LAUNCH_GAME_X, LAUNCH_GAME_Y};
-    DrawTextEx(Var_GetFontBold(), game.title, gameTxt_Pos, LAUNCH_TXT_SIZE, LAUNCH_SPACE, WHITE);
+    DrawTextEx(Var_GetFontBold(), (*game).title, gameTxt_Pos, LAUNCH_TXT_SIZE, LAUNCH_SPACE, WHITE);
     //Home instructions
     Vector2 homeTxt_Size = MeasureTextEx(Var_GetFontRegular(), LAUNCH_HOME, LAUNCH_TXT_SIZE, LAUNCH_SPACE);
     Vector2 homeTxt_Pos = {LAUNCH_HOME_X, LAUNCH_HOME_Y};
@@ -373,7 +373,7 @@ static void UI_ChangeAlpha_Static() {
     }
     //If less than 1, increment
     if (alphaGames < 1.0f) {
-        alphaGames += 0.25f;
+        alphaGames += (0.25f* GetFrameTime() * 60.0f);
     }
     //If greater than 1, bring back to 1
     else if (alphaGames > 1.0f) {
@@ -381,7 +381,7 @@ static void UI_ChangeAlpha_Static() {
     }
     //If less than 1, increment
     if (alphaSelectBox < 1.0f) {
-        alphaSelectBox += 0.25f;
+        alphaSelectBox += (0.25f * GetFrameTime() * 60.0f);
     }
     //If greater than 1, bring back to 1
     else if (alphaSelectBox > 1.0f) {
@@ -409,7 +409,7 @@ static void UI_ChangeAlpha_ScrollGames() {
     }
     //If less than 1, increment
     if (alphaSelectBox < 1.0f) {
-        alphaSelectBox += 0.25f;
+        alphaSelectBox += (0.25f * GetFrameTime() * 60.0f);
     }
     //If greater than 1, bring to 1
     else if (alphaSelectBox > 1.0f) {
@@ -447,7 +447,7 @@ static void UI_ChangeAlpha_ScrollCateg() {
     }
     // If less than 1, increment up
     else if (alphaCategories_In < 1.0f) {
-        alphaCategories_In += 0.05f;
+        alphaCategories_In += (0.05f * GetFrameTime() * 60.0f);
     }
     // If less than 0, bring to 0
     if (alphaCategories_Out < 0.0f) {
@@ -944,7 +944,6 @@ void UI_Init() {
     alphaCategories_In = 0.0f;
     //Reset the coordinates for the games
     UI_ResetCoords_Games();
-    UI_ResetCoords_Categ();
     //Strings to hold the text in the file
     char color1[10] = "", color2[10] = "", color3[10] = "", bright[32] = "", circX[32] = "", diag[5] = "";
     //Open the file

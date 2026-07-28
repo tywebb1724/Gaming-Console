@@ -69,7 +69,7 @@ void Games_NewRefresh();
 //Update the games displayed for the new category
 void Games_Refresh();
 //Clear game data
-void Games_ClearData(game_t game);
+void Games_ClearData(const game_t* game);
 //Initialize game library
 void Games_Init();
 //Shift the order of the games to the right

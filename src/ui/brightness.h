@@ -28,7 +28,7 @@
 #define BRIGHTNESS_PERCENT_X (CENTER_X - brightnessSize.x / 2)
 #define BRIGHTNESS_PERCENT_Y (BRIGHTNESS_LINE_Y - 3 * UIPAUSE_TXT_SPACING_Y / 2 - brightnessSize.y / 2)
 //Brightness increment
-#define BRIGHTNESS_INCREMENT (MIN_BRIGHTNESS / 100.0f)
+#define BRIGHTNESS_INCREMENT (MIN_BRIGHTNESS / 100.0f * GetFrameTime() * 60.0f)
 
 //State of the brightness options
 typedef enum {

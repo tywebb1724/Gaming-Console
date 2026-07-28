@@ -38,8 +38,8 @@ void Var_Init() {
     monitorWidth = GetMonitorWidth(0);
     monitorHeight = GetMonitorHeight(0);
     //Load the fonts into this file
-    fontRegular = LoadFont("assets/fonts/Exo2-Regular.ttf");
-    fontBold = LoadFont("assets/fonts/Exo2-Bold.ttf");
+    fontRegular = LoadFontEx("assets/fonts/Exo2-Regular.ttf", 64, NULL, 0);
+    fontBold = LoadFontEx("assets/fonts/Exo2-Bold.ttf", 64, NULL, 0);
     //Load the backgrounds
     backgroundBlue = LoadTexture("./assets/covers/logo/BlueBackground.png");
     backgroundRed = LoadTexture("./assets/covers/logo/RedBackground.png");
