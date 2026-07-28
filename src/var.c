@@ -1,5 +1,6 @@
 #include "var.h"
 #include <stdio.h>
+#include <string.h>
 
 //Variables for brightness and brightness circle position
 static float brightness;
