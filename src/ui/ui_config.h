@@ -157,11 +157,11 @@
 #define SIDE1_CATEG_SIZE (CENTER_CATEG_SIZE * (3.0f / 4))
 //#define CATEG_Y (TOP_Y - size.y / 2)
 #define CENTER_CATEG_Y (TOP_Y - MeasureTextEx(Var_GetFontBold(), "L", CENTER_CATEG_SIZE, CATEG_SPACE).y / 2)
-#define CENTER_CATEG_X (UI_CenterText_X(Categories_GetDisplayed(2), CENTER_CATEG_SIZE, CENTER_X))
+#define CENTER_CATEG_X (CENTER_X - MeasureTextEx(Var_GetFontBold(), Categories_GetDisplayed(2), CENTER_CATEG_SIZE, CATEG_SPACE).x / 2)
 #define LEFT1_CATEG (Var_GetMonitorWidth() * (1.0f / 4))
 #define RIGHT1_CATEG (Var_GetMonitorWidth() * (3.0f / 4))
-#define LEFT1_CATEG_X (UI_CenterText_X(Categories_GetDisplayed(1), SIDE1_CATEG_SIZE, LEFT1_CATEG))
-#define RIGHT1_CATEG_X (UI_CenterText_X(Categories_GetDisplayed(3), SIDE1_CATEG_SIZE, RIGHT1_CATEG))
+#define LEFT1_CATEG_X (LEFT1_CATEG - MeasureTextEx(Var_GetFontBold(), Categories_GetDisplayed(1), SIDE1_CATEG_SIZE, CATEG_SPACE).x / 2)
+#define RIGHT1_CATEG_X (RIGHT1_CATEG - MeasureTextEx(Var_GetFontBold(), Categories_GetDisplayed(3), SIDE1_CATEG_SIZE, CATEG_SPACE).x / 2)
 #define SIDE_CATEG_Y (TOP_Y - MeasureTextEx(Var_GetFontBold(), "L", SIDE1_CATEG_SIZE, CATEG_SPACE).y / 2)
 //Macros for scrolling categories
 #define SCROLL_CATEG_IN_SPEED 0.15f

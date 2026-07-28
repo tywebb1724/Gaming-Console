@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "ui/ui.h"
 
 //Key and pad maps
 static int your_key_map[RETRO_DEVICE_ID_JOYPAD_MASK];
@@ -192,16 +193,13 @@ static void Play_ApplyMaps(char* corePath) {
 //Get the aspect ratio for the console
 static float Play_GetConsoleAspect(const char* console) {
     //Depending on the console, return the correct aspect ratio
-    if (strcmp(console, "Game Boy") == 0) {
-        return 10.0f / 9.0f;
-    }
-    else if (strcmp(console, "Game Boy Color") == 0) {
+    if (strcmp(console, "Game Boy Color") == 0) {
        return 10.0f / 9.0f;
     }
     else if (strcmp(console, "Game Boy Advance") == 0) {
         return 3.0f / 2.0f;
     }    
-    else if (strcmp(console, "Game Gear") == 0) {
+    else if (strcmp(console, "Sega Game Gear") == 0) {
         return 6.0f / 5.0f;
     }
     else if (strcmp(console, "Neo Geo Pocket Color") == 0) {

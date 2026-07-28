@@ -137,7 +137,7 @@ void UIPause_Init() {
     //Start with no time on the selected option
     uipauseTimeElapsed = 0.0f;
     //Not display brightness or theme options
-    Var_SetDisplayBrightness(false);
+    Var_SetDisplayBright(false);
     Var_SetDisplayTheme(false);
 }
 
@@ -170,10 +170,10 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             //Display or stop displaying brightness options
             if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && Var_GetDisplayBright() == false) {
                 Brightness_Init();
-                Var_SetDisplayBrightness(true);
+                Var_SetDisplayBright(true);
             }
             else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
-                Var_SetDisplayBrightness(false);
+                Var_SetDisplayBright(false);
             }
             break;
 
