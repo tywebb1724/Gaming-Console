@@ -38,7 +38,7 @@ int main(void)
         States_LoadGameImages();
     }
     //Stop any possibly running game
-    Play_Stop(*Games_GetDisplayed(3));
+    Play_Stop(Games_GetDisplayed(3));
     //Unload game textures and close window
     Games_UnloadTextures();
     //Close window

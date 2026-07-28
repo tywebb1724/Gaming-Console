@@ -25,7 +25,7 @@ static void Brightness_Draw() {
     //Draw line
     DrawLineEx((Vector2){BRIGHTNESS_LINE_X_START, BRIGHTNESS_LINE_Y}, (Vector2){BRIGHTNESS_LINE_X_END, BRIGHTNESS_LINE_Y}, BRIGHTNESS_LINE_THICK, Var_GetColor1());
     //Draw position of brightness circle
-    DrawCircle(Var_GetBrightX(), BRIGHTNESS_LINE_Y, BRIGHTNESS_RADIUS, Var_GetColor1());
+    DrawCircle(BRIGHTNESS_CIRCLE_X, BRIGHTNESS_LINE_Y, BRIGHTNESS_RADIUS, Var_GetColor1());
     //Draw arrows
     DrawCircle(BRIGHT_LS_LEFT_X + (Var_GetMonitorWidth() / 700.0f), BRIGHT_LS_Y, BRIGHT_LS_RADIUS, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
     Vector2 point1 = {BRIGHT_LS_LEFT_X - (BRIGHT_LS_TRIANGLE_SIZE / 2), BRIGHT_LS_Y};
@@ -96,15 +96,6 @@ void Brightness_Tick() {
         case NEITHER:
             //Draw brightness options screen
             Brightness_Draw();
-            //If brightness too high, set it at max
-            if (Var_GetBright() < MAX_BRIGHTNESS) {
-                Var_SetBright(MAX_BRIGHTNESS);
-            }
-            //If brightness too low, set it at min
-            else if (Var_GetBright() > MIN_BRIGHTNESS) {
-                Var_SetBright(MIN_BRIGHTNESS);
-                Var_SetBrightX(BRIGHTNESS_LINE_X_START);
-            }
             break;
 
         //Decreasing brightness
@@ -113,13 +104,6 @@ void Brightness_Tick() {
             Brightness_Draw();
             //Decrease brightness
             Var_AddBright(BRIGHTNESS_INCREMENT);
-            //Move brightness circle to the left
-            Var_AddBrightX(- BRIGHTNESS_CIRCLE_INCREMENT);
-            //If brightness too low, set it at min
-            if (Var_GetBright() >= MIN_BRIGHTNESS) {
-                Var_SetBright(MIN_BRIGHTNESS);
-                Var_SetBrightX(BRIGHTNESS_LINE_X_START);
-            }
             break;
 
         //Increasing brightness
@@ -128,13 +112,6 @@ void Brightness_Tick() {
             Brightness_Draw();
             //Increase brightness
             Var_AddBright(- BRIGHTNESS_INCREMENT);
-            //Move brightness circle to the right
-            Var_AddBrightX(BRIGHTNESS_CIRCLE_INCREMENT);
-            //If brightness too high, set it at max
-            if (Var_GetBright() <= MAX_BRIGHTNESS) {
-                Var_SetBright(MAX_BRIGHTNESS);
-                Var_SetBrightX(BRIGHTNESS_CIRCLE_X);
-            }
             break;
     }
 }

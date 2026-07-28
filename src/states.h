@@ -3,6 +3,8 @@
 
 //Time the boot up screen should display
 #define BOOT_TIME 3.0f
+//Time on launch screen
+#define LAUNCH_TIME 3.0f
 
 //Load all game images (if not loaded already)
 void States_LoadGameImages();

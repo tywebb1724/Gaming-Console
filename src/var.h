@@ -14,6 +14,7 @@ typedef enum {
 typedef enum {
     STATE_BOOT,
     STATE_MAIN_MENU,
+    STATE_LAUNCHING,
     STATE_APP_LAUNCHER,
     STATE_LIST,
     STATE_VIEW_DIAG
@@ -27,12 +28,6 @@ float Var_GetBright();
 void Var_SetBright(float value);
 //Set brightness value
 void Var_AddBright(float value);
-//Get brightness value
-float Var_GetBrightX();
-//Set brightness value
-void Var_SetBrightX(float value);
-//Set brightness value
-void Var_AddBrightX(float value);
 //Get theme color 1
 Color Var_GetColor1();
 //Get theme color 2

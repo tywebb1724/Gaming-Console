@@ -287,7 +287,7 @@ void UI_DrawBootScreen() {
 }
 
 //Draw launching screen
-void UI_DrawLaunch(game_t* game) {
+void UI_DrawLaunch(const game_t* game) {
     //Clear background
     ClearBackground(BLACK);
     //Launching text
@@ -343,7 +343,7 @@ static void UI_ChangeAlpha_Static() {
     if (alphaSelectTxt_Blink == true) {
         // If less than 1, increment
         if (Var_GetAlphaSelect() < 1.0f) {
-            Var_AddAlphaSelect(0.04f);
+            Var_AddAlphaSelect(0.04f * GetFrameTime() * 60.0f);
         }
         //If alpha has reached 1
         else if (Var_GetAlphaSelect() >= 1.0f) {
@@ -359,7 +359,7 @@ static void UI_ChangeAlpha_Static() {
     {
         // If less than 1, increment
         if (Var_GetAlphaSelect() > 0.1f) {
-            Var_AddAlphaSelect(- 0.04f);
+            Var_AddAlphaSelect(- 0.04f * GetFrameTime() * 60.0f);
         }
         //If alpha has gotten low enough
         else if (Var_GetAlphaSelect() <= 0.1f) {
@@ -373,7 +373,7 @@ static void UI_ChangeAlpha_Static() {
     }
     //If less than 1, increment
     if (alphaGames < 1.0f) {
-        alphaGames += (0.25f* GetFrameTime() * 60.0f);
+        alphaGames += (0.25f * GetFrameTime() * 60.0f);
     }
     //If greater than 1, bring back to 1
     else if (alphaGames > 1.0f) {
@@ -397,7 +397,7 @@ static void UI_ChangeAlpha_ScrollGames() {
     }
     //If greater than 0, decrement
     else if (Var_GetAlphaSelect() > 0.0f) {
-        Var_AddAlphaSelect(- 0.25f);
+        Var_AddAlphaSelect(- 0.25f * GetFrameTime() * 60.0f);
     }
     //If less than 0, bring to 0
     if (alphaGames < 0.0f) {
@@ -405,7 +405,7 @@ static void UI_ChangeAlpha_ScrollGames() {
     }
     //If greater than 0, decrement
     else if (alphaGames > 0.0f) {
-        alphaGames -= 0.25f;
+        alphaGames -= (0.25f * GetFrameTime() * 60.0f);
     }
     //If less than 1, increment
     if (alphaSelectBox < 1.0f) {
@@ -425,7 +425,7 @@ static void UI_ChangeAlpha_ScrollCateg() {
     }
     // If greater than 0, decrement
     else if (Var_GetAlphaSelect() > 0.0f) {
-        Var_AddAlphaSelect(- 0.25f);
+        Var_AddAlphaSelect(- 0.25f * GetFrameTime() * 60.0f);
     }
     // If less than 0, bring to 0
     if (alphaGames < 0.0f) {
@@ -433,10 +433,10 @@ static void UI_ChangeAlpha_ScrollCateg() {
     }
     // If greater than 0, decrement
     else if (alphaGames > 0.0f) {
-        alphaGames -= 0.25f;
+        alphaGames -= (0.25f * GetFrameTime() * 60.0f);
     }
     if (alphaSelectBox > 0.0f) {
-        alphaSelectBox -= 0.25f;
+        alphaSelectBox -= (0.25f * GetFrameTime() * 60.0f);
     }
     else if (alphaSelectBox < 0.0f) {
         alphaSelectBox = 0.0f;
@@ -455,7 +455,7 @@ static void UI_ChangeAlpha_ScrollCateg() {
     }
     // If greater than 0, decrement
     else if (alphaCategories_Out > 0.0f) {
-        alphaCategories_Out -= 0.1f;
+        alphaCategories_Out -= (0.1f * GetFrameTime() * 60.0f);
     }
 }
 
@@ -945,7 +945,7 @@ void UI_Init() {
     //Reset the coordinates for the games
     UI_ResetCoords_Games();
     //Strings to hold the text in the file
-    char color1[10] = "", color2[10] = "", color3[10] = "", bright[32] = "", circX[32] = "", diag[5] = "";
+    char color1[10] = "", color2[10] = "", color3[10] = "", bright[32] = "", diag[5] = "";
     //Open the file
     FILE* f = fopen("/home/tywebb1724/Desktop/Gaming-Console/assets/system/ui.txt", "r");
     //Chech if the file opened successfully
@@ -983,21 +983,10 @@ void UI_Init() {
         if (fgets(bright, sizeof(bright), f)) {
             bright[strcspn(bright, "\n")] = '\0';
             Var_SetBright(atof(bright));
-            //Get position of brightness circle and set the variable
-            if (fgets(circX, sizeof(circX), f)) { 
-                circX[strcspn(circX, "\n")] = '\0';
-                Var_SetBrightX(atof(circX));
-            }
-            //If no text, set default brightness and brightness circle position
-            else {
-                Var_SetBright(MAX_BRIGHTNESS);
-                Var_SetBrightX(BRIGHTNESS_CIRCLE_X);
-            }
         }
         //If no text, set default brightness and brightness circle position
         else {
             Var_SetBright(MAX_BRIGHTNESS);
-            Var_SetBrightX(BRIGHTNESS_CIRCLE_X);
         }
         //Get whether diagnostics are being displayed and set the variable
         if (fgets(diag, sizeof(diag), f)) {

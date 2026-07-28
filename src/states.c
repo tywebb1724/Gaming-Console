@@ -25,6 +25,8 @@ static pthread_t loadThread;
 static bool isTextureUploaded[GAMES_LEN] = { false };
 //Variable to indicate if game is running
 static bool is_game_running;
+//Timer to track app launch
+static float launchTimer;
 
 //Load all game images (if not loaded already)
 void States_LoadGameImages() {
@@ -34,7 +36,7 @@ void States_LoadGameImages() {
     bool pending = false;
     //Search through all the games
     for (int i = 0; i < GAMES_LEN; i++) {
-        if (isTextureUploaded) {
+        if (isTextureUploaded[i]) {
             continue;
         }
         //If image is loaded
@@ -62,6 +64,8 @@ void States_Init() {
     newConsoleState = STATE_MAIN_MENU;
     //Boot timer starts at 0
     bootTimer = 0.0f;
+    //Launching timer starts at 0
+    launchTimer = 0;
     //Initially no games loaded
     gamesLoaded = 0;
     //Create thread for loading images
@@ -101,10 +105,7 @@ void States_UpdateAndDraw() {
         case STATE_MAIN_MENU:
             //Check if console is transitioning to a new state, and transition accordingly
             if (newConsoleState == STATE_APP_LAUNCHER) {
-                currentConsoleState = STATE_APP_LAUNCHER;
-                //Initialize the game and free up the FPS
-                Play_Init(Games_GetDisplayed(3));
-                SetTargetFPS(0);
+                currentConsoleState = STATE_LAUNCHING;
             }
             else if (newConsoleState == STATE_LIST) {
                 currentConsoleState = STATE_LIST;
@@ -114,7 +115,18 @@ void States_UpdateAndDraw() {
             }
             break;
 
-        //Launching/running app
+        //Launching qpp
+        case STATE_LAUNCHING:
+            //If has been launching long enough, transition to officially launch the app
+            if (launchTimer >= LAUNCH_TIME) {
+                currentConsoleState = STATE_APP_LAUNCHER;
+                //Initialize the game and free up the FPS
+                Play_Init(Games_GetDisplayed(3));
+                SetTargetFPS(0);
+            }
+            break;
+
+        //Running app
         case STATE_APP_LAUNCHER:
             //If game is libretro
             if (Games_GetDisplayed(3)->libRetro == true) {
@@ -181,6 +193,13 @@ void States_UpdateAndDraw() {
             DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
 
+        //Launching qpp
+        case STATE_LAUNCHING:
+            UI_DrawLaunch(Games_GetDisplayed(3));
+            //Increment timer
+            launchTimer += GetFrameTime();
+            break;
+            
         //Launching/running app
         case STATE_APP_LAUNCHER:
             //If the game is libretro

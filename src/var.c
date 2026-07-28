@@ -1,10 +1,10 @@
 #include "var.h"
 #include <stdio.h>
 #include <string.h>
+#include "config.h"
 
 //Variables for brightness and brightness circle position
 static float brightness;
-static float brightCircleX;
 //Theme color variables
 static Color themeColor1;
 static Color themeColor2;
@@ -56,29 +56,24 @@ float Var_GetBright() {
     return brightness;
 }
 
+static float Var_ClampBright(float value) {
+    //Catch bad brightness values
+    if (!(value >= MAX_BRIGHTNESS)) {
+        return MAX_BRIGHTNESS;
+    }
+    if (value > MIN_BRIGHTNESS) {
+        return MIN_BRIGHTNESS;
+    }
+    return value;
+}
 //Set brightness value
 void Var_SetBright(float value) {
-    brightness = value;
+    brightness = Var_ClampBright(value);
 }
 
 //Set brightness value
 void Var_AddBright(float value) {
-    brightness += value;
-}
-
-//Get brightness value
-float Var_GetBrightX() {
-    return brightCircleX;
-}
-
-//Set brightness value
-void Var_SetBrightX(float value) {
-    brightCircleX = value;
-}
-
-//Set brightness value
-void Var_AddBrightX(float value) {
-    brightCircleX += value;
+    brightness = Var_ClampBright(brightness + value);
 }
 
 //Get theme color 1
@@ -215,7 +210,6 @@ void Var_UpdateUIFile() {
         fprintf(f, "%s\n", Var_ColorToName(Var_GetColor2()));
         fprintf(f, "%s\n", Var_ColorToName(Var_GetColor3()));
         fprintf(f, "%f\n", Var_GetBright());
-        fprintf(f, "%f\n", Var_GetBrightX());
         fprintf(f, "%d\n", Var_GetDiag());
         fclose(f);
     }

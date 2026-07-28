@@ -317,8 +317,6 @@ void Play_Init(const game_t* game) {
     is_game_running = false;
     //If the game is libretro
     if (Play_IsLibRetro(game)) {
-        UI_DrawLaunch(game);
-        sleep(2);
         //Reset previous rotation settings
         SetGameRotation(0);
         //Unload the previous texture from the last emulator ran

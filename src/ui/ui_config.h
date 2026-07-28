@@ -116,7 +116,8 @@
 //Game screen constants
 #define GAME_ASPECT_RATIO (3.0f / 4)
 //Macros for scrolling animation
-#define SCROLL_GAMES_SPEED (0.225f * GetFrameTime() * 60.0f)
+#define FRAME_LERP(rate) (1.0f - powf(1.0f - (rate), GetFrameTime() * 60.0f))
+#define SCROLL_GAMES_SPEED FRAME_LERP(0.225f)
 #define SCROLL_GAMES_THRESHOLD (Var_GetMonitorWidth() / 192.0f)
 //Game screen coordinates
 #define LEFT2_GAME (LEFT1_GAME - (SIDE2_GAME_W * (19 / 20.0f)))
@@ -164,8 +165,8 @@
 #define RIGHT1_CATEG_X (RIGHT1_CATEG - MeasureTextEx(Var_GetFontBold(), Categories_GetDisplayed(3), SIDE1_CATEG_SIZE, CATEG_SPACE).x / 2)
 #define SIDE_CATEG_Y (TOP_Y - MeasureTextEx(Var_GetFontBold(), "L", SIDE1_CATEG_SIZE, CATEG_SPACE).y / 2)
 //Macros for scrolling categories
-#define SCROLL_CATEG_IN_SPEED 0.15f
-#define SCROLL_CATEG_OUT_SPEED 0.225f
+#define SCROLL_CATEG_IN_SPEED FRAME_LERP(0.15f)
+#define SCROLL_CATEG_OUT_SPEED FRAME_LERP(0.225f)
 #define SCROLL_CATEG_THRESHOLD (Var_GetMonitorWidth() / 80.0f)
 #define LEFT2_SCROLLR (LEFT1_SCROLLR - (SIDE2_GAME_W * (19 / 20.0f)))
 #define LEFT1_SCROLLR (CENTER_SCROLLR - (SIDE1_GAME_W * (19 / 20.0f)))
