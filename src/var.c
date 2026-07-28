@@ -3,7 +3,7 @@
 #include <string.h>
 #include "config.h"
 
-//Variables for brightness and brightness circle position
+//Variables for brightness
 static float brightness;
 //Theme color variables
 static Color themeColor1;

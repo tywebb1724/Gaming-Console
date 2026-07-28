@@ -42,8 +42,8 @@ game_t* Games_GetNew(int i) {
 //Update the indexes for the new game category
 void Games_UpdateNewIndexes(int direction) {
     char categ[30];
-    //If scrolling to the left
-    if (direction == LEFT) {
+    //If scrolling to the right
+    if (direction == RIGHT) {
         //If it is the last category in the array, the new category starts at the beginning
         if (end_index == GAMES_LEN - 1) {
             start_index_new = 1;
@@ -53,7 +53,7 @@ void Games_UpdateNewIndexes(int direction) {
             start_index_new = end_index + 2;
         }
     }
-    //If scrolling to the right
+    //If scrolling to the left
     else {
         //If the first category in the array, new category is the last one
         if (start_index == 0) {

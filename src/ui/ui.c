@@ -1007,7 +1007,6 @@ void UI_Init() {
         Var_SetColor2(BLACK);
         Var_SetColor3(WHITE);
         Var_SetBright(MAX_BRIGHTNESS);
-        Var_SetBrightX(BRIGHTNESS_CIRCLE_X);
         Var_SetDiag(false);
     }
     //Set max length to start at 0

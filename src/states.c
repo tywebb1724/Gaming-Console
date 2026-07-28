@@ -106,6 +106,7 @@ void States_UpdateAndDraw() {
             //Check if console is transitioning to a new state, and transition accordingly
             if (newConsoleState == STATE_APP_LAUNCHER) {
                 currentConsoleState = STATE_LAUNCHING;
+                launchTimer = 0;
             }
             else if (newConsoleState == STATE_LIST) {
                 currentConsoleState = STATE_LIST;
@@ -115,7 +116,7 @@ void States_UpdateAndDraw() {
             }
             break;
 
-        //Launching qpp
+        //Launching app
         case STATE_LAUNCHING:
             //If has been launching long enough, transition to officially launch the app
             if (launchTimer >= LAUNCH_TIME) {
@@ -193,14 +194,16 @@ void States_UpdateAndDraw() {
             DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
 
-        //Launching qpp
+        //Launching app
         case STATE_LAUNCHING:
             UI_DrawLaunch(Games_GetDisplayed(3));
             //Increment timer
             launchTimer += GetFrameTime();
+            //Draw brightness
+            DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
             
-        //Launching/running app
+        //Running app
         case STATE_APP_LAUNCHER:
             //If the game is libretro
             if (Games_GetDisplayed(3)->libRetro == true) {
