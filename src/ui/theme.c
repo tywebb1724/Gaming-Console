@@ -28,8 +28,8 @@ static void Theme_Draw() {
         UIPAUSE_RECT_Y,
         UIPAUSE_RECT_W,
         UIPAUSE_RECT_H};
-    DrawRectangleRoundedLinesEx(rectSec, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, THICKNESS_UIPAUSE, Var_GetColor3());
     DrawRectangleRounded(rectSec, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, Var_GetColor2());
+    DrawRectangleRoundedLinesEx(rectSec, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, THICKNESS_UIPAUSE, Var_GetColor3());
     //Draw title
     Vector2 themeSize = MeasureTextEx(Var_GetFontBold(), THEME_TXT, THEME_TXT_SIZE, UIPAUSE_TITLE_SPACE);
     Vector2 theme = {THEME_TXT_X, THEME_TXT_Y};
@@ -175,7 +175,7 @@ void Theme_Tick() {
             Var_SetColor2(BLACK);
             Var_SetColor3(WHITE);
             Var_SetBackground(Var_NametoBackground("BLUE"));
-            Var_UpdateUITxt();
+            Var_UpdateUIFile();
         }
         break;
 
@@ -191,7 +191,7 @@ void Theme_Tick() {
             Var_SetColor2(BLACK);
             Var_SetColor3(WHITE);
             Var_SetBackground(Var_NametoBackground("RED"));
-            Var_UpdateUITxt();
+            Var_UpdateUIFile();
         }
         break;
 
@@ -207,7 +207,7 @@ void Theme_Tick() {
             Var_SetColor2(BLACK);
             Var_SetColor3(WHITE);
             Var_SetBackground(Var_NametoBackground("GREEN"));
-            Var_UpdateUITxt();
+            Var_UpdateUIFile();
         }
         break;
 
@@ -223,7 +223,7 @@ void Theme_Tick() {
             Var_SetColor2(BLACK);
             Var_SetColor3(WHITE);
             Var_SetBackground(Var_NametoBackground("YELLOW"));
-            Var_UpdateUITxt();
+            Var_UpdateUIFile();
         }
         break;
     }

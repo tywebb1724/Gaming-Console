@@ -2,25 +2,25 @@
 #define PLAYPAUSE_CONFIG_H
 
 
-#define PLAYPAUSE_LINE_THICK (Var_GetScreenHeight() / 500.0f)
+#define PLAYPAUSE_LINE_THICK (Var_GetMonitorHeight() / 500.0f)
 
 #define PLAYPAUSE_RECT_X (CENTER_X - PLAYPAUSE_RECT_W / 2)
-#define PLAYPAUSE_RECT_Y (Var_GetScreenHeight() * (1.0f / 2) - PLAYPAUSE_RECT_H / 2)
-#define PLAYPAUSE_RECT_W (Var_GetScreenWidth() * (2.0f / 5))
-#define PLAYPAUSE_RECT_H (Var_GetScreenHeight() * (2.0f / 5))
+#define PLAYPAUSE_RECT_Y (Var_GetMonitorHeight() * (1.0f / 2) - PLAYPAUSE_RECT_H / 2)
+#define PLAYPAUSE_RECT_W (Var_GetMonitorWidth() * (2.0f / 5))
+#define PLAYPAUSE_RECT_H (Var_GetMonitorHeight() * (2.0f / 5))
 #define PLAYPAUSE_ROUND 0.025f
 #define PLAYPAUSE_SEGMENTS 15
 
-#define PLAYPAUSE_SPACING_Y (Var_GetScreenHeight() / 30.0f)
+#define PLAYPAUSE_SPACING_Y (Var_GetMonitorHeight() / 30.0f)
 #define PLAYPAUSE_TITLE "[PAUSED]"
-#define PLAYPAUSE_TITLE_SIZE (Var_GetScreenWidth() / 40.0f)
-#define PLAYPAUSE_SPACE (Var_GetScreenWidth() / 400.0f)
+#define PLAYPAUSE_TITLE_SIZE (Var_GetMonitorWidth() / 40.0f)
+#define PLAYPAUSE_SPACE (Var_GetMonitorWidth() / 400.0f)
 #define PLAYPAUSE_TITLE_X (CENTER_X - titleSize.x / 2)
 #define PLAYPAUSE_TITLE_Y (PLAYPAUSE_RECT_Y + PLAYPAUSE_SPACING_Y - titleSize.y / 2)
 
 #define PLAYPAUSE_SIZE (PLAYPAUSE_TITLE_SIZE * (3.0f / 4))
 #define PLAYPAUSE_X (PLAYPAUSE_RECT_X + PLAYPAUSE_SPACING_Y)
-#define RESUME_TXT "Restart game"
+#define RESUME_TXT "Resume game"
 #define RESUME_Y (PLAYPAUSE_TITLE_Y + titleSize.y + PLAYPAUSE_SPACING_Y - resumeSize.y / 2)
 #define RESTART_TXT "Restart game"
 #define RESTART_Y (RESUME_Y + PLAYPAUSE_SPACING_Y + resumeSize.y / 2)

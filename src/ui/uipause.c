@@ -32,8 +32,8 @@ static void UIPause_Draw(UIPauseState currentUIPauseState, ConsoleState currentC
         UIPAUSE_RECT_Y,
         UIPAUSE_RECT_W,
         UIPAUSE_RECT_H};
-    DrawRectangleRoundedLinesEx(rectSec, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, THICKNESS_UIPAUSE, Var_GetColor3());
     DrawRectangleRounded(rectSec, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, Var_GetColor2());
+    DrawRectangleRoundedLinesEx(rectSec, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, THICKNESS_UIPAUSE, Var_GetColor3());
     //Draw title
     Vector2 titleSize = MeasureTextEx(Var_GetFontBold(), UIPAUSE_TITLE, UIPAUSE_TITLE_SIZE, UIPAUSE_TITLE_SPACE);
     Vector2 title = {UIPAUSE_TITLE_X, UIPAUSE_TITLE_Y};
@@ -159,16 +159,16 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
 
         case BRIGHTNESS:
             //Move selected option up or down depending on input
-            if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBrightness() == false) {
+            if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBright() == false) {
                 currentUIPauseState = THEME;
                 uipauseTimeElapsed = 0.0f;
             }
-            else if (((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBrightness() == false) {
+            else if (((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBright() == false) {
                 currentUIPauseState = LIST;
                 uipauseTimeElapsed = 0.0f;
             }
             //Display or stop displaying brightness options
-            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && Var_GetDisplayBrightness() == false) {
+            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && Var_GetDisplayBright() == false) {
                 Brightness_Init();
                 Var_SetDisplayBrightness(true);
             }
@@ -213,7 +213,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) {
                 bool diag = Var_GetDiag();
                 Var_SetDiag(!diag);
-                UI_UpdateFile();
+                Var_UpdateUIFile();
             }
             break;
 
@@ -250,7 +250,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 //mouseWasPressed = false;
             }
             //Display brightness options or normal options
-            if (Var_GetDisplayBrightness() == true) {
+            if (Var_GetDisplayBright() == true) {
                 Brightness_Tick();
             }
             else {
@@ -266,7 +266,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             }
             //Display theme options or normal options
             if (Var_GetDisplayTheme() == true) {
-                MainMenu_DrawTheme();
+                Theme_Tick();
             }
             else {
                 UIPause_Draw(currentUIPauseState, *currentConsoleState);

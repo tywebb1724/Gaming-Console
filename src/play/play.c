@@ -6,10 +6,11 @@
 #include "controller_config.h"
 #include "raylib.h"
 #include "var.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-//Monitor width and height
-static int Var_GetMonitorWidth();
-static int Var_GetMonitorHeight();
 //Key and pad maps
 static int your_key_map[RETRO_DEVICE_ID_JOYPAD_MASK];
 static int your_pad_map[RETRO_DEVICE_ID_JOYPAD_MASK];
@@ -301,7 +302,7 @@ static void Play_Draw(game_t game) {
     //Draw texture on the screen
     DrawTexturePro(emulator_texture, src, dest, origin, rot, WHITE);
     //Draw diganostics (if applys)
-    MainMenu_DrawDiagnostics();
+    UI_DrawDispDiag();
 }
 
 //Play initialization
@@ -363,18 +364,18 @@ void Play_Init(game_t game) {
         //Reset time since last saved game
         saveTimeElapsed = 0;
         //Initialize state of the game
-        currentPlayState = GAME_GO;
+        currentPlayState = PLAY_GO;
     }
     //If the game is through an external application
     else {
         //If it is a DS or Saturn game, start the script for exiting the applcication when the right button is pressed
         if (strcmp(game.corePath, PATH_DS) == 0) {
             system("flatpak run io.github.antimicrox.antimicrox --profile /home/tywebb1724/Desktop/Gaming-Console/assets/antimicro/micro_ds.gamecontroller.amgp --hidden &");
-            usleep(4000000);
+            sleep(4);
         }
         else if (strcmp(game.corePath, PATH_SATURN) == 0) {
             system("flatpak run io.github.antimicrox.antimicrox --profile /home/tywebb1724/Desktop/Gaming-Console/assets/antimicro/micro_saturn.gamecontroller.amgp --hidden &");
-            usleep(4000000);
+            sleep(4);
         }
         //Run the correct command depending on the console
         char command[1024];
@@ -481,6 +482,7 @@ bool Play_Tick(game_t game) {
             break;
 
         case PLAY_EXIT:
+            Play_Stop(game);
             return false;
     }
 

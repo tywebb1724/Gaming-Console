@@ -5,6 +5,7 @@
 #include "categories.h"
 #include "controller_config.h"
 #include "config.h"
+#include "play/play.h"
 
 
 //Main function

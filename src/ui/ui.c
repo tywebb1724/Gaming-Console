@@ -31,7 +31,7 @@ static Texture2D spiderLogo;
 //Variable to hold the current image to draw
 Texture2D img;
 //Variables to hold information about the current image to draw
-static int img_X, img_Y, img_W, img_H;
+static float img_X, img_Y, img_W, img_H;
 //Different alphas
 static float alphaGames;
 static float alphaCategories_Out;
@@ -67,25 +67,6 @@ static const Color UI_NametoColor(char *c) {
     return BLUE;
 }
 
-//Extract a name from the color
-static const char *UI_ColorToName(Color c) {
-    //Return the corresponding name depending on rgba values
-    if (c.r == BLUE.r && c.g == BLUE.g && c.b == BLUE.b && c.a == BLUE.a)
-        return "BLUE";
-    if (c.r == RED.r && c.g == RED.g && c.b == RED.b && c.a == RED.a)
-        return "RED";
-    if (c.r == BLACK.r && c.g == BLACK.g && c.b == BLACK.b && c.a == BLACK.a)
-        return "BLACK";
-    if (c.r == GREEN.r && c.g == GREEN.g && c.b == GREEN.b && c.a == GREEN.a)
-        return "GREEN";
-    if (c.r == YELLOW.r && c.g == YELLOW.g && c.b == YELLOW.b && c.a == YELLOW.a)
-        return "YELLOW";
-    if (c.r == WHITE.r && c.g == WHITE.g && c.b == WHITE.b && c.a == WHITE.a)
-        return "WHITE";
-    //Fallback case
-    return "UNKNOWN";
-}
-
 //Center an image on a certain X position
 static float UI_CenterImg_X(float width, float position) {
     return (position - width / 2.0f);
@@ -94,12 +75,6 @@ static float UI_CenterImg_X(float width, float position) {
 //Center an image on a certain Y position
 static float UI_CenterImg_Y(float height, float position) {
     return (position - height / 2.0f);
-}
-
-//Center text on a certain X position
-static float UI_CenterText_X(char *text, int fontSize, int position) {
-    float width = MeasureText(text, fontSize);
-    return (position - (width / 2.0f));
 }
 
 //Reset the coordinates for the displayed games after games scroll
@@ -292,9 +267,8 @@ static void UI_DrawBottom() {
         BOTTOM_RECT_Y,
         BOTTOM_RECT_W,
         BOTTOM_RECT_H};
-
-    DrawRectangleRoundedLinesEx(rect, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_BOTTOM, Fade(Var_GetColor3(), alphaSelectBox));
     DrawRectangleRounded(rect, BOTTOM_ROUND, BOTTOM_SEGMENTS, Fade(Var_GetColor2(), alphaSelectBox));
+    DrawRectangleRoundedLinesEx(rect, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_BOTTOM, Fade(Var_GetColor3(), alphaSelectBox));
     //Draw text
     DrawTextEx(Var_GetFontBold(), Games_GetDisplayed(3)->title, game, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
     DrawTextEx(Var_GetFontBold(), Games_GetDisplayed(3)->console, console, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
@@ -883,10 +857,10 @@ void UI_Tick(ConsoleState* currentConsoleState) {
         UI_DrawCateg_Static();
         UI_DrawGames_Normal();
         //Draw bumpers
-        UI_DrawBumpers();
+        UI_DrawTop();
         //Draw bottom section of screen
         UI_DrawBottom();
-        Diagnostics_Tick(&currentConsoleState);
+        UI_DrawDispDiag();
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) {
             *currentConsoleState = STATE_APP_LAUNCHER;
         }
@@ -907,10 +881,10 @@ void UI_Tick(ConsoleState* currentConsoleState) {
             THICKNESS_GAME_SELECT,
             Fade(Var_GetColor1(), alphaGames));
         //Draw bumpers
-        UI_DrawBumpers();
+        UI_DrawTop();
         //Draw bottom section of screen
         UI_DrawBottom();
-        Diagnostics_Tick(&currentConsoleState);
+        UI_DrawDispDiag();
         break;
 
     case SCROLL_CATEGORIES:
@@ -919,10 +893,10 @@ void UI_Tick(ConsoleState* currentConsoleState) {
         UI_DrawCateg_Scroll();
         UI_DrawGames_Normal();
         //Draw bumpers
-        UI_DrawBumpers();
+        UI_DrawTop();
         //Draw bottom section of screen
         UI_DrawBottom();
-        Diagnostics_Tick(&currentConsoleState);
+        UI_DrawDispDiag();
         break;
 
     case OPTIONS:
@@ -952,10 +926,10 @@ void UI_Tick(ConsoleState* currentConsoleState) {
             UI_DrawGames_Normal();
         }
         //Draw bumpers
-        UI_DrawBumpers();
+        UI_DrawTop();
         //Draw bottom section of screen
         UI_DrawBottom();
-        Diagnostics_Tick(&currentConsoleState);
+        UI_DrawDispDiag();
         UIPause_Tick(currentConsoleState);
         break;
     }
@@ -1037,6 +1011,16 @@ void UI_Init() {
         }
         //Close the file
         fclose(f);
+    }
+    //Fallback if file doesn't open
+    else {
+        Var_SetColor1(BLUE);
+        Var_SetBackground(Var_NametoBackground("BLUE"));
+        Var_SetColor2(BLACK);
+        Var_SetColor3(WHITE);
+        Var_SetBright(MAX_BRIGHTNESS);
+        Var_SetBrightX(BRIGHTNESS_CIRCLE_X);
+        Var_SetDiag(false);
     }
     //Set max length to start at 0
     maxLen = 0;

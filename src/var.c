@@ -186,15 +186,34 @@ const Texture2D Var_NametoBackground(char *c) {
     return backgroundBlue;
 }
 
+//Extract a name from the color
+static const char *Var_ColorToName(Color c) {
+    //Return the corresponding name depending on rgba values
+    if (c.r == BLUE.r && c.g == BLUE.g && c.b == BLUE.b && c.a == BLUE.a)
+        return "BLUE";
+    if (c.r == RED.r && c.g == RED.g && c.b == RED.b && c.a == RED.a)
+        return "RED";
+    if (c.r == BLACK.r && c.g == BLACK.g && c.b == BLACK.b && c.a == BLACK.a)
+        return "BLACK";
+    if (c.r == GREEN.r && c.g == GREEN.g && c.b == GREEN.b && c.a == GREEN.a)
+        return "GREEN";
+    if (c.r == YELLOW.r && c.g == YELLOW.g && c.b == YELLOW.b && c.a == YELLOW.a)
+        return "YELLOW";
+    if (c.r == WHITE.r && c.g == WHITE.g && c.b == WHITE.b && c.a == WHITE.a)
+        return "WHITE";
+    //Fallback case
+    return "UNKNOWN";
+}
+
 //Update the UI text file
 void Var_UpdateUIFile() {
     //Open the file
     FILE *f = fopen("/home/tywebb1724/Desktop/Gaming-Console/assets/system/ui.txt", "w");
     //If it opens correctly, write the variables
     if (f) {
-        fprintf(f, "%s\n", ColorToName(Var_GetColor1()));
-        fprintf(f, "%s\n", ColorToName(Var_GetColor2()));
-        fprintf(f, "%s\n", ColorToName(Var_GetColor3()));
+        fprintf(f, "%s\n", Var_ColorToName(Var_GetColor1()));
+        fprintf(f, "%s\n", Var_ColorToName(Var_GetColor2()));
+        fprintf(f, "%s\n", Var_ColorToName(Var_GetColor3()));
         fprintf(f, "%f\n", Var_GetBright());
         fprintf(f, "%f\n", Var_GetBrightX());
         fprintf(f, "%d\n", Var_GetDiag());

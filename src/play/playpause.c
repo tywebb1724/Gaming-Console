@@ -6,6 +6,8 @@
 #include "config.h"
 #include "games.h"
 #include "var.h"
+#include <stdio.h>
+#include <string.h>
 
 //Current state of the pause screen
 static PlayPauseState currentPlayPauseState;
@@ -29,7 +31,7 @@ static void PlayPause_UpdateTime() {
 static void PlayPause_DrawControls(game_t game) {
     //Draw controller image
     Rectangle sourceRect = {0.0f, 0.0f, (float)controlsImg.width, (float)controlsImg.height};
-    Rectangle destRect = {Var_GetScreenWidth() / 5, Var_GetScreenHeight() / 5, Var_GetScreenWidth() / 5 * 3, Var_GetScreenHeight() / 5 * 3};
+    Rectangle destRect = {Var_GetMonitorWidth() / 5, Var_GetMonitorHeight() / 5, Var_GetMonitorWidth() / 5 * 3, Var_GetMonitorHeight() / 5 * 3};
     Vector2 origin = {0.0f, 0.0f};
     DrawTexturePro(controlsImg, sourceRect, destRect, origin, 0.0f, WHITE);
     //Initialize the text variables for all the controls
@@ -366,8 +368,8 @@ static void PlayPause_Draw() {
         PLAYPAUSE_RECT_Y,
         PLAYPAUSE_RECT_W,
         PLAYPAUSE_RECT_H};
-    DrawRectangleRoundedLinesEx(rectSection, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, Var_GetColor3());
     DrawRectangleRounded(rectSection, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, Var_GetColor2());
+    DrawRectangleRoundedLinesEx(rectSection, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, Var_GetColor3());
     //Draw title
     Vector2 titleSize = MeasureTextEx(Var_GetFontBold(), PLAYPAUSE_TITLE, PLAYPAUSE_TITLE_SIZE, PLAYPAUSE_SPACE);
     Vector2 title = {PLAYPAUSE_TITLE_X, PLAYPAUSE_TITLE_Y};
@@ -558,12 +560,9 @@ PlayState PlayPause_Tick() {
             //Resume game
             if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !A_DOWN) {
                 // mouseWasPressed = false;
-                //Unload controls image texture
-                UnloadTexture(controlsImg);
-                return PLAY_RESUME;
             }
             //Resume game
-            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
                 /// mouseWasPressed = true;
                 //Unload controls image texture
                 UnloadTexture(controlsImg);
@@ -684,5 +683,5 @@ PlayState PlayPause_Tick() {
             break;
     }
 
-    return GAME_PAUSE;
+    return PLAY_PAUSE;
 }

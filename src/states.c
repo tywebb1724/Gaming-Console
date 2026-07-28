@@ -134,6 +134,7 @@ void States_UpdateAndDraw() {
             if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
                 //mouseWasPressed = true;
                 currentConsoleState = STATE_MAIN_MENU;
+                newConsoleState = STATE_MAIN_MENU;
             }
             break;
 
@@ -159,7 +160,7 @@ void States_UpdateAndDraw() {
             //Increment boot timer
             bootTimer += GetFrameTime();
             //Draw brightness
-            DrawRectangle(0, 0, Var_GetScreenWidth(), Var_GetScreenHeight(), (Color){ 0, 0, 0, Var_GetBright() });
+            DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
 
         //Drawing the main menu
@@ -171,7 +172,7 @@ void States_UpdateAndDraw() {
             //Draw UI for the menu
             UI_Tick(&newConsoleState);
             //Draw brightness
-            DrawRectangle(0, 0, Var_GetScreenWidth(), Var_GetScreenHeight(), (Color){ 0, 0, 0, Var_GetBright() });
+            DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
 
         //Launching/running app
@@ -181,14 +182,14 @@ void States_UpdateAndDraw() {
                 //Call play tick function and check if game is still running
                 is_game_running = Play_Tick(*Games_GetDisplayed(3));
                 //Draw brightness
-                DrawRectangle(0, 0, Var_GetScreenWidth(), Var_GetScreenHeight(), (Color){ 0, 0, 0, Var_GetBright() });
+                DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             }    
             break;
 
         //View consoles/games list
         case STATE_LIST:
             //Draw brightness
-            DrawRectangle(0, 0, Var_GetScreenWidth(), Var_GetScreenHeight(), (Color){ 0, 0, 0, Var_GetBright() });
+            DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
 
         //View diagnostics menu
@@ -196,7 +197,7 @@ void States_UpdateAndDraw() {
             //Call diagnostics tick function
             Diagnostics_Tick(&newConsoleState);
             //Draw brightness
-            DrawRectangle(0, 0, Var_GetScreenWidth(), Var_GetScreenHeight(), (Color){ 0, 0, 0, Var_GetBright() });
+            DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
    }
 }

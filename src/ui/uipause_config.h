@@ -1,10 +1,7 @@
 #ifndef UIPAUSE_CONFIG_H
-#define UIPASUE_CONFIG_H
+#define UIPAUSE_CONFIG_H
 
 #define THICKNESS_UIPAUSE (Var_GetMonitorHeight() / 500.0f)
-
-#define UIPAUSE_ROUND 0.1f
-#define UIPAUSE_SEGMENTS 25
 
 
 #define UIPAUSE_RECT_X (CENTER_X - UIPAUSE_RECT_W / 2)

@@ -3,6 +3,7 @@
 #include "controller_config.h"
 #include "uipause_config.h"
 #include "config.h"
+#include <stdio.h>
 
 //Current state of the brightness options screen
 static BrightnessState currentBrightnessState;
@@ -15,8 +16,8 @@ static void Brightness_Draw() {
         UIPAUSE_RECT_Y,
         UIPAUSE_RECT_W,
         UIPAUSE_RECT_H};
-    DrawRectangleRoundedLinesEx(rect1, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, THICKNESS_UIPAUSE, Var_GetColor3());
     DrawRectangleRounded(rect1, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, Var_GetColor2());
+    DrawRectangleRoundedLinesEx(rect1, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, THICKNESS_UIPAUSE, Var_GetColor3());
     //Draw title
     Vector2 brightnessSize = MeasureTextEx(Var_GetFontBold(), BRIGHTNESS_TXT, BRIGHTNESS_TXT_SIZE, UIPAUSE_TITLE_SPACE);
     Vector2 brightness = {BRIGHTNESS_TXT_X, BRIGHTNESS_TXT_Y};
@@ -26,12 +27,12 @@ static void Brightness_Draw() {
     //Draw position of brightness circle
     DrawCircle(Var_GetBrightX(), BRIGHTNESS_LINE_Y, BRIGHTNESS_RADIUS, Var_GetColor1());
     //Draw arrows
-    DrawCircle(BRIGHT_LS_LEFT_X + (Var_GetScreenWidth() / 700.0f), BRIGHT_LS_Y, BRIGHT_LS_RADIUS, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
+    DrawCircle(BRIGHT_LS_LEFT_X + (Var_GetMonitorWidth() / 700.0f), BRIGHT_LS_Y, BRIGHT_LS_RADIUS, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
     Vector2 point1 = {BRIGHT_LS_LEFT_X - (BRIGHT_LS_TRIANGLE_SIZE / 2), BRIGHT_LS_Y};
     Vector2 point2 = {BRIGHT_LS_LEFT_X + (BRIGHT_LS_TRIANGLE_SIZE / 2), BRIGHT_LS_Y + BRIGHT_LS_TRIANGLE_SIZE / 2};
     Vector2 point3 = {BRIGHT_LS_LEFT_X + (BRIGHT_LS_TRIANGLE_SIZE / 2), BRIGHT_LS_Y - BRIGHT_LS_TRIANGLE_SIZE / 2};
     DrawTriangle(point1, point2, point3, Fade(Var_GetColor2(), Var_GetAlphaSelect()));
-    DrawCircle(BRIGHT_LS_RIGHT_X - (Var_GetScreenWidth() / 700.0f), BRIGHT_LS_Y, BRIGHT_LS_RADIUS, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
+    DrawCircle(BRIGHT_LS_RIGHT_X - (Var_GetMonitorWidth() / 700.0f), BRIGHT_LS_Y, BRIGHT_LS_RADIUS, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
     Vector2 point4 = {BRIGHT_LS_RIGHT_X + (BRIGHT_LS_TRIANGLE_SIZE / 2), BRIGHT_LS_Y};
     Vector2 point5 = {BRIGHT_LS_RIGHT_X - (BRIGHT_LS_TRIANGLE_SIZE / 2), BRIGHT_LS_Y + BRIGHT_LS_TRIANGLE_SIZE / 2};
     Vector2 point6 = {BRIGHT_LS_RIGHT_X - (BRIGHT_LS_TRIANGLE_SIZE / 2), BRIGHT_LS_Y - BRIGHT_LS_TRIANGLE_SIZE / 2};
@@ -116,7 +117,7 @@ void Brightness_Tick() {
                 Var_SetBrightX(BRIGHTNESS_LINE_X_START);
             }
             //Update the UI file
-            Var_UpdateUITxt();
+            Var_UpdateUIFile();
             break;
 
         //Increasing brightness
@@ -133,7 +134,7 @@ void Brightness_Tick() {
                 Var_SetBrightX(BRIGHTNESS_CIRCLE_X);
             }
             //Update the UI file
-            Var_UpdateUITxt();
+            Var_UpdateUIFile();
             break;
     }
 }

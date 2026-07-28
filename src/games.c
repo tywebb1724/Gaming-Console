@@ -1,6 +1,8 @@
 #include "games.h"
 #include <pthread.h>
 #include "config.h"
+#include <stdio.h>
+#include <string.h>
 
 
 //Arrays to hold all games, the games displayed, and the new games displayed
@@ -36,7 +38,7 @@ game_t* Games_GetNew(int i) {
 }
 
 //Update the indexes for the new game category
-static void Games_UpdateNewIndexes(int direction) {
+void Games_UpdateNewIndexes(int direction) {
     char categ[30];
     //If scrolling to the left
     if (direction == LEFT) {
@@ -88,7 +90,7 @@ void Games_UpdateIndexes(const char *categ) {
             break;
         }
         //Once you enter another category, update the end of the category as previous index
-        if (strcmp(gamesLibrary[i].category, categ) == 0) {
+        if (strcmp(gamesLibrary[i].category, categ) != 0) {
             end_index = i - 1;
             break;
         }

@@ -54,20 +54,14 @@ typedef struct {
     char *serial;
 } game_t;
 
-//State of game after it has been launched
-typedef enum {
-    GAME_RESTART,
-    GAME_GO,
-    GAME_PAUSE,
-    GAME_EXIT
-} GameState;
-
 //Get a game from the main array
 game_t* Games_Get(int i);
 //Get a game from the displayed array
 game_t* Games_GetDisplayed(int i);
 //Get a game from the new array
 game_t* Games_GetNew(int i);
+//Update the indexes for the new game category
+void Games_UpdateNewIndexes(int direction);
 //Update the indexes of the current game category
 void Games_UpdateIndexes(const char *categ);
 //Update the array of the new games displayed

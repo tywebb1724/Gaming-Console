@@ -1,7 +1,7 @@
 #ifndef PLAYPAUSE_H
 #define PLAYPAUSE_H
 
-#include <stdbool.h>>
+#include <stdbool.h>
 
 //State of the in-game pause menu
 typedef enum {
