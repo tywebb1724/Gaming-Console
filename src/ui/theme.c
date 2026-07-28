@@ -164,18 +164,16 @@ void Theme_Tick() {
     case THEME_1:
         //Draw the menu
         Theme_Draw();
-        if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !A_DOWN) {
-            //mouseLeftWasPressed = false;
-        }
         //Increase the time the current theme has been selected
         Theme_UpdateTime();
         //Set the theme if selected by user
-        if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS)) {
+        if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
             Var_SetColor1(BLUE);
             Var_SetColor2(BLACK);
             Var_SetColor3(WHITE);
             Var_SetBackground(Var_NametoBackground("BLUE"));
             Var_UpdateUIFile();
+            Controller_SetWasPressed_A(true);
         }
         break;
 
@@ -186,12 +184,13 @@ void Theme_Tick() {
         //Increase the time the current theme has been selected
         Theme_UpdateTime();
         //Set the theme if selected by user
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) {
+        if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
             Var_SetColor1(RED);
             Var_SetColor2(BLACK);
             Var_SetColor3(WHITE);
             Var_SetBackground(Var_NametoBackground("RED"));
             Var_UpdateUIFile();
+            Controller_SetWasPressed_A(true);
         }
         break;
 
@@ -202,12 +201,13 @@ void Theme_Tick() {
         //Increase the time the current theme has been selected
         Theme_UpdateTime();
         //Set the theme if selected by user
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) {
+        if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
             Var_SetColor1(GREEN);
             Var_SetColor2(BLACK);
             Var_SetColor3(WHITE);
             Var_SetBackground(Var_NametoBackground("GREEN"));
             Var_UpdateUIFile();
+            Controller_SetWasPressed_A(true);
         }
         break;
 
@@ -218,12 +218,13 @@ void Theme_Tick() {
         //Increase the time the current theme has been selected
         Theme_UpdateTime();
         //Set the theme if selected by user
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) {
+        if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
             Var_SetColor1(YELLOW);
             Var_SetColor2(BLACK);
             Var_SetColor3(WHITE);
             Var_SetBackground(Var_NametoBackground("YELLOW"));
             Var_UpdateUIFile();
+            Controller_SetWasPressed_A(true);
         }
         break;
     }

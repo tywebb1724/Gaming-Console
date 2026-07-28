@@ -147,11 +147,11 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
     switch (currentUIPauseState) {
         case LIST:
             //Move selected option up or down depending on input
-            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
+            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
                 currentUIPauseState = BRIGHTNESS;
                 uipauseTimeElapsed = 0.0f;
             }
-            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) {
+            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) {
                 currentUIPauseState = VIEW_DIAGNOSTICS;
                 uipauseTimeElapsed = 0.0f;
             }
@@ -159,18 +159,19 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
 
         case BRIGHTNESS:
             //Move selected option up or down depending on input
-            if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBright() == false) {
+            if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBright() == false) {
                 currentUIPauseState = THEME;
                 uipauseTimeElapsed = 0.0f;
             }
-            else if (((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBright() == false) {
+            else if (((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBright() == false) {
                 currentUIPauseState = LIST;
                 uipauseTimeElapsed = 0.0f;
             }
             //Display or stop displaying brightness options
-            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && Var_GetDisplayBright() == false) {
+            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A() && Var_GetDisplayBright() == false) {
                 Brightness_Init();
                 Var_SetDisplayBright(true);
+                Controller_SetWasPressed_A(true);
             }
             else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
                 Var_SetDisplayBright(false);
@@ -179,20 +180,19 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
 
         case THEME:
             //Move selected option up or down depending on input
-            if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayTheme() == false) {
+            if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayTheme() == false) {
                 currentUIPauseState = DISPLAY_DIAGNOSTICS;
                 uipauseTimeElapsed = 0.0f;
             }
-            else if (((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayTheme() == false) {
+            else if (((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayTheme() == false) {
                 currentUIPauseState = BRIGHTNESS;
                 uipauseTimeElapsed = 0.0f;
             }
             //Display or stop displaying theme options
-            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && Var_GetDisplayTheme() == false) {
+            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A() && Var_GetDisplayTheme() == false) {
                 Theme_Init();
                 Var_SetDisplayTheme(true);
-                //currentTheme = THEME_1;
-                //mouseLeftWasPressed = true;
+                Controller_SetWasPressed_A(true);
             }
             else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
                 Var_SetDisplayTheme(false);
@@ -201,29 +201,30 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
 
         case DISPLAY_DIAGNOSTICS:
             //Move selected option up or down depending on input
-            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
+            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
                 currentUIPauseState = VIEW_DIAGNOSTICS;
                 uipauseTimeElapsed = 0.0f;
             }
-            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f))  {
+            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f))  {
                 currentUIPauseState = THEME;
                 uipauseTimeElapsed = 0.0f;
             }
             //Start or stop displaying diagnostics
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) {
+            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
                 bool diag = Var_GetDiag();
                 Var_SetDiag(!diag);
                 Var_UpdateUIFile();
+                Controller_SetWasPressed_A(true);
             }
             break;
 
         case VIEW_DIAGNOSTICS:
             //Move selected option up or down depending on input
-            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
+            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
                 currentUIPauseState = LIST;
                 uipauseTimeElapsed = 0.0f;
             }
-            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) {
+            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) {
                 currentUIPauseState = DISPLAY_DIAGNOSTICS;
                 uipauseTimeElapsed = 0.0f;
             }
@@ -233,12 +234,6 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
     //Action
     switch (currentUIPauseState) {
         case LIST:
-            if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !A_DOWN) {
-                //mouseWasPressed = false;
-            }
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) {
-                ///mouseWasPressed = true;
-            }
             //Draw pause menu
             UIPause_Draw(currentUIPauseState, *currentConsoleState);
             //Update elapsed time
@@ -246,9 +241,6 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             break;
 
         case BRIGHTNESS:
-            if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !A_DOWN) {
-                //mouseWasPressed = false;
-            }
             //Display brightness options or normal options
             if (Var_GetDisplayBright() == true) {
                 Brightness_Tick();
@@ -261,9 +253,6 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             break;
 
         case THEME:
-            if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !A_DOWN) {
-                //mouseWasPressed = false;
-            }
             //Display theme options or normal options
             if (Var_GetDisplayTheme() == true) {
                 Theme_Tick();
@@ -276,9 +265,6 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             break;
 
         case DISPLAY_DIAGNOSTICS:
-            if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !A_DOWN) {
-                //mouseWasPressed = false;
-            }
             //Draw options menu
             UIPause_Draw(currentUIPauseState, *currentConsoleState);
             //Update elapsed time
@@ -286,12 +272,8 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             break;
 
         case VIEW_DIAGNOSTICS:
-            if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !A_DOWN) {
-                //mouseWasPressed = false;
-            }
             //If user selects this option
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) {
-                //mouseWasPressed = true;
+            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
                 //Change to the main menu or view diagnostics menu depending on which screen is being displayed
                 if (*currentConsoleState == STATE_VIEW_DIAG) {
                     *currentConsoleState = STATE_MAIN_MENU;
@@ -300,6 +282,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                     Diagnostics_Init();
                     *currentConsoleState = STATE_VIEW_DIAG;
                 }
+                Controller_SetWasPressed_A(true);
             }
             //Draw options menu
             UIPause_Draw(currentUIPauseState, *currentConsoleState);

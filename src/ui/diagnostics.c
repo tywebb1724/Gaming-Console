@@ -40,13 +40,14 @@ void Diagnostics_Tick(ConsoleState* currentConsoleState) {
             //If pause button pressed, display options
             if (IsKeyPressed(KEY_TAB) || START_PRESS) {
                 currentDiagState = DIAG_OPTIONS;
+                UIPause_Init();
             }
             break;
 
         //Displaying options menu
         case DIAG_OPTIONS:
             //If correct button(s) pressed, take away options menu
-            if (IsKeyPressed(KEY_TAB) || START_PRESS || (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS)) {
+            if (IsKeyPressed(KEY_TAB) || START_PRESS || ((IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) && !Var_GetDisplayBright() && !Var_GetDisplayTheme())) {
                 currentDiagState = DIAG_NORMAL;
             }
             break;
@@ -58,14 +59,19 @@ void Diagnostics_Tick(ConsoleState* currentConsoleState) {
         case DIAG_NORMAL:
             //Draw diagnostics screen
             Diagnostics_Draw();
+            //Draw display diagnostics
+            UI_DrawDispDiag();
             break;
 
         //Displaying options menu
         case DIAG_OPTIONS:
+            UI_ChangeAlpha_Static();
             //Draw diagnostics screen
             Diagnostics_Draw();
             //Options tick
             UIPause_Tick(currentConsoleState);
+            //Draw display diagnostics
+            UI_DrawDispDiag();
             break;
     }
 }

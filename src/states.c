@@ -9,6 +9,10 @@
 #include "var.h"
 #include "config.h"
 #include "ui/diagnostics.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 
 //State of the console
 static ConsoleState currentConsoleState;
@@ -27,6 +31,34 @@ static bool isTextureUploaded[GAMES_LEN] = { false };
 static bool is_game_running;
 //Timer to track app launch
 static float launchTimer;
+//Length of longest text line in the select box
+static float maxLen;
+
+
+//Extract a color from the color name
+static Color States_NametoColor(char *c) {
+    //Return the corresponding color for each name
+    if (strcmp(c, "BLUE") == 0) {
+        return BLUE;
+    }
+    else if (strcmp(c, "RED") == 0) {
+        return RED;
+    }
+    else if (strcmp(c, "BLACK") == 0) {
+        return BLACK;
+    }
+    else if (strcmp(c, "WHITE") == 0) {
+        return WHITE;
+    }
+    else if (strcmp(c, "GREEN") == 0) {
+        return GREEN;
+    }
+    else if (strcmp(c, "YELLOW") == 0) {
+        return YELLOW;
+    }
+    //Fallback case
+    return BLUE;
+}
 
 //Load all game images (if not loaded already)
 void States_LoadGameImages() {
@@ -86,6 +118,91 @@ void States_Init() {
     }
     //Initialize audio
     InitAudioDevice();
+    //Strings to hold the text in the file
+    char color1[10] = "", color2[10] = "", color3[10] = "", bright[32] = "", diag[5] = "";
+    //Open the file
+    FILE* f = fopen("/home/tywebb1724/Desktop/Gaming-Console/assets/system/ui.txt", "r");
+    //Chech if the file opened successfully
+    if (f) {
+        //Get theme color 1 and set the variables for the color and the background
+        if (fgets(color1, sizeof(color1), f)) {
+            color1[strcspn(color1, "\n")] = '\0';
+            Var_SetColor1(States_NametoColor(color1));
+            Var_SetBackground(Var_NametoBackground(color1));
+        }
+        //If no text, set default case (blue)
+        else {
+            Var_SetColor1(BLUE);
+            Var_SetBackground(Var_NametoBackground("BLUE"));
+        }
+        //Get theme color 2 and set the variable
+        if (fgets(color2, sizeof(color2), f)) {
+            color2[strcspn(color2, "\n")] = '\0';
+            Var_SetColor2(States_NametoColor(color2));;
+        }
+        //If no text, set default case (black)
+        else {
+            Var_SetColor2(BLACK);
+        }
+        //Get theme color 3 and set the variable
+        if (fgets(color3, sizeof(color3), f)) {
+            color3[strcspn(color3, "\n")] = '\0';
+            Var_SetColor3(States_NametoColor(color3));;
+        }
+        //If no text, set default case (white)
+        else {
+            Var_SetColor3(WHITE);
+        }
+        //Get brightness and set the variable
+        if (fgets(bright, sizeof(bright), f)) {
+            bright[strcspn(bright, "\n")] = '\0';
+            Var_SetBright(atof(bright));
+        }
+        //If no text, set default brightness and brightness circle position
+        else {
+            Var_SetBright(MAX_BRIGHTNESS);
+        }
+        //Get whether diagnostics are being displayed and set the variable
+        if (fgets(diag, sizeof(diag), f)) {
+            diag[strcspn(diag, "\n")] = '\0';
+            Var_SetDiag(atoi(diag));
+        }
+        //If no text, set default (don't display)
+        else {
+            Var_SetDiag(false);
+        }
+        //Close the file
+        fclose(f);
+    }
+    //Fallback if file doesn't open
+    else {
+        Var_SetColor1(BLUE);
+        Var_SetBackground(Var_NametoBackground("BLUE"));
+        Var_SetColor2(BLACK);
+        Var_SetColor3(WHITE);
+        Var_SetBright(MAX_BRIGHTNESS);
+        Var_SetDiag(false);
+    }
+    //Set max length to start at 0
+    maxLen = 0;
+    //Go through all games
+    for (int i = 0; i < GAMES_LEN; i++) {
+        //If game title is larger than max length, set new max length
+        if (MeasureTextEx(Var_GetFontBold(), Games_Get(i)->title, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x > maxLen) {
+            maxLen = MeasureTextEx(Var_GetFontBold(), Games_Get(i)->title, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x;
+        }
+        //If console title is larger than max length, set new max length
+        if (MeasureTextEx(Var_GetFontBold(), Games_Get(i)->console, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x > maxLen) {
+            maxLen = MeasureTextEx(Var_GetFontBold(), Games_Get(i)->console, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x;
+        }
+    }
+    //If length of bottom text is larger than max length, set new max length
+    if (MeasureTextEx(Var_GetFontBold(), BOTTOM_TXT, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x > maxLen) {
+        maxLen = MeasureTextEx(Var_GetFontBold(), BOTTOM_TXT, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x;
+    }
+    UI_LoadLogo();
+    UI_SetMaxLen(maxLen);
+    UI_LoadControlImg();
 }
 
 //Update states and variabels and draw the correct screen
@@ -98,6 +215,7 @@ void States_UpdateAndDraw() {
             //If the boot up time has passed, go to the main menu
             if (bootTimer >= BOOT_TIME) {
                 currentConsoleState = STATE_MAIN_MENU;
+                UI_Init();
             }
             break;
 
@@ -112,6 +230,7 @@ void States_UpdateAndDraw() {
                 currentConsoleState = STATE_LIST;
             }
             else if (newConsoleState == STATE_VIEW_DIAG) {
+                Diagnostics_Init();
                 currentConsoleState = STATE_VIEW_DIAG;
             }
             break;
@@ -137,6 +256,7 @@ void States_UpdateAndDraw() {
                     newConsoleState = STATE_MAIN_MENU;
                     //Set target FPS again
                     SetTargetFPS(FPS);
+                    UI_Init();
                 }
             }   
             //If game is not libretro, immediately transition back to main menu 
@@ -145,6 +265,7 @@ void States_UpdateAndDraw() {
                 newConsoleState = STATE_MAIN_MENU;
                 //Set target FPS again
                 SetTargetFPS(FPS);
+                UI_Init();
             }
             break;
 
@@ -154,6 +275,7 @@ void States_UpdateAndDraw() {
                 //mouseWasPressed = true;
                 currentConsoleState = STATE_MAIN_MENU;
                 newConsoleState = STATE_MAIN_MENU;
+                UI_Init();
             }
             break;
 
@@ -165,6 +287,7 @@ void States_UpdateAndDraw() {
             }
             else if (newConsoleState == STATE_MAIN_MENU) {
                 currentConsoleState = STATE_MAIN_MENU;
+                UI_Init();
             }
             break;
     }

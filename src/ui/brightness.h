@@ -25,8 +25,8 @@
 #define BRIGHT_LS_RADIUS (Var_GetMonitorWidth() / 135.0f)
 //Drawing percentage
 #define BRIGHTNESS_PERCENT_SIZE (Var_GetMonitorWidth() / 60.0f)
-#define BRIGHTNESS_PERCENT_X (CENTER_X - brightnessSize.x / 2)
-#define BRIGHTNESS_PERCENT_Y (BRIGHTNESS_LINE_Y - 3 * UIPAUSE_TXT_SPACING_Y / 2 - brightnessSize.y / 2)
+#define BRIGHTNESS_PERCENT_X (CENTER_X - brightnessPercentSize.x / 2)
+#define BRIGHTNESS_PERCENT_Y (BRIGHTNESS_LINE_Y - 3 * UIPAUSE_TXT_SPACING_Y / 2 - brightnessPercentSize.y / 2)
 //Brightness increment
 #define BRIGHTNESS_INCREMENT (MIN_BRIGHTNESS / 100.0f * GetFrameTime() * 60.0f)
 

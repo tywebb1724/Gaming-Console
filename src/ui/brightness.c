@@ -41,7 +41,7 @@ static void Brightness_Draw() {
     char percentTxt[5];
     int brightPercent = (int)((MIN_BRIGHTNESS - Var_GetBright()) / (MIN_BRIGHTNESS / 100.0f));
     snprintf(percentTxt, sizeof(percentTxt), "%d%%", brightPercent);
-    Vector2 brightnessPercent_Size = MeasureTextEx(Var_GetFontBold(), percentTxt, BRIGHTNESS_PERCENT_SIZE, UIPAUSE_TITLE_SPACE);
+    Vector2 brightnessPercentSize = MeasureTextEx(Var_GetFontBold(), percentTxt, BRIGHTNESS_PERCENT_SIZE, UIPAUSE_TITLE_SPACE);
     Vector2 brightnessPercent = {BRIGHTNESS_PERCENT_X, BRIGHTNESS_PERCENT_Y};
     DrawTextEx(Var_GetFontBold(), percentTxt, brightnessPercent, BRIGHTNESS_PERCENT_SIZE, UIPAUSE_TITLE_SPACE, Var_GetColor3());
 

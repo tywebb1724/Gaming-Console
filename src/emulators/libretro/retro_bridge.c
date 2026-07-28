@@ -10,6 +10,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include "rlgl.h"
+#include "controller.h"
 
 #ifndef RETRO_ENVIRONMENT_SET_SYSTEM_DIRECTORY
 #define RETRO_ENVIRONMENT_SET_SYSTEM_DIRECTORY 16
@@ -80,7 +81,6 @@ static struct retro_game_info current_game_info = {0};
 typedef void (*retro_set_controller_port_device_t)(unsigned, unsigned);
 retro_set_controller_port_device_t core_set_controller_port_device;
 
-int g_controllerIndex = -1;
 
 static unsigned int hw_framebuffer_id = 0;
 
@@ -227,7 +227,7 @@ void SaveBattery(const char* rom_path) {
 }
 
 // Keep track of the pixel format the core decides to use
-volatile static enum retro_pixel_format global_pixel_fmt = RETRO_PIXEL_FORMAT_RGB565;
+static volatile enum retro_pixel_format global_pixel_fmt = RETRO_PIXEL_FORMAT_RGB565;
 static int vrcb_count = 0;
 
 int GetAndResetVRCBCount(void) {
@@ -321,21 +321,26 @@ static void input_poll_cb(void) {
 }
 
 static int16_t input_state_cb(unsigned port, unsigned device, unsigned index, unsigned id) {
-    if (port != 0) return 0;
+    //Ignore ports we have no controller for
+    if (port >= CONTROLLER_MAX) return 0;
 
-    bool padOK = (g_controllerIndex >= 0 && IsGamepadAvailable(g_controllerIndex));
+    //Whichever gamepad slot belongs to this player, -1 if none
+    int slot = Controller_Slot((int)port);
+    bool padOK = (slot >= 0);
+    //The keyboard only ever drives player one
+    bool kbdOK = (port == 0);
 
     // ---- DIGITAL BUTTONS (JOYPAD) ----
     if (device == RETRO_DEVICE_JOYPAD) {
         int key = your_key_map[id];
         int pad = your_pad_map[id];
-        if (key != 0 && IsKeyDown(key)) return 1;
-        if (pad != 0 && padOK && IsGamepadButtonDown(g_controllerIndex, pad)) return 1;
+        if (kbdOK && key != 0 && IsKeyDown(key)) return 1;
+        if (pad != 0 && padOK && IsGamepadButtonDown(slot, pad)) return 1;
 
         // Left stick also acts as the D-pad for directional buttons:
         if (padOK) {
-            float lx = GetGamepadAxisMovement(g_controllerIndex, GAMEPAD_AXIS_LEFT_X);
-            float ly = GetGamepadAxisMovement(g_controllerIndex, GAMEPAD_AXIS_LEFT_Y);
+            float lx = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_LEFT_X);
+            float ly = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_LEFT_Y);
             if (id == RETRO_DEVICE_ID_JOYPAD_LEFT  && lx < -0.5f) return 1;
             if (id == RETRO_DEVICE_ID_JOYPAD_RIGHT && lx >  0.5f) return 1;
             if (id == RETRO_DEVICE_ID_JOYPAD_UP    && ly < -0.5f) return 1;
@@ -347,19 +352,19 @@ static int16_t input_state_cb(unsigned port, unsigned device, unsigned index, un
     // ---- LEFT ANALOG STICK (movement for N64/PS1) ----
     if (device == RETRO_DEVICE_ANALOG && index == RETRO_DEVICE_INDEX_ANALOG_LEFT) {
         if (id == RETRO_DEVICE_ID_ANALOG_X) {
-            if (IsKeyDown(KEY_LEFT))  return -32767;
-            if (IsKeyDown(KEY_RIGHT)) return  32767;
+            if (kbdOK && IsKeyDown(KEY_LEFT))  return -32767;
+            if (kbdOK && IsKeyDown(KEY_RIGHT)) return  32767;
             if (padOK) {
-                float v = GetGamepadAxisMovement(g_controllerIndex, GAMEPAD_AXIS_LEFT_X);
+                float v = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_LEFT_X);
                 if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
             }
             return 0;
         }
         if (id == RETRO_DEVICE_ID_ANALOG_Y) {
-            if (IsKeyDown(KEY_UP))   return -32767;
-            if (IsKeyDown(KEY_DOWN)) return  32767;
+            if (kbdOK && IsKeyDown(KEY_UP))   return -32767;
+            if (kbdOK && IsKeyDown(KEY_DOWN)) return  32767;
             if (padOK) {
-                float v = GetGamepadAxisMovement(g_controllerIndex, GAMEPAD_AXIS_LEFT_Y);
+                float v = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_LEFT_Y);
                 if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
             }
             return 0;
@@ -370,19 +375,19 @@ static int16_t input_state_cb(unsigned port, unsigned device, unsigned index, un
     // ---- RIGHT ANALOG STICK (N64 C-buttons / PS1 right stick) ----
     if (device == RETRO_DEVICE_ANALOG && index == RETRO_DEVICE_INDEX_ANALOG_RIGHT) {
         if (id == RETRO_DEVICE_ID_ANALOG_X) {
-            if (IsKeyDown(KEY_J)) return -32767;   // C-left
-            if (IsKeyDown(KEY_L)) return  32767;   // C-right
+            if (kbdOK && IsKeyDown(KEY_J)) return -32767;   // C-left
+            if (kbdOK && IsKeyDown(KEY_L)) return  32767;   // C-right
             if (padOK) {
-                float v = GetGamepadAxisMovement(g_controllerIndex, GAMEPAD_AXIS_RIGHT_X);
+                float v = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_RIGHT_X);
                 if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
             }
             return 0;
         }
         if (id == RETRO_DEVICE_ID_ANALOG_Y) {
-            if (IsKeyDown(KEY_I)) return -32767;   // C-up
-            if (IsKeyDown(KEY_K)) return  32767;   // C-down
+            if (kbdOK && IsKeyDown(KEY_I)) return -32767;   // C-up
+            if (kbdOK && IsKeyDown(KEY_K)) return  32767;   // C-down
             if (padOK) {
-                float v = GetGamepadAxisMovement(g_controllerIndex, GAMEPAD_AXIS_RIGHT_Y);
+                float v = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_RIGHT_Y);
                 if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
             }
             return 0;
@@ -619,8 +624,11 @@ bool LoadRetroCore(const char* path) {
     core_init();
 
     if (core_set_controller_port_device) {
-    // 0 = Port 1, 1 = Classic Controller / Gamepad
-    core_set_controller_port_device(0, 1); 
+    //Second argument 1 = RETRO_DEVICE_JOYPAD
+        //Register every port a controller could turn up on
+        for (unsigned p = 0; p < CONTROLLER_MAX; p++) {
+            core_set_controller_port_device(p, 1);
+        }
 }
     
     return true;

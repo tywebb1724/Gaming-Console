@@ -163,7 +163,7 @@ void Var_SetBackground(Texture2D background) {
 
 
 //Extract a background from a color name
-const Texture2D Var_NametoBackground(char *c) {
+Texture2D Var_NametoBackground(char *c) {
     //Return the corresponding background for each color name
     if (strcmp(c, "BLUE") == 0) {
         return backgroundBlue;

@@ -6,6 +6,8 @@
 #include "controller_config.h"
 #include "config.h"
 #include "play/play.h"
+#include "controller.h"
+#include "play/playpause.h"
 
 
 //Main function
@@ -23,11 +25,18 @@ int main(void)
     Games_Init();
     Categories_Init();
     States_Init();
-    UI_Init();
     //Set target FPS to 60
     SetTargetFPS(FPS);
+    //Find any controllers that are already plugged in
+    Controller_Refresh();
     //Main game loop
     while (!IsKeyPressed(KEY_ESCAPE) && (!HOME_DOWN || !START_DOWN)) {
+        //Pick up controllers being plugged in or unplugged
+        Controller_Refresh();
+        //Check if a button is pressed
+        if (!A_DOWN && Controller_GetWasPressed_A()) {
+            Controller_SetWasPressed_A(false);
+        }
         //Start drawing
         BeginDrawing();
         //Update console and draw

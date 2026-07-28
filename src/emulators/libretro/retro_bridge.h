@@ -10,7 +10,6 @@ extern void (*core_run)(void);
 extern void (*core_unload_game)(void);
 extern void (*core_deinit)(void);
 
-extern int g_controllerIndex;
 // --- Main Bridge API ---
 void StartRetroAudio(void);
 void StopRetroAudio(void);

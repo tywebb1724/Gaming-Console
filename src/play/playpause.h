@@ -2,6 +2,7 @@
 #define PLAYPAUSE_H
 
 #include <stdbool.h>
+#include "games.h"
 
 //State of the in-game pause menu
 typedef enum {
@@ -20,6 +21,7 @@ typedef enum {
     PLAY_RESUME,
     PLAY_EXIT
 } PlayState;
+
 
 //PlayPause initialization
 void PlayPause_Init();

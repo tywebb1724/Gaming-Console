@@ -63,7 +63,7 @@ Texture2D Var_GetBackground();
 //Set the current background
 void Var_SetBackground(Texture2D background);
 //Extract a background from a color name
-const Texture2D Var_NametoBackground(char *c);
+Texture2D Var_NametoBackground(char *c);
 //Update the UI text file
 void Var_UpdateUIFile();
 //Get bold font

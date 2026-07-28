@@ -20,7 +20,7 @@
 
 #define PLAYPAUSE_SIZE (PLAYPAUSE_TITLE_SIZE * (3.0f / 4))
 #define PLAYPAUSE_X (PLAYPAUSE_RECT_X + PLAYPAUSE_SPACING_Y)
-#define RESUME_TXT "Resume game"
+#define RESUME_TXT "Resume"
 #define RESUME_Y (PLAYPAUSE_TITLE_Y + titleSize.y + PLAYPAUSE_SPACING_Y - resumeSize.y / 2)
 #define RESTART_TXT "Restart game"
 #define RESTART_Y (RESUME_Y + PLAYPAUSE_SPACING_Y + resumeSize.y / 2)

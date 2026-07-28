@@ -152,7 +152,7 @@
 //Macros for category drawing and scrolling
 #pragma region UI_CATEG
 //Macros for drawing static categories
-#define TOP_Y (Var_GetMonitorHeight() * (1.0f / 7))
+#define TOP_Y (Var_GetMonitorHeight() / 6.0f)
 #define CATEG_SPACE (Var_GetMonitorWidth() / 750.0f)
 #define CENTER_CATEG_SIZE (Var_GetMonitorWidth() / 38.0f)
 #define SIDE1_CATEG_SIZE (CENTER_CATEG_SIZE * (3.0f / 4))
@@ -192,16 +192,106 @@
 
 //Macros for drawing launching screen
 #pragma region UI_LAUNCH
-#define LAUNCH_TXT_SIZE (Var_GetMonitorWidth() / 30.0f)
+//Launching text
+#define LAUNCH_TXT_SIZE (Var_GetMonitorWidth() / 25.0f)
 #define LAUNCH_TXT "Launching:"
 #define LAUNCH_SPACE (Var_GetMonitorWidth() / 400.0f)
 #define LAUNCH_TITLE_X (CENTER_X - launchTxt_Size.x / 2)
-#define LAUNCH_TITLE_Y (Var_GetMonitorHeight() / 8.0f)
+#define LAUNCH_TITLE_Y (Var_GetMonitorHeight() / 20.0f)
 #define LAUNCH_GAME_X (CENTER_X - gameTxt_Size.x / 2)
-#define LAUNCH_GAME_Y (LAUNCH_TITLE_Y + launchTxt_Size.y + LAUNCH_SPACE * 10)
-#define LAUNCH_HOME "Press [HOME] to pause emulator"
+#define LAUNCH_GAME_Y (LAUNCH_TITLE_Y + launchTxt_Size.y + LAUNCH_SPACE * 5)
+#define LAUNCH_HOME_LIB "Press [HOME] to pause emulator"
+#define LAUNCH_HOME_EXT "Press [HOME] to close game (may need multiple presses)"
 #define LAUNCH_HOME_X (CENTER_X - homeTxt_Size.x / 2)
 #define LAUNCH_HOME_Y (Var_GetMonitorHeight() / 2.0f)
+
+//Drawing controller
+//Shared macros for the controls
+#define LAUNCH_CONTROL_SIZE (Var_GetMonitorWidth() / 75.0f)
+#define LAUNCH_CONTROL_SPACE (Var_GetMonitorWidth() / 2000.0f)
+#define LAUNCH_CONTROL_RADIUS (Var_GetMonitorWidth() / 70.0f)
+//Right face buttons
+#define LAUNCH_RIGHT_FACE_DOWN_X (Var_GetMonitorWidth() / 1600 * 1187)
+#define LAUNCH_RIGHT_FACE_DOWN_Y (Var_GetMonitorHeight() / 400 * 246)
+#define LAUNCH_RIGHT_FACE_DOWN_TXT_X (LAUNCH_RIGHT_FACE_DOWN_X - rDown_Size.x / 2)
+#define LAUNCH_RIGHT_FACE_DOWN_TXT_Y (LAUNCH_RIGHT_FACE_DOWN_Y - rDown_Size.y / 2)
+#define LAUNCH_RIGHT_FACE_RIGHT_X (Var_GetMonitorWidth() / 1600 * 1238)
+#define LAUNCH_RIGHT_FACE_RIGHT_Y (Var_GetMonitorHeight() / 400 * 228)
+#define LAUNCH_RIGHT_FACE_RIGHT_TXT_X (LAUNCH_RIGHT_FACE_RIGHT_X - rRight_Size.x / 2)
+#define LAUNCH_RIGHT_FACE_RIGHT_TXT_Y (LAUNCH_RIGHT_FACE_RIGHT_Y - rRight_Size.y / 2)
+#define LAUNCH_RIGHT_FACE_UP_X (Var_GetMonitorWidth() / 1600 * 1187)
+#define LAUNCH_RIGHT_FACE_UP_Y (Var_GetMonitorHeight() / 400 * 210)
+#define LAUNCH_RIGHT_FACE_UP_TXT_X (LAUNCH_RIGHT_FACE_UP_X - rUp_Size.x / 2)
+#define LAUNCH_RIGHT_FACE_UP_TXT_Y (LAUNCH_RIGHT_FACE_UP_Y - rUp_Size.y / 2)
+#define LAUNCH_RIGHT_FACE_LEFT_X (Var_GetMonitorWidth() / 1600 * 1136)
+#define LAUNCH_RIGHT_FACE_LEFT_Y (Var_GetMonitorHeight() / 400 * 228)
+#define LAUNCH_RIGHT_FACE_LEFT_TXT_X (LAUNCH_RIGHT_FACE_LEFT_X - rLeft_Size.x / 2)
+#define LAUNCH_RIGHT_FACE_LEFT_TXT_Y (LAUNCH_RIGHT_FACE_LEFT_Y - rLeft_Size.y / 2)
+//Middle buttons
+#define LAUNCH_HOME_RECT_W (Var_GetMonitorWidth() / 23.0f)
+#define LAUNCH_HOME_RECT_H (Var_GetMonitorHeight() / 30.0f)
+#define LAUNCH_HOME_RECT_X (Var_GetMonitorWidth() / 800.0f * 375)
+#define LAUNCH_HOME_RECT_Y (Var_GetMonitorHeight() / 400.0f * 327)
+#define LAUNCH_HOME_TXT_X (LAUNCH_HOME_RECT_X + LAUNCH_HOME_RECT_W / 2 - home_Size.x / 2)
+#define LAUNCH_HOME_TXT_Y (LAUNCH_HOME_RECT_Y + LAUNCH_HOME_RECT_H / 2 - home_Size.y / 2)
+#define LAUNCH_BACK_RECT_W (Var_GetMonitorWidth() / 22.0f)
+#define LAUNCH_BACK_RECT_H (Var_GetMonitorHeight() / 31.0f)
+#define LAUNCH_BACK_RECT_X (Var_GetMonitorWidth() / 800.0f * 335)
+#define LAUNCH_BACK_RECT_Y (Var_GetMonitorHeight() / 400.0f * 155)
+#define LAUNCH_BACK_TXT_X (LAUNCH_BACK_RECT_X + LAUNCH_BACK_RECT_W / 2 - back_Size.x / 2)
+#define LAUNCH_BACK_TXT_Y (LAUNCH_BACK_RECT_Y + LAUNCH_BACK_RECT_H / 2 - back_Size.y / 2)
+#define LAUNCH_START_RECT_W (Var_GetMonitorWidth() / 22.0f)
+#define LAUNCH_START_RECT_H (Var_GetMonitorHeight() / 31.0f)
+#define LAUNCH_START_RECT_X (Var_GetMonitorWidth() / 800.0f * 413)
+#define LAUNCH_START_RECT_Y (Var_GetMonitorHeight() / 400.0f * 155)
+#define LAUNCH_START_TXT_X (LAUNCH_START_RECT_X + LAUNCH_START_RECT_W / 2 - start_Size.x / 2)
+#define LAUNCH_START_TXT_Y (LAUNCH_START_RECT_Y + LAUNCH_START_RECT_H / 2 - start_Size.y / 2)
+//D-Pad
+#define LAUNCH_D_RECT_W (Var_GetMonitorWidth() / 23.0f)
+#define LAUNCH_D_RECT_H (Var_GetMonitorHeight() / 30.0f)
+#define LAUNCH_D_RECT_X (Var_GetMonitorWidth() / 800.0f * 320)
+#define LAUNCH_D_RECT_Y (Var_GetMonitorHeight() / 400.0f * 326)
+#define LAUNCH_D_TXT_X (LAUNCH_D_RECT_X + LAUNCH_D_RECT_W / 2 - d_Size.x / 2)
+#define LAUNCH_D_TXT_Y (LAUNCH_D_RECT_Y + LAUNCH_D_RECT_H / 2 - d_Size.y / 2)
+//Joysticks
+#define LAUNCH_RS_RECT_W (Var_GetMonitorWidth() / 21.0f)
+#define LAUNCH_RS_RECT_H (Var_GetMonitorHeight() / 30.0f)
+#define LAUNCH_RS_RECT_X (Var_GetMonitorWidth() / 800.0f * 426)
+#define LAUNCH_RS_RECT_Y (Var_GetMonitorHeight() / 400.0f * 326)
+#define LAUNCH_RS_TXT_X (LAUNCH_RS_RECT_X + LAUNCH_RS_RECT_W / 2 - rs_Size.x / 2)
+#define LAUNCH_RS_TXT_Y (LAUNCH_RS_RECT_Y + LAUNCH_RS_RECT_H / 2 - rs_Size.y / 2)
+#define LAUNCH_LS_RECT_W (Var_GetMonitorWidth() / 21.0f)
+#define LAUNCH_LS_RECT_H (Var_GetMonitorHeight() / 31.0f)
+#define LAUNCH_LS_RECT_X (Var_GetMonitorWidth() / 800.0f * 182)
+#define LAUNCH_LS_RECT_Y (Var_GetMonitorHeight() / 400.0f * 222)
+#define LAUNCH_LS_TXT_X (LAUNCH_LS_RECT_X + LAUNCH_LS_RECT_W / 2 - ls_Size.x / 2)
+#define LAUNCH_LS_TXT_Y (LAUNCH_LS_RECT_Y + LAUNCH_LS_RECT_H / 2 - ls_Size.y / 2)
+//Triggers
+#define LAUNCH_LT_RECT_W (Var_GetMonitorWidth() / 22.0f)
+#define LAUNCH_LT_RECT_H (Var_GetMonitorHeight() / 31.0f)
+#define LAUNCH_LT_RECT_X (Var_GetMonitorWidth() / 800.0f * 268)
+#define LAUNCH_LT_RECT_Y (Var_GetMonitorHeight() / 400.0f * 155)
+#define LAUNCH_LT_TXT_X (LAUNCH_LT_RECT_X + LAUNCH_LT_RECT_W / 2 - lt_Size.x / 2)
+#define LAUNCH_LT_TXT_Y (LAUNCH_LT_RECT_Y + LAUNCH_LT_RECT_H / 2 - lt_Size.y / 2)
+#define LAUNCH_RT_RECT_W (Var_GetMonitorWidth() / 22.0f)
+#define LAUNCH_RT_RECT_H (Var_GetMonitorHeight() / 31.0f)
+#define LAUNCH_RT_RECT_X (Var_GetMonitorWidth() / 800.0f * 479)
+#define LAUNCH_RT_RECT_Y (Var_GetMonitorHeight() / 400.0f * 155)
+#define LAUNCH_RT_TXT_X (LAUNCH_RT_RECT_X + LAUNCH_RT_RECT_W / 2 - rt_Size.x / 2)
+#define LAUNCH_RT_TXT_Y (LAUNCH_RT_RECT_Y + LAUNCH_RT_RECT_H / 2 - rt_Size.y / 2)
+//Bumpers
+#define LAUNCH_LB_RECT_W (Var_GetMonitorWidth() / 26.0f)
+#define LAUNCH_LB_RECT_H (Var_GetMonitorHeight() / 31.0f)
+#define LAUNCH_LB_RECT_X (Var_GetMonitorWidth() / 800.0f * 209)
+#define LAUNCH_LB_RECT_Y (Var_GetMonitorHeight() / 400.0f * 188)
+#define LAUNCH_LB_TXT_X (LAUNCH_LB_RECT_X + LAUNCH_LB_RECT_W / 2 - lb_Size.x / 2)
+#define LAUNCH_LB_TXT_Y (LAUNCH_LB_RECT_Y + LAUNCH_LB_RECT_H / 2 - lb_Size.y / 2)
+#define LAUNCH_RB_RECT_W (Var_GetMonitorWidth() / 26.0f)
+#define LAUNCH_RB_RECT_H (Var_GetMonitorHeight() / 31.0f)
+#define LAUNCH_RB_RECT_X (Var_GetMonitorWidth() / 800.0f * 544)
+#define LAUNCH_RB_RECT_Y (Var_GetMonitorHeight() / 400.0f * 188)
+#define LAUNCH_RB_TXT_X (LAUNCH_RB_RECT_X + LAUNCH_RB_RECT_W / 2 - rb_Size.x / 2)
+#define LAUNCH_RB_TXT_Y (LAUNCH_RB_RECT_Y + LAUNCH_RB_RECT_H / 2 - rb_Size.y / 2)
 #pragma endregion
 
 

@@ -13,10 +13,10 @@
 #include "ui/ui.h"
 
 //Key and pad maps
-static int your_key_map[RETRO_DEVICE_ID_JOYPAD_R3 + 1];
-static int your_pad_map[RETRO_DEVICE_ID_JOYPAD_R3 + 1];
+int your_key_map[RETRO_DEVICE_ID_JOYPAD_R3 + 1];
+int your_pad_map[RETRO_DEVICE_ID_JOYPAD_R3 + 1];
 //Textures for drawing the games
-static Texture2D emulator_texture;
+Texture2D emulator_texture;
 //Time on the current frame
 static double accumulator;
 //FPS of the game
