@@ -307,7 +307,7 @@ void UI_DrawBootScreen() {
     ClearBackground(BACKGROUND_CLR);
     //Draw logo
     Rectangle sourceRect = {0.0f, 0.0f, (float)spiderLogo.width, (float)spiderLogo.height};
-    Rectangle destRect = {UI_CenterImg_X(LOGO_SIZE, CENTER_X), UI_CenterImg_Y(LOGO_SIZE, Var_GetScreenHeight() / 2), LOGO_SIZE, LOGO_SIZE};
+    Rectangle destRect = {UI_CenterImg_X(LOGO_SIZE, CENTER_X), UI_CenterImg_Y(LOGO_SIZE, Var_GetMonitorHeight() / 2), LOGO_SIZE, LOGO_SIZE};
     Vector2 origin = {0.0f, 0.0f};
     DrawTexturePro(spiderLogo, sourceRect, destRect, origin, 0.0f, WHITE);
 }
@@ -350,16 +350,16 @@ static void UI_DrawBase() {
     ClearBackground(BACKGROUND_CLR);
     //Draw background
     Rectangle sourceRect = {0.0f, 0.0f, (float)Var_GetBackground().width, (float)Var_GetBackground().height};
-    Rectangle destRect = {UI_CenterImg_X(BACKGROUND_W, CENTER_X), UI_CenterImg_Y(BACKGROUND_H, Var_GetScreenHeight() / 2), BACKGROUND_W, BACKGROUND_H};
+    Rectangle destRect = {UI_CenterImg_X(BACKGROUND_W, CENTER_X), UI_CenterImg_Y(BACKGROUND_H, Var_GetMonitorHeight() / 2), BACKGROUND_W, BACKGROUND_H};
     Vector2 origin = {0.0f, 0.0f};
     DrawTexturePro(Var_GetBackground(), sourceRect, destRect, origin, 0.0f, Fade(WHITE, BACKGROUND_ALPHA));
     //Draw sections
-    DrawRectangle(0, 0, Var_GetScreenWidth(), START_SECTION_Y, Fade(Var_GetColor2(), TOP_ALPHA));
+    DrawRectangle(0, 0, Var_GetMonitorWidth(), START_SECTION_Y, Fade(Var_GetColor2(), TOP_ALPHA));
     Vector2 startSection1 = {0, START_SECTION_Y};
-    Vector2 endSection1 = {Var_GetScreenWidth(), START_SECTION_Y};
+    Vector2 endSection1 = {Var_GetMonitorWidth(), START_SECTION_Y};
     DrawLineEx(startSection1, endSection1, THICKNESS_BASE, Var_GetColor3());
     Vector2 startSection2 = {0, END_SECTION_Y};
-    Vector2 endSection2 = {Var_GetScreenWidth(), END_SECTION_Y};
+    Vector2 endSection2 = {Var_GetMonitorWidth(), END_SECTION_Y};
     DrawLineEx(startSection2, endSection2, THICKNESS_BASE, Var_GetColor3());
 }
 
@@ -519,7 +519,7 @@ static void UI_DrawCateg_Scroll() {
             }
             //If still scrolling, keep going
             else {
-                Game_UpdateNewIndexes();
+                Games_UpdateNewIndexes(RIGHT);
                 Games_NewRefresh();
                 UI_ResetCoords_Categ();
             }
@@ -557,14 +557,14 @@ static void UI_DrawCateg_Scroll() {
             }
             //If still scrolling, keep going
             else {
-                Game_UpdateNewIndexes();
+                Games_UpdateNewIndexes(LEFT);
                 Games_NewRefresh();
                 UI_ResetCoords_Categ();
             }
             alphaCategories_Out = 1.0f;
             alphaCategories_In = 0.0f;
             //Reset values for games
-            UI_ResetDisplayCoords_Games();
+            UI_ResetCoords_Games();
             return;
         }
         // Update x coordinates for new games
@@ -580,6 +580,97 @@ static void UI_DrawCateg_Scroll() {
         Games_GetDisplayed(4)->x = Lerp(Games_GetDisplayed(4)->x, RIGHT1_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
         Games_GetDisplayed(5)->x = Lerp(Games_GetDisplayed(5)->x, RIGHT2_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
     }
+}
+
+//Draw a game cover
+static void UI_DrawGame(int i, float alpha, bool scroll) {
+    //If scrolling
+    if (scroll) {
+        //Update values of image to draw
+        img_Y = Games_GetNew(i)->y;
+        img_W = Games_GetNew(i)->w;
+        img_H = Games_GetNew(i)->h;
+        img_X = Games_GetNew(i)->x;
+        img = Games_GetNew(i)->cover;
+        //Draw image
+        UI_DrawImage(alpha);
+        //Draw outline
+        DrawRectangleLinesEx(
+            (Rectangle){
+                img_X - THICKNESS_GAME_OTHER,
+                img_Y - THICKNESS_GAME_OTHER,
+                img_W + (2 * THICKNESS_GAME_OTHER),
+                img_H + (2 * THICKNESS_GAME_OTHER)},
+            THICKNESS_GAME_OTHER,
+            Fade(GRAY, alphaCategories_In));
+    }
+    //If not scrolling
+    else {
+        //Update values of image to draw
+        img_Y = Games_GetDisplayed(i)->y;
+        img_W = Games_GetDisplayed(i)->w;
+        img_H = Games_GetDisplayed(i)->h;
+        img_X = Games_GetDisplayed(i)->x;
+        img = Games_GetDisplayed(i)->cover;
+        //Draw image
+        UI_DrawImage(alpha);
+        //Draw outline
+        DrawRectangleLinesEx(
+            (Rectangle){
+                img_X - THICKNESS_GAME_OTHER,
+                img_Y - THICKNESS_GAME_OTHER,
+                img_W + (2 * THICKNESS_GAME_OTHER),
+                img_H + (2 * THICKNESS_GAME_OTHER)},
+            THICKNESS_GAME_OTHER,
+            Fade(GRAY, alphaCategories_Out));
+    }
+}
+
+//Draw the games when scrolling to the left
+static void UI_DrawGames_Left() {
+    UI_DrawGame(0, 1.0f, false);
+    UI_DrawGame(1, 1.0f, false);
+    UI_DrawGame(5, 1.0f, false);
+    UI_DrawGame(4, 1.0f, false);
+    UI_DrawGame(3, 1.0f, false);
+    UI_DrawGame(2, 1.0f, false);
+}
+
+//Draw the games when scrolling to the right
+static void UI_DrawGames_Right() {
+    UI_DrawGame(6, 1.0f, false);
+    UI_DrawGame(1, 1.0f, false);
+    UI_DrawGame(5, 1.0f, false);
+    UI_DrawGame(2, 1.0f, false);
+    UI_DrawGame(3, 1.0f, false);
+    UI_DrawGame(4, 1.0f, false);
+}
+
+//Draw games when not scrolling
+static void UI_DrawGames_Normal() {
+    //Draw new games
+    if (Var_GetScrollCateg() != SCROLL_NO) {
+        UI_DrawGame(0, alphaCategories_In, true);
+        UI_DrawGame(4, alphaCategories_In, true);
+        UI_DrawGame(1, alphaCategories_In, true);
+        UI_DrawGame(3, alphaCategories_In, true);
+        UI_DrawGame(2, alphaCategories_In, true);
+    }
+    UI_DrawGame(1, alphaCategories_Out, false);
+    UI_DrawGame(5, alphaCategories_Out, false);
+    UI_DrawGame(2, alphaCategories_Out, false);
+    UI_DrawGame(4, alphaCategories_Out, false);
+    UI_DrawGame(3, alphaCategories_Out, false);
+
+    // Draw outline for selected game
+    DrawRectangleLinesEx(
+        (Rectangle){
+            img_X - THICKNESS_GAME_SELECT,
+            img_Y - THICKNESS_GAME_SELECT,
+            img_W + (2 * THICKNESS_GAME_SELECT),
+            img_H + (2 * THICKNESS_GAME_SELECT)},
+        THICKNESS_GAME_SELECT,
+        Fade(Var_GetColor1(), alphaGames));
 }
 
 //Function for drawing the animation of scrolling games
@@ -622,7 +713,7 @@ static void UI_DrawGames_Scroll()
         Games_GetDisplayed(5)->w = Lerp(Games_GetDisplayed(5)->w, SIDE1_GAME_W, SCROLL_GAMES_SPEED);
         Games_GetDisplayed(6)->w = Lerp(Games_GetDisplayed(6)->w, SIDE2_GAME_W, SCROLL_GAMES_SPEED);
         //Update height values
-        Games_GetDisplayed(1)->h = Lerp(Games_GetDisplayed(1)->h, SIDE3_GAME_W, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(1)->h = Lerp(Games_GetDisplayed(1)->h, SIDE3_GAME_H, SCROLL_GAMES_SPEED);
         Games_GetDisplayed(2)->h = Lerp(Games_GetDisplayed(2)->h, SIDE2_GAME_H, SCROLL_GAMES_SPEED);
         Games_GetDisplayed(3)->h = Lerp(Games_GetDisplayed(3)->h, SIDE1_GAME_H, SCROLL_GAMES_SPEED);
         Games_GetDisplayed(4)->h = Lerp(Games_GetDisplayed(4)->h, CENTER_GAME_H, SCROLL_GAMES_SPEED);
@@ -675,98 +766,6 @@ static void UI_DrawGames_Scroll()
     }
 }
 
-//Draw the games when scrolling to the left
-static void UI_DrawGames_Left() {
-    UI_DrawGame(0, 1.0f, false);
-    UI_DrawGame(1, 1.0f, false);
-    UI_DrawGame(5, 1.0f, false);
-    UI_DrawGame(4, 1.0f, false);
-    UI_DrawGame(3, 1.0f, false);
-    UI_DrawGame(2, 1.0f, false);
-}
-
-//Draw the games when scrolling to the right
-static void UI_DrawGames_Right() {
-    UI_DrawGame(6, 1.0f, false);
-    UI_DrawGame(1, 1.0f, false);
-    UI_DrawGame(5, 1.0f, false);
-    UI_DrawGame(2, 1.0f, false);
-    UI_DrawGame(3, 1.0f, false);
-    UI_DrawGame(4, 1.0f, false);
-}
-
-//Draw a game cover
-static void UI_DrawGame(int i, float alpha, bool scroll) {
-    //If scrolling
-    if (scroll) {
-        //Update values of image to draw
-        img_Y = Games_GetNew(i)->y;
-        img_W = Games_GetNew(i)->w;
-        img_H = Games_GetNew(i)->h;
-        img_X = Games_GetNew(i)->x;
-        img = Games_GetNew(i)->cover;
-        //Draw image
-        UI_DrawImage(alpha);
-        //Draw outline
-        DrawRectangleLinesEx(
-            (Rectangle){
-                img_X - THICKNESS_GAME_OTHER,
-                img_Y - THICKNESS_GAME_OTHER,
-                img_W + (2 * THICKNESS_GAME_OTHER),
-                img_H + (2 * THICKNESS_GAME_OTHER)},
-            THICKNESS_GAME_OTHER,
-            Fade(GRAY, alphaCategories_In));
-    }
-    //If not scrolling
-    else {
-        //Update values of image to draw
-        img_Y = Games_GetDisplayed(i)->y;
-        img_W = Games_GetDisplayed(i)->w;
-        img_H = Games_GetDisplayed(i)->h;
-        img_X = Games_GetDisplayed(i)->x;
-        img = Games_GetDisplayed(i)->cover;
-        //Draw image
-        UI_DrawImage(alpha);
-        //Draw outline
-        DrawRectangleLinesEx(
-            (Rectangle){
-                img_X - THICKNESS_GAME_OTHER,
-                img_Y - THICKNESS_GAME_OTHER,
-                img_W + (2 * THICKNESS_GAME_OTHER),
-                img_H + (2 * THICKNESS_GAME_OTHER)},
-            THICKNESS_GAME_OTHER,
-            Fade(GRAY, alphaCategories_Out));
-    }
-}
-
-//Draw games when not scrolling
-static void UI_DrawGames_Normal() {
-    //If scrolling categories
-    if (Var_GetScrollCateg() != SCROLL_NO) {
-        UI_DrawGame(0, alphaCategories_In, true);
-        UI_DrawGame(4, alphaCategories_In, true);
-        UI_DrawGame(1, alphaCategories_In, true);
-        UI_DrawGame(3, alphaCategories_In, true);
-        UI_DrawGame(2, alphaCategories_In, true);
-    }
-    // If not scrolling categories
-    UI_DrawGame(1, alphaCategories_Out, false);
-    UI_DrawGame(5, alphaCategories_Out, false);
-    UI_DrawGame(2, alphaCategories_Out, false);
-    UI_DrawGame(4, alphaCategories_Out, false);
-    UI_DrawGame(3, alphaCategories_Out, false);
-
-    // Draw outline for selected game
-    DrawRectangleLinesEx(
-        (Rectangle){
-            img_X - THICKNESS_GAME_SELECT,
-            img_Y - THICKNESS_GAME_SELECT,
-            img_W + (2 * THICKNESS_GAME_SELECT),
-            img_H + (2 * THICKNESS_GAME_SELECT)},
-        THICKNESS_GAME_SELECT,
-        Fade(Var_GetColor1(), alphaGames));
-}
-
 //Tick function for the main UI
 void UI_Tick(ConsoleState* currentConsoleState) {
 
@@ -796,7 +795,7 @@ void UI_Tick(ConsoleState* currentConsoleState) {
                 Var_SetScrollGames(SCROLL_NO);
                 currentUIState = SCROLL_CATEGORIES;
                 //Get new games ready and reset the coordinates
-                Game_UpdateNewIndexes();
+                Games_UpdateNewIndexes(RIGHT);
                 Games_NewRefresh();
                 UI_ResetCoords_Categ();
             }
@@ -810,7 +809,7 @@ void UI_Tick(ConsoleState* currentConsoleState) {
                 Var_SetScrollGames(SCROLL_NO);
                 currentUIState = SCROLL_CATEGORIES;
                 //Get new games ready and reset the coordinates
-                Game_UpdateNewIndexes();
+                Games_UpdateNewIndexes(LEFT);
                 Games_NewRefresh();
                 UI_ResetCoords_Categ();
             }
@@ -836,10 +835,10 @@ void UI_Tick(ConsoleState* currentConsoleState) {
             //Update displayed games
             Games_ScrollLeft();
             //Reset game values
-            UI_ResetDisplayCoords_Games();
+            UI_ResetCoords_Games();
             Var_SetScrollCateg(SCROLL_LEFT);
             currentUIState = SCROLL_CATEGORIES;
-            Game_UpdateNewIndexes();
+            Games_UpdateNewIndexes(LEFT);
             Games_NewRefresh();
             UI_ResetCoords_Categ();
         }
@@ -848,10 +847,10 @@ void UI_Tick(ConsoleState* currentConsoleState) {
             //Update displayed games
             Games_ScrollRight();
             //Reset game values
-            UI_ResetDisplayCoords_Games();
+            UI_ResetCoords_Games();
             Var_SetScrollCateg(SCROLL_RIGHT);
             currentUIState = SCROLL_CATEGORIES;
-            Game_UpdateNewIndexes();
+            Games_UpdateNewIndexes(RIGHT);
             Games_NewRefresh();
             UI_ResetCoords_Categ();
         }
@@ -870,7 +869,7 @@ void UI_Tick(ConsoleState* currentConsoleState) {
         break;
 
     case OPTIONS:
-        if (IsKeyPressed(KEY_TAB) || START_PRESS || ((IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) && Var_GetDisplayBrightness() == false && Var_GetDisplayTheme() == false)) {
+        if (IsKeyPressed(KEY_TAB) || START_PRESS || ((IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) && Var_GetDisplayBright() == false && Var_GetDisplayTheme() == false)) {
             currentUIState = NORMAL;
         }
         break;
@@ -879,15 +878,15 @@ void UI_Tick(ConsoleState* currentConsoleState) {
     //Action
     switch (currentUIState) {
     case NORMAL:
-        UI_ChangeAlpha_Normal();
+        UI_ChangeAlpha_Static();
         UI_DrawBase();
-        UI_DrawCategories_Normal();
+        UI_DrawCateg_Static();
         UI_DrawGames_Normal();
         //Draw bumpers
         UI_DrawBumpers();
         //Draw bottom section of screen
         UI_DrawBottom();
-        UI_DrawDiagnostics();
+        Diagnostics_Tick(&currentConsoleState);
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) {
             *currentConsoleState = STATE_APP_LAUNCHER;
         }
@@ -896,8 +895,8 @@ void UI_Tick(ConsoleState* currentConsoleState) {
     case SCROLL_GAMES:
         UI_ChangeAlpha_ScrollGames();
         UI_DrawBase();
-        UI_DrawCategories_Normal();
-        UI_DrawScroll_Games();
+        UI_DrawCateg_Static();
+        UI_DrawGames_Scroll();
         //Draw outline for selected game
         DrawRectangleLinesEx(
             (Rectangle){
@@ -911,27 +910,27 @@ void UI_Tick(ConsoleState* currentConsoleState) {
         UI_DrawBumpers();
         //Draw bottom section of screen
         UI_DrawBottom();
-        UI_DrawDiagnostics();
+        Diagnostics_Tick(&currentConsoleState);
         break;
 
     case SCROLL_CATEGORIES:
-        UI_ChangeAlpha_ScrollCategories();
+        UI_ChangeAlpha_ScrollCateg();
         UI_DrawBase();
-        UI_DrawScroll_Categories();
+        UI_DrawCateg_Scroll();
         UI_DrawGames_Normal();
         //Draw bumpers
         UI_DrawBumpers();
         //Draw bottom section of screen
         UI_DrawBottom();
-        UI_DrawDiagnostics();
+        Diagnostics_Tick(&currentConsoleState);
         break;
 
     case OPTIONS:
         UI_DrawBase();
         if (Var_GetScrollGames() != SCROLL_NO) {
             UI_ChangeAlpha_ScrollGames();
-            UI_DrawCategories_Normal();
-            UI_DrawScroll_Games();
+            UI_DrawCateg_Static();
+            UI_DrawGames_Scroll();
             //Draw outline for selected game
             DrawRectangleLinesEx(
                 (Rectangle){
@@ -943,20 +942,20 @@ void UI_Tick(ConsoleState* currentConsoleState) {
                 Fade(Var_GetColor1(), alphaGames));
         }
         else if (Var_GetScrollCateg() != SCROLL_NO) {
-            UI_ChangeAlpha_ScrollCategories();
-            UI_DrawScroll_Categories();
+            UI_ChangeAlpha_ScrollCateg();
+            UI_DrawCateg_Scroll();
             UI_DrawGames_Normal();
         }
         else {
-            UI_ChangeAlpha_Normal();
-            UI_DrawCategories_Normal();
+            UI_ChangeAlpha_Static();
+            UI_DrawCateg_Static();
             UI_DrawGames_Normal();
         }
         //Draw bumpers
         UI_DrawBumpers();
         //Draw bottom section of screen
         UI_DrawBottom();
-        UI_DrawDiagnostics();
+        Diagnostics_Tick(&currentConsoleState);
         UIPause_Tick(currentConsoleState);
         break;
     }
@@ -970,7 +969,7 @@ void UI_Init() {
     alphaCategories_Out = 1.0f;
     alphaCategories_In = 0.0f;
     //Reset the coordinates for the games
-    UI_ResetDisplayCoords_Games();
+    UI_ResetCoords_Games();
     UI_ResetCoords_Categ();
     //Strings to hold the text in the file
     char color1[10] = "", color2[10] = "", color3[10] = "", bright[32] = "", circX[32] = "", diag[5] = "";
