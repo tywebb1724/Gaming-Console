@@ -20,9 +20,6 @@
 
 //Length of longest text line in the select box
 static float maxLen;
-//Whether the mouse buttons were previously pressed
-//static bool mouseLeftWasPressed = false;
-//static bool mouseRightWasPressed = false;
 //Current state of the UI
 static UIState currentUIState;
 //Spider logo
@@ -640,155 +637,7 @@ static void UI_DrawControls_Ext(const game_t* game) {
     DrawRectangle(LAUNCH_LS_RECT_X, LAUNCH_LS_RECT_Y, LAUNCH_LS_RECT_W, LAUNCH_LS_RECT_H, GRAY);
 
     //Set the text variables for the console and draw the non-shared ones
-    if (strcmp(game->console, "Sega Genesis") == 0 || strcmp(game->console, "Sega CD") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "START");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"B");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "A");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
-
-        snprintf(back_Txt,  sizeof(back_Txt),  "MODE");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(rLeft_Txt, sizeof(rLeft_Txt), "C");
-        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rLeft = {LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "X");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(rUp_Txt,   sizeof(rUp_Txt),   "Y");
-        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rUp = {LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "Z");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    }
-    else if (strcmp(game->console, "Sega Game Gear") == 0 || strcmp(game->console, "Sega Master System") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "1");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "2");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
-    }
-    else if (strcmp(game->console, "TurboGrafx-16") == 0 || strcmp(game->console, "TurboGrafx-CD") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "RUN");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "I");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "II");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
-
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    }
-    else if (strcmp(game->console, "Neo Geo Pocket Color") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "OPTION");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "B");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "A");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
-    }
-    else if (strcmp(game->console, "Nintendo Entertainment System") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
-
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    }
-    else if (strcmp(game->console, "Game Boy Color") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
-
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    }
-    else if (strcmp(game->console, "Atari Lynx") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
-
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    }
-    else if (strcmp(game->console, "Super Nintendo Entertainment System") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
-
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(rLeft_Txt, sizeof(rLeft_Txt), "%s", "Y");
-        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rLeft = {LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(rUp_Txt,   sizeof(rUp_Txt),   "%s", "X");
-        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rUp = {LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "L");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "R");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    }
-    else if (strcmp(game->console, "Game Boy Advance") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
-        
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "L");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "R");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    }
-    else if (strcmp(game->console, "Sony PlayStation") == 0) {
+    if (strcmp(game->console, "Nintendo GameCube") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "X");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "O");
@@ -830,114 +679,35 @@ static void UI_DrawControls_Ext(const game_t* game) {
         Vector2 rt = {LAUNCH_RT_TXT_X, LAUNCH_RT_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rt_Txt, rt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
     }
-    else if (strcmp(game->console, "Nintendo 64") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "STICK");
-        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
-
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "L");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "R");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(lt_Txt,    sizeof(lt_Txt),    "%s", "Z");
-        Vector2 lt_Size = MeasureTextEx(Var_GetFontBold(), lt_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lt = {LAUNCH_LT_TXT_X, LAUNCH_LT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lt_Txt, lt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(rs_Txt,    sizeof(rs_Txt),    "%s", "C");
-        Vector2 rs_Size = MeasureTextEx(Var_GetFontBold(), rs_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rs = {LAUNCH_RS_TXT_X, LAUNCH_RS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rs_Txt, rs, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+    else if (strcmp(game->console, "Nintendo DS") == 0) {
+        
     }
-    else if (strcmp(game->console, "Arcade") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "1");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "2");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "STICK");
-        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "JOY");
-
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "COIN");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(rLeft_Txt, sizeof(rLeft_Txt), "%s", "3");
-        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rLeft = {LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(rUp_Txt,   sizeof(rUp_Txt),   "%s", "4");
-        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rUp = {LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "5");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "6");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+    else if (strcmp(game->console, "Sony PlayStation Portable") == 0) {
+        
     }
-    else if (strcmp(game->console, "PC") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "ENTER");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "USE");
-        snprintf(rDown_Txt,   sizeof(rDown_Txt),   "%s", "RUN");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "MOVE");
-        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "MOVE");
-
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "MAP");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(rt_Txt, sizeof(rt_Txt), "%s", "FIRE");
-        Vector2 rt_Size = MeasureTextEx(Var_GetFontBold(), rt_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rt = {LAUNCH_RT_TXT_X, LAUNCH_RT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rt_Txt, rt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "WPN-");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "WPN+");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+    else if (strcmp(game->console, "Sega Saturn") == 0) {
+        
+    }
+    else if (strcmp(game->console, "Sega Dreamcast") == 0) {
+        
     }
 
     //Controls all games use
     Vector2 rDown_Size = MeasureTextEx(Var_GetFontBold(), rDown_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
     Vector2 rDown = {LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y};
     DrawTextEx(Var_GetFontBold(), rDown_Txt, rDown, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
     Vector2 rRight_Size = MeasureTextEx(Var_GetFontBold(), rRight_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
     Vector2 rRight = {LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y};
     DrawTextEx(Var_GetFontBold(), rRight_Txt, rRight, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
     Vector2 home_Size = MeasureTextEx(Var_GetFontBold(), home_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
     Vector2 home = {LAUNCH_HOME_TXT_X, LAUNCH_HOME_TXT_Y};
     DrawTextEx(Var_GetFontBold(), home_Txt, home, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
     Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
     Vector2 d = {LAUNCH_D_TXT_X, LAUNCH_D_TXT_Y};
     DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
     Vector2 start_Size = MeasureTextEx(Var_GetFontBold(), start_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
     Vector2 start = {LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y};
     DrawTextEx(Var_GetFontBold(), start_Txt, start, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-
     Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
     Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
     DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
@@ -961,8 +731,8 @@ void UI_DrawLaunch(const game_t* game) {
         UI_DrawControls_Lib(game);
     }
     else {
-        UI_DrawControls_Ext(game);
         snprintf(homeTxt, size(homeTxt), LAUNCH_HOME_EXT);
+        UI_DrawControls_Ext(game);
     }
     //Home instructions
     Vector2 homeTxt_Size = MeasureTextEx(Var_GetFontRegular(), homeTxt, LAUNCH_TXT_SIZE, LAUNCH_SPACE);
@@ -972,16 +742,25 @@ void UI_DrawLaunch(const game_t* game) {
 }
 
 //Display diagnostics on top left
-void UI_DrawDispDiag() {
+void UI_DrawDispDiag(bool in_game) {
     //If diagnostics are being displayed
     if (Var_GetDiag()) {
-        //Draw resolution
         Vector2 diagnosticsResolution = {DISP_DIAG_RES_X, DISP_DIAG_RES_Y};
         DrawTextEx(Var_GetFontRegular(), TextFormat("Resolution:  %d:%d", GetMonitorWidth(0), GetMonitorHeight(0)), diagnosticsResolution, DISP_DIAG_SIZE, 
             DISP_DIAG_SPACE, Var_GetColor3());
-        //Draw FPS
         Vector2 diagnosticsFPS = {DISP_DIAG_FPS_X, DISP_DIAG_FPS_Y};
-        DrawTextEx(Var_GetFontRegular(), TextFormat("FPS:  %d", GetFPS()), diagnosticsFPS, DISP_DIAG_SIZE, DISP_DIAG_SPACE, Var_GetColor3());
+        Vector2 temp = {DISP_DIAG_TEMP_X, DISP_DIAG_TEMP_Y};
+        DrawTextEx(Var_GetFontRegular(), TextFormat("CPU Temperature:  %.1f C", Var_GetTemp()), temp, DISP_DIAG_SIZE, DISP_DIAG_SPACE, Var_GetColor3());
+        Vector2 clock = {DISP_DIAG_CLOCK_X, DISP_DIAG_CLOCK_Y};
+        DrawTextEx(Var_GetFontRegular(), TextFormat("CPU Clock Speed:  %d kHz", Var_GetClock()), clock, DISP_DIAG_SIZE, DISP_DIAG_SPACE, Var_GetColor3());
+        Vector2 frame = {DISP_DIAG_FRAME_X, DISP_DIAG_FRAME_Y};
+        DrawTextEx(Var_GetFontRegular(), TextFormat("Frame:  %.1f     Worst: %.1f", Var_GetFrameAvg(), Var_GetFrameWorst()), frame, DISP_DIAG_SIZE, DISP_DIAG_SPACE, Var_GetColor3());
+        if (in_game) {
+            DrawTextEx(Var_GetFontRegular(), TextFormat("Emulator FPS:  %f / %f", GetAndResetVRCBCount(), GetCoreTargetFPS()), diagnosticsFPS, DISP_DIAG_SIZE, DISP_DIAG_SPACE, Var_GetColor3());
+        }
+        else {
+            DrawTextEx(Var_GetFontRegular(), TextFormat("FPS:  %d", GetFPS()), diagnosticsFPS, DISP_DIAG_SIZE, DISP_DIAG_SPACE, Var_GetColor3());
+        }
     }
 }
 
@@ -1312,8 +1091,7 @@ static void UI_DrawGames_Normal() {
 }
 
 //Function for drawing the animation of scrolling games
-static void UI_DrawGames_Scroll()
-{
+static void UI_DrawGames_Scroll() {
     //If scrolling to the right
     if (Var_GetScrollGames() == SCROLL_RIGHT) {
         //Draw the games
@@ -1522,7 +1300,7 @@ void UI_Tick(ConsoleState* currentConsoleState) {
         UI_DrawTop();
         //Draw bottom section of screen
         UI_DrawBottom();
-        UI_DrawDispDiag();
+        UI_DrawDispDiag(false);
         if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
             *currentConsoleState = STATE_APP_LAUNCHER;
             Controller_SetWasPressed_A(true);
@@ -1547,7 +1325,7 @@ void UI_Tick(ConsoleState* currentConsoleState) {
         UI_DrawTop();
         //Draw bottom section of screen
         UI_DrawBottom();
-        UI_DrawDispDiag();
+        UI_DrawDispDiag(false);
         break;
 
     case SCROLL_CATEGORIES:
@@ -1559,7 +1337,7 @@ void UI_Tick(ConsoleState* currentConsoleState) {
         UI_DrawTop();
         //Draw bottom section of screen
         UI_DrawBottom();
-        UI_DrawDispDiag();
+        UI_DrawDispDiag(false);
         break;
 
     case OPTIONS:
@@ -1592,7 +1370,7 @@ void UI_Tick(ConsoleState* currentConsoleState) {
         UI_DrawTop();
         //Draw bottom section of screen
         UI_DrawBottom();
-        UI_DrawDispDiag();
+        UI_DrawDispDiag(false);
         UIPause_Tick(currentConsoleState);
         break;
     }

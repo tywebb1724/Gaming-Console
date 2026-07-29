@@ -30,6 +30,19 @@ static float alphaSelectTxt;
 static bool displayBrightness;
 static bool displayTheme;
 static bool displayDiag;
+//Temperature of the CPU in degrees C
+static float cpuTemp;
+//Clock speed of the CPU in kHz
+static int cpuClock;
+//Timer for updating diagnostics
+static float diagTimer;
+//Frame time tracking for the diagnostics overlay
+static float frameMsAvg;
+static float frameMsPeak;
+//Accumulators for the second currently being measured
+static float frameMsTotal;
+static float frameMsWorst;
+static int frameMsCount;
 
 
 //Initialize the variables
@@ -56,6 +69,7 @@ float Var_GetBright() {
     return brightness;
 }
 
+//Catch bad brightness values
 static float Var_ClampBright(float value) {
     //Catch bad brightness values
     if (!(value >= MAX_BRIGHTNESS)) {
@@ -66,6 +80,7 @@ static float Var_ClampBright(float value) {
     }
     return value;
 }
+
 //Set brightness value
 void Var_SetBright(float value) {
     brightness = Var_ClampBright(value);
@@ -161,7 +176,6 @@ void Var_SetBackground(Texture2D background) {
     currentBackground = background;
 }
 
-
 //Extract a background from a color name
 Texture2D Var_NametoBackground(char *c) {
     //Return the corresponding background for each color name
@@ -254,3 +268,86 @@ bool Var_GetDisplayTheme() {
 void Var_SetDisplayTheme(bool value) {
     displayTheme = value;
 }
+
+//Update CPU temperature
+void Var_UpdateTemp() {
+    diagTimer += GetFrameTime();
+    //Not time to update
+    if (diagTimer < DIAG_TIME) {
+        return;
+    }
+    FILE* f = fopen("/sys/class/thermal/thermal_zone0/temp", "r");
+    //If the file will not open, keep the reading file already has
+    if (f == NULL) {
+        return;
+    }
+    //Temporary temperature variable (in thousandths of a degree)
+    int tempTemp = 0;
+    //Scan the file for the temperature and convert to degrees
+    if (fscanf(f, "%f", &tempTemp) == 1) {
+        cpuTemp = tempTemp / 1000.0f;
+    }
+    fclose(f);
+}
+
+//Get CPU temperature
+float Var_GetTemp() {
+    return cpuTemp;
+}
+
+//Update CPU clock speed
+void Var_UpdateClock() {
+    //Not time to update
+    if (diagTimer < DIAG_TIME) {
+        return;
+    }
+    diagTimer = 0.0f;
+    FILE* f = fopen("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", "r");
+    //If the file will not open, keep the reading file already has
+    if (f == NULL) {
+        return;
+    }
+    //Scan the file for the temperature and convert to degrees
+    fscanf(f, "%d", &cpuClock);
+    fclose(f);
+}
+
+//Get CPU clock speed
+int Var_GetClock() {
+    return cpuClock;
+}
+
+//Update frame time
+void Var_UpdateFrame() {
+    float ms = GetFrameTime() * 1000.0f;
+    frameMsTotal += ms;
+    frameMsCount++;
+    //Remember the worst frame in this window
+    if (ms > frameMsWorst) {
+        frameMsWorst = ms;
+    }
+    //Not time to publish yet
+    if (diagTimer < DIAG_TIME) {
+        return;
+    }
+    if (frameMsCount > 0) {
+        frameMsAvg = frameMsTotal / frameMsCount;
+    }
+    frameMsPeak = frameMsWorst;
+    //Start a new window
+    frameMsTotal = 0.0f;
+    frameMsWorst = 0.0f;
+    frameMsCount = 0;
+    diagTimer = 0.0f;
+}
+
+//Get average frame time
+float Var_GetFrameAvg() {
+    return frameMsAvg;
+}
+
+//Get worst frame time
+float Var_GetFrameWorst() {
+    return frameMsWorst;
+}
+

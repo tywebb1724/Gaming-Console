@@ -3,6 +3,8 @@
 
 #include "raylib.h"
 
+#define DIAG_TIME 1.0f
+
 //Scrolling states
 typedef enum {
     SCROLL_NO,
@@ -82,5 +84,19 @@ void Var_SetDisplayBright(bool value);
 bool Var_GetDisplayTheme();
 //Set whether theme options are being displayed
 void Var_SetDisplayTheme(bool value);
+//Update CPU temperature
+void Var_UpdateTemp();
+//Get CPU temperature
+float Var_GetTemp();
+//Update CPU clock speed
+void Var_UpdateClock();
+//Get CPU clock speed
+int Var_GetClock();
+//Update frame time
+void Var_UpdateFrame();
+//Get average frame time
+float Var_GetFrameAvg();
+//Get worst frame time
+float Var_GetFrameWorst();
 
 #endif

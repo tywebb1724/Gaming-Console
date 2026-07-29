@@ -104,6 +104,12 @@
 #define DISP_DIAG_RES_Y (Var_GetMonitorHeight() / 70.0f)
 #define DISP_DIAG_FPS_X (Var_GetMonitorWidth() / 70.0f)
 #define DISP_DIAG_FPS_Y (DISP_DIAG_RES_Y + Var_GetMonitorHeight() / 40.0f)
+#define DISP_DIAG_FRAME_X (Var_GetMonitorWidth() / 50.0f)
+#define DISP_DIAG_FRAME_Y (DISP_DIAG_FPS_Y)
+#define DISP_DIAG_TEMP_X (Var_GetMonitorWidth() / 70.0f)
+#define DISP_DIAG_TEMP_Y (DISP_DIAG_FPS_Y + Var_GetMonitorHeight() / 40.0f)
+#define DISP_DIAG_CLOCK_X (DISP_DIAG_FRAME_X)
+#define DISP_DIAG_CLOCK_Y (DISP_DIAG_TEMP_Y)
 #pragma endregion
 
 //Macros for game drawing and scrolling

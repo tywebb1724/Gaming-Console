@@ -300,7 +300,7 @@ static void Play_Draw(const game_t* game) {
     //Draw texture on the screen
     DrawTexturePro(emulator_texture, src, dest, origin, rot, WHITE);
     //Draw diganostics (if applys)
-    UI_DrawDispDiag();
+    UI_DrawDispDiag(true);
 }
 
 //Play initialization

@@ -25,7 +25,7 @@ void UI_LoadControlImg();
 //Draw launching screen
 void UI_DrawLaunch(const game_t* game);
 //Display diagnostics on top left
-void UI_DrawDispDiag();
+void UI_DrawDispDiag(bool in_game);
 //Change alphas when static
 void UI_ChangeAlpha_Static();
 //Tick function for the main UI

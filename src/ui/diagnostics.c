@@ -8,8 +8,13 @@
 //Current state of the diagnostics screen
 static DiagState currentDiagState;
 
+
 //Draw diagnostics screen
 static void Diagnostics_Draw() {
+    //Update the CPU temperature
+    Var_UpdateTemp();
+    Var_UpdateClock();
+    Var_UpdateFrame();
     //Clear background
     ClearBackground(BACKGROUND_CLR);
     //Draw title
@@ -21,6 +26,17 @@ static void Diagnostics_Draw() {
     DrawTextEx(Var_GetFontRegular(), TextFormat("Resolution:  %d:%d", GetMonitorWidth(0), GetMonitorHeight(0)), resolution, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
     Vector2 fps = {FPS_TXT_X, FPS_TXT_Y};
     DrawTextEx(Var_GetFontRegular(), TextFormat("FPS:  %d", GetFPS()), fps, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
+    Vector2 frame = {FRAME_TXT_X, FRAME_TXT_Y};
+    DrawTextEx(Var_GetFontRegular(), TextFormat("Frame:  %.1f     Worst: %.1f", Var_GetFrameAvg(), Var_GetFrameWorst()), frame, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
+    Vector2 temp = {TEMP_TXT_X, TEMP_TXT_Y};
+    DrawTextEx(Var_GetFontRegular(), TextFormat("CPU Temperature:  %.1f C", Var_GetTemp()), temp, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
+    Vector2 clock = {CLOCK_TXT_X, CLOCK_TXT_Y};
+    DrawTextEx(Var_GetFontRegular(), TextFormat("CPU Clock Speed:  %d kHz", Var_GetClock()), clock, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
+    Vector2 refresh = {REFRESH_TXT_X, REFRESH_TXT_Y};
+    DrawTextEx(Var_GetFontRegular(), TextFormat("Monitor Refresh Rate:  %d Hz", GetMonitorRefreshRate(0)), refresh, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
+    Vector2 control = {CONTROL_TXT_X, CONTROL_TXT_Y};
+    DrawTextEx(Var_GetFontRegular(), TextFormat("Controllers connected:  %d", Controller_Count()), control, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
+    
     //Draw options button
     UI_DrawOptions();
 }
@@ -60,7 +76,7 @@ void Diagnostics_Tick(ConsoleState* currentConsoleState) {
             //Draw diagnostics screen
             Diagnostics_Draw();
             //Draw display diagnostics
-            UI_DrawDispDiag();
+            UI_DrawDispDiag(false);
             break;
 
         //Displaying options menu
@@ -71,7 +87,7 @@ void Diagnostics_Tick(ConsoleState* currentConsoleState) {
             //Options tick
             UIPause_Tick(currentConsoleState);
             //Draw display diagnostics
-            UI_DrawDispDiag();
+            UI_DrawDispDiag(false);
             break;
     }
 }
