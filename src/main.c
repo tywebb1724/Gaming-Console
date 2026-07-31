@@ -29,18 +29,23 @@ int main(void)
     SetTargetFPS(FPS);
     //Find any controllers that are already plugged in
     Controller_Refresh();
+    UI_Init();
     //Main game loop
-    while (!IsKeyPressed(KEY_ESCAPE) && (!HOME_DOWN || !START_DOWN)) {
+    while (!IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && (!HOME_DOWN || !START_DOWN)) {
         //Pick up controllers being plugged in or unplugged
         Controller_Refresh();
-        //Check if a button is pressed
-        if (!A_DOWN && Controller_GetWasPressed_A()) {
+        //Check if buttons are pressed
+        if ((!A_DOWN && !IsKeyDown(KEY_ENTER)) && Controller_GetWasPressed_A()) {
             Controller_SetWasPressed_A(false);
+        }
+        if ((!B_DOWN && !IsKeyDown(KEY_ESCAPE)) && Controller_GetWasPressed_B()) {
+            Controller_SetWasPressed_B(false);
         }
         //Start drawing
         BeginDrawing();
         //Update console and draw
-        States_UpdateAndDraw();
+        //States_UpdateAndDraw();
+        UI_DrawLaunch(Games_GetDisplayed(3));
         //Stop drawing
         EndDrawing();
         //Load game images (if not already loaded)

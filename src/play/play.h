@@ -16,6 +16,7 @@
 #define PLAY_RESUME_RECT_W (resumeSize.x + Var_GetMonitorWidth() / 40.0f)
 #define PLAY_RESUME_RECT_H (resumeSize.y + Var_GetMonitorHeight() / 40.0f)
 
+bool Play_IsDoomActive(void);
 //Stop the game
 void Play_Stop(const game_t* game);
 //Play initialization

@@ -8,6 +8,7 @@
 #include "var.h"
 #include <stdio.h>
 #include <string.h>
+#include "ui/ui.h"
 
 //Current state of the pause screen
 static PlayPauseState currentPlayPauseState;
@@ -31,13 +32,16 @@ static void PlayPause_UpdateTime() {
 static void PlayPause_DrawControls(const game_t* game) {
     //Draw controller image
     Rectangle sourceRect = {0.0f, 0.0f, (float)controlsImg.width, (float)controlsImg.height};
-    Rectangle destRect = {Var_GetMonitorWidth() / 5, Var_GetMonitorHeight() / 5, Var_GetMonitorWidth() / 5 * 3, Var_GetMonitorHeight() / 5 * 3};
+    Rectangle destRect = {Var_GetMonitorWidth() / 20, Var_GetMonitorHeight() / 3, Var_GetMonitorWidth() / 20 * 9, Var_GetMonitorHeight() / 5 * 3};
     Vector2 origin = {0.0f, 0.0f};
     DrawTexturePro(controlsImg, sourceRect, destRect, origin, 0.0f, WHITE);
+    Rectangle rect = {Var_GetMonitorWidth() / 2, Var_GetMonitorHeight() / 3, Var_GetMonitorWidth() / 20 * 9, Var_GetMonitorHeight() / 5 * 3};
+    DrawRectanglePro(rect, origin, 0.0f, WHITE);
+    DrawLine(Var_GetMonitorWidth() / 2, Var_GetMonitorHeight() / 3, Var_GetMonitorWidth() / 2, Var_GetMonitorHeight() / 3 + Var_GetMonitorHeight() / 5 * 3, BLACK);
     //Initialize the text variables for all the controls
     char rDown_Txt[10] = "", rUp_Txt[10] = "", rLeft_Txt[10] = "", rRight_Txt[10] = "";
     char d_Txt[10] = "", rs_Txt[10] = "", back_Txt[10] = "", start_Txt[10] = "";
-    char lt_Txt[10] = "", rt_Txt[10] = "", lb_Txt[10] = "", rb_Txt[10] = "", ls_Txt[10] = "";
+    char lt_Txt[10] = "", rt_Txt[10] = "", lb_Txt[15] = "", rb_Txt[15] = "", ls_Txt[10] = "";
     char home_Txt[10] = "PAUSE";
 
     //Draw circles and rectangles for backgrounds of each control
@@ -57,11 +61,14 @@ static void PlayPause_DrawControls(const game_t* game) {
     DrawRectangle(PLAYPAUSE_LS_RECT_X, PLAYPAUSE_LS_RECT_Y, PLAYPAUSE_LS_RECT_W, PLAYPAUSE_LS_RECT_H, GRAY);
 
     //Set the text variables for the console and draw the non-shared ones
-    if (strcmp((*game).console, "Sega Genesis") == 0 || strcmp((*game).console, "Sega CD") == 0) {
+    if (strcmp(game->console, "Sega Genesis") == 0 || strcmp(game->console, "Sega CD") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "START");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"B");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "A");
         snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
+        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 ls = {PLAYPAUSE_LS_TXT_X, PLAYPAUSE_LS_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "MODE");
@@ -89,18 +96,24 @@ static void PlayPause_DrawControls(const game_t* game) {
         Vector2 rb = {PLAYPAUSE_RB_TXT_X, PLAYPAUSE_RB_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rb_Txt, rb, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
     }
-    else if (strcmp((*game).console, "Sega Game Gear") == 0 || strcmp((*game).console, "Sega Master System") == 0) {
+    else if (strcmp(game->console, "Sega Game Gear") == 0 || strcmp(game->console, "Sega Master System") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "1");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "2");
         snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
+        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 ls = {PLAYPAUSE_LS_TXT_X, PLAYPAUSE_LS_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
     }
-    else if (strcmp((*game).console, "TurboGrafx-16") == 0 || strcmp((*game).console, "TurboGrafx-CD") == 0) {
+    else if (strcmp(game->console, "TurboGrafx-16") == 0 || strcmp(game->console, "TurboGrafx-CD") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "RUN");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "I");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "II");
         snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
+        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 ls = {PLAYPAUSE_LS_TXT_X, PLAYPAUSE_LS_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
@@ -108,30 +121,24 @@ static void PlayPause_DrawControls(const game_t* game) {
         Vector2 back = {PLAYPAUSE_BACK_TXT_X, PLAYPAUSE_BACK_TXT_Y};
         DrawTextEx(Var_GetFontBold(), back_Txt, back, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
     }
-    else if (strcmp((*game).console, "Neo Geo Pocket Color") == 0) {
+    else if (strcmp(game->console, "Neo Geo Pocket Color") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "OPTION");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "B");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "A");
         snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
+        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 ls = {PLAYPAUSE_LS_TXT_X, PLAYPAUSE_LS_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
     }
-    else if (strcmp((*game).console, "Nintendo Entertainment System") == 0) {
+    else if (strcmp(game->console, "Nintendo Entertainment System") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
         snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
-
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
-        Vector2 back = {PLAYPAUSE_BACK_TXT_X, PLAYPAUSE_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
-    }
-    else if (strcmp((*game).console, "Game Boy Color") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
+        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 ls = {PLAYPAUSE_LS_TXT_X, PLAYPAUSE_LS_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
@@ -139,11 +146,14 @@ static void PlayPause_DrawControls(const game_t* game) {
         Vector2 back = {PLAYPAUSE_BACK_TXT_X, PLAYPAUSE_BACK_TXT_Y};
         DrawTextEx(Var_GetFontBold(), back_Txt, back, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
     }
-    else if (strcmp((*game).console, "Atari Lynx") == 0) {
+    else if (strcmp(game->console, "Game Boy Color") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
         snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
+        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 ls = {PLAYPAUSE_LS_TXT_X, PLAYPAUSE_LS_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
@@ -151,11 +161,29 @@ static void PlayPause_DrawControls(const game_t* game) {
         Vector2 back = {PLAYPAUSE_BACK_TXT_X, PLAYPAUSE_BACK_TXT_Y};
         DrawTextEx(Var_GetFontBold(), back_Txt, back, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
     }
-    else if (strcmp((*game).console, "Super Nintendo Entertainment System") == 0) {
+    else if (strcmp(game->console, "Atari Lynx") == 0) {
+        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
+        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
+        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
+        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
+        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 ls = {PLAYPAUSE_LS_TXT_X, PLAYPAUSE_LS_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
+        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
+
+        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
+        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 back = {PLAYPAUSE_BACK_TXT_X, PLAYPAUSE_BACK_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), back_Txt, back, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
+    }
+    else if (strcmp(game->console, "Super Nintendo Entertainment System") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
         snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
+        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 ls = {PLAYPAUSE_LS_TXT_X, PLAYPAUSE_LS_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
@@ -183,11 +211,14 @@ static void PlayPause_DrawControls(const game_t* game) {
         Vector2 rb = {PLAYPAUSE_RB_TXT_X, PLAYPAUSE_RB_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rb_Txt, rb, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
     }
-    else if (strcmp((*game).console, "Game Boy Advance") == 0) {
+    else if (strcmp(game->console, "Game Boy Advance") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
         snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
+        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 ls = {PLAYPAUSE_LS_TXT_X, PLAYPAUSE_LS_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
         
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
@@ -205,11 +236,14 @@ static void PlayPause_DrawControls(const game_t* game) {
         Vector2 rb = {PLAYPAUSE_RB_TXT_X, PLAYPAUSE_RB_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rb_Txt, rb, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
     }
-    else if (strcmp((*game).console, "Sony PlayStation") == 0) {
+    else if (strcmp(game->console, "Sony PlayStation") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "X");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "O");
         snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "STICK");
+        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 ls = {PLAYPAUSE_LS_TXT_X, PLAYPAUSE_LS_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
@@ -247,11 +281,14 @@ static void PlayPause_DrawControls(const game_t* game) {
         Vector2 rt = {PLAYPAUSE_RT_TXT_X, PLAYPAUSE_RT_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rt_Txt, rt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
     }
-    else if (strcmp((*game).console, "Nintendo 64") == 0) {
+    else if (strcmp(game->console, "Nintendo 64") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
         snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "STICK");
+        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 ls = {PLAYPAUSE_LS_TXT_X, PLAYPAUSE_LS_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "D-PAD");
 
         snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "L");
@@ -274,11 +311,14 @@ static void PlayPause_DrawControls(const game_t* game) {
         Vector2 rs = {PLAYPAUSE_RS_TXT_X, PLAYPAUSE_RS_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rs_Txt, rs, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
     }
-    else if (strcmp((*game).console, "Arcade") == 0) {
+    else if (strcmp(game->console, "Arcade") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
         snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "1");
         snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "2");
         snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "STICK");
+        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 ls = {PLAYPAUSE_LS_TXT_X, PLAYPAUSE_LS_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
         snprintf(d_Txt,     sizeof(d_Txt),     "%s", "JOY");
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "COIN");
@@ -306,12 +346,13 @@ static void PlayPause_DrawControls(const game_t* game) {
         Vector2 rb = {PLAYPAUSE_RB_TXT_X, PLAYPAUSE_RB_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rb_Txt, rb, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
     }
-    else if (strcmp((*game).console, "PC") == 0) {
+    else if (strcmp(game->console, "PC") == 0) {
         snprintf(start_Txt, sizeof(start_Txt), "%s", "ENTER");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "USE");
-        snprintf(rDown_Txt,   sizeof(rDown_Txt),   "%s", "RUN");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "MOVE");
-        snprintf(d_Txt,     sizeof(d_Txt),     "%s", "MOVE");
+        snprintf(rDown_Txt,sizeof(rDown_Txt),"%s", "USE");
+        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "MOVE/RUN");
+        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, PLAYPAUSE_CONTROL_SIZE_DOOM1, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 ls = {PLAYPAUSE_LS_TXT_X, PLAYPAUSE_LS_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, PLAYPAUSE_CONTROL_SIZE_DOOM1, PLAYPAUSE_CONTROL_SPACE, BLACK);
 
         snprintf(back_Txt,  sizeof(back_Txt),  "%s", "MAP");
         Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
@@ -323,15 +364,20 @@ static void PlayPause_DrawControls(const game_t* game) {
         Vector2 rt = {PLAYPAUSE_RT_TXT_X, PLAYPAUSE_RT_TXT_Y};
         DrawTextEx(Var_GetFontBold(), rt_Txt, rt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
 
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "WPN-");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "SWITCH GUNS");
+        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, PLAYPAUSE_CONTROL_SIZE_DOOM2, PLAYPAUSE_CONTROL_SPACE);
         Vector2 lb = {PLAYPAUSE_LB_TXT_X, PLAYPAUSE_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, PLAYPAUSE_CONTROL_SIZE_DOOM2, PLAYPAUSE_CONTROL_SPACE, BLACK);
 
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "WPN+");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "SWITCH GUNS");
+        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, PLAYPAUSE_CONTROL_SIZE_DOOM2, PLAYPAUSE_CONTROL_SPACE);
         Vector2 rb = {PLAYPAUSE_RB_TXT_X, PLAYPAUSE_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
+        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, PLAYPAUSE_CONTROL_SIZE_DOOM2, PLAYPAUSE_CONTROL_SPACE, BLACK);
+
+        snprintf(rs_Txt,    sizeof(rs_Txt),    "%s", "TURN");
+        Vector2 rs_Size = MeasureTextEx(Var_GetFontBold(), rs_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+        Vector2 rs = {PLAYPAUSE_RS_TXT_X, PLAYPAUSE_RS_TXT_Y};
+        DrawTextEx(Var_GetFontBold(), rs_Txt, rs, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
     }
 
     //Controls all games use
@@ -355,9 +401,10 @@ static void PlayPause_DrawControls(const game_t* game) {
     Vector2 start = {PLAYPAUSE_START_TXT_X, PLAYPAUSE_START_TXT_Y};
     DrawTextEx(Var_GetFontBold(), start_Txt, start, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
 
-    Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
-    Vector2 ls = {PLAYPAUSE_LS_TXT_X, PLAYPAUSE_LS_TXT_Y};
-    DrawTextEx(Var_GetFontBold(), ls_Txt, ls, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, BLACK);
+    //Draw back text
+    Vector2 backSize = MeasureTextEx(Var_GetFontRegular(), PLAYPAUSE_CONTROL_BACK, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE);
+    Vector2 back = {PLAYPAUSE_CONTROL_BACK_X, PLAYPAUSE_CONTROL_BACK_Y};
+    DrawTextEx(Var_GetFontRegular(), PLAYPAUSE_CONTROL_BACK, back, PLAYPAUSE_CONTROL_SIZE, PLAYPAUSE_CONTROL_SPACE, Fade(Var_GetColor2(), Var_GetAlphaSelect()));
 }
 
 //Draw the pause screen
@@ -433,11 +480,11 @@ static void PlayPause_Draw() {
     //Draw select
     Vector2 selectSize = MeasureTextEx(Var_GetFontRegular(), SELECT_TXT, SELECT_SIZE, PLAYPAUSE_SPACE);
     Vector2 select = {SELECT_X, SELECT_Y};
-    DrawTextEx(Var_GetFontRegular(), SELECT_TXT, select, SELECT_SIZE, PLAYPAUSE_SPACE, Var_GetColor3());
+    DrawTextEx(Var_GetFontRegular(), SELECT_TXT, select, SELECT_SIZE, PLAYPAUSE_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
     //Draw back
     Vector2 backSize = MeasureTextEx(Var_GetFontRegular(), BACK_TXT, BACK_SIZE, PLAYPAUSE_SPACE);
     Vector2 back = {BACK_X, BACK_Y};
-    DrawTextEx(Var_GetFontRegular(), BACK_TXT, back, BACK_SIZE, PLAYPAUSE_SPACE, Var_GetColor3());
+    DrawTextEx(Var_GetFontRegular(), BACK_TXT, back, BACK_SIZE, PLAYPAUSE_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
     //Draw an outline around the selected section
     if (currentPlayPauseState == PLAYPAUSE_RESUME)
     {
@@ -550,17 +597,19 @@ PlayState PlayPause_Tick() {
         //Resume game section
         case PLAYPAUSE_RESUME:
             //Resume game
-            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
                 Controller_SetWasPressed_A(true);
                 //Unload controls image texture
                 UnloadTexture(controlsImg);
                 return PLAY_RESUME;
             }
-            else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
+            else if ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B()) {
                 //Unload controls image texture
                 UnloadTexture(controlsImg);
+                Controller_SetWasPressed_B(true);
                 return PLAY_RESUME;
             }
+            UI_ChangeAlpha_Static();
             //Draw menu and update time
             PlayPause_Draw();
             PlayPause_UpdateTime();
@@ -569,7 +618,7 @@ PlayState PlayPause_Tick() {
         //Restart game section
         case PLAYPAUSE_RESTART:
             //Restart game
-            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
                 Controller_SetWasPressed_A(true);
                 currentPlayPauseState = PLAYPAUSE_RESUME;
                 //Unload controls image texture
@@ -577,13 +626,15 @@ PlayState PlayPause_Tick() {
                 return PLAY_RESTART;
             }
             //Resume game
-            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
+            if ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B()) {
                 /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
                 //Unload controls image texture
                 UnloadTexture(controlsImg);
+                Controller_SetWasPressed_B(true);
                 return PLAY_RESUME;
             }
+            UI_ChangeAlpha_Static();
             //Draw menu and update time
             PlayPause_Draw();
             PlayPause_UpdateTime();
@@ -592,17 +643,18 @@ PlayState PlayPause_Tick() {
         //View controls section
         case PLAYPAUSE_CONTROLS:
             //Stop or start displaying controls
-            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
                 displayControls = true;
                 Controller_SetWasPressed_A(true);
             }
             //If B is pressed
-            else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
+            else if ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B()) {
                 //Resume game or stop displaying controls
                 if (displayControls == false) {
                     currentPlayPauseState = PLAYPAUSE_RESUME;
                     //Unload controls image texture
                     UnloadTexture(controlsImg);
+                    Controller_SetWasPressed_B(true);
                     return PLAY_RESUME;
                 }
                 else {
@@ -616,6 +668,7 @@ PlayState PlayPause_Tick() {
             else {
                 PlayPause_Draw();
             }
+            UI_ChangeAlpha_Static();
             //Update time
             PlayPause_UpdateTime();
             break;
@@ -623,19 +676,21 @@ PlayState PlayPause_Tick() {
         //Display/hide diagnostics section
         case PLAYPAUSE_DIAGNOSTICS:
             //Stop or start displaying diagnostics
-            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
                 Var_SetDiag(!(Var_GetDiag()));
                 Var_UpdateUIFile();
                 Controller_SetWasPressed_A(true);
             }
             //Resume game
-            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
+            if ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B()) {
                 /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
                 //Unload controls image texture
                 UnloadTexture(controlsImg);
+                Controller_SetWasPressed_B(true);
                 return PLAY_RESUME;
             }
+            UI_ChangeAlpha_Static();
             //Draw menu and update time
             PlayPause_Draw();
             PlayPause_UpdateTime();
@@ -644,7 +699,7 @@ PlayState PlayPause_Tick() {
         //Exit game section
         case PLAYPAUSE_EXIT:
             //Exit game
-            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
                 currentPlayPauseState = PLAYPAUSE_RESUME;
                 //Unload controls image texture
                 UnloadTexture(controlsImg);
@@ -652,13 +707,15 @@ PlayState PlayPause_Tick() {
                 return PLAY_EXIT;
             }
             //Resume game
-            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
+            if ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B()) {
                 /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
                 //Unload controls image texture
                 UnloadTexture(controlsImg);
+                Controller_SetWasPressed_B(true);
                 return PLAY_RESUME;
             }
+            UI_ChangeAlpha_Static();
             //Draw menu and update time
             PlayPause_Draw();
             PlayPause_UpdateTime();

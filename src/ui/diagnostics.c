@@ -11,7 +11,7 @@ static DiagState currentDiagState;
 
 //Draw diagnostics screen
 static void Diagnostics_Draw() {
-    //Update the CPU temperature
+    //Update the diagnostics
     Var_UpdateTemp();
     Var_UpdateClock();
     Var_UpdateFrame();
@@ -31,7 +31,7 @@ static void Diagnostics_Draw() {
     Vector2 temp = {TEMP_TXT_X, TEMP_TXT_Y};
     DrawTextEx(Var_GetFontRegular(), TextFormat("CPU Temperature:  %.1f C", Var_GetTemp()), temp, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
     Vector2 clock = {CLOCK_TXT_X, CLOCK_TXT_Y};
-    DrawTextEx(Var_GetFontRegular(), TextFormat("CPU Clock Speed:  %d kHz", Var_GetClock()), clock, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
+    DrawTextEx(Var_GetFontRegular(), TextFormat("Clock Speed:  %.2f GHz", Var_GetClock() / 1000000.0f, Var_GetClock()), clock, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
     Vector2 refresh = {REFRESH_TXT_X, REFRESH_TXT_Y};
     DrawTextEx(Var_GetFontRegular(), TextFormat("Monitor Refresh Rate:  %d Hz", GetMonitorRefreshRate(0)), refresh, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
     Vector2 control = {CONTROL_TXT_X, CONTROL_TXT_Y};
@@ -63,8 +63,9 @@ void Diagnostics_Tick(ConsoleState* currentConsoleState) {
         //Displaying options menu
         case DIAG_OPTIONS:
             //If correct button(s) pressed, take away options menu
-            if (IsKeyPressed(KEY_TAB) || START_PRESS || ((IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) && !Var_GetDisplayBright() && !Var_GetDisplayTheme())) {
+            if (IsKeyPressed(KEY_TAB) || START_PRESS || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Var_GetDisplayBright() && !Var_GetDisplayTheme())) {
                 currentDiagState = DIAG_NORMAL;
+                Controller_SetWasPressed_B(true);
             }
             break;
     }

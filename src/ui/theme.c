@@ -74,6 +74,14 @@ static void Theme_Draw() {
     DrawRectangleRec((Rectangle){THEME_X2, THEME_RECT_4_Y, THEME_RECT_W / 3, THEME_RECT_H}, BLACK);
     DrawRectangleRec((Rectangle){THEME_X3, THEME_RECT_4_Y, THEME_RECT_W / 3, THEME_RECT_H}, WHITE);
     DrawRectangleLinesEx(rect4, THICKNESS_UIPAUSE, Var_GetColor3());
+    //Draw select text
+    Vector2 selectSize = MeasureTextEx(Var_GetFontRegular(), UIPAUSE_SELECT, UIPAUSE_SELECT_SIZE, UIPAUSE_TITLE_SPACE);
+    Vector2 select = {UIPAUSE_SELECT_X, UIPAUSE_SELECT_Y};
+    DrawTextEx(Var_GetFontRegular(), UIPAUSE_SELECT, select, UIPAUSE_SELECT_SIZE, UIPAUSE_TITLE_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
+    //Draw back text
+    Vector2 backSize = MeasureTextEx(Var_GetFontRegular(), UIPAUSE_BACK, UIPAUSE_BACK_SIZE, UIPAUSE_TITLE_SPACE);
+    Vector2 back = {UIPAUSE_BACK_X, UIPAUSE_BACK_Y};
+    DrawTextEx(Var_GetFontRegular(), UIPAUSE_BACK, back, UIPAUSE_BACK_SIZE, UIPAUSE_TITLE_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
     //Depending on the current theme selected, draw the selected outline
     if (currentThemeState == THEME_1) {
         DrawRectangleLinesEx(rect1, 2 * THICKNESS_UIPAUSE, Var_GetColor1());
@@ -99,10 +107,6 @@ void Theme_Init() {
 
 //Theme options tick function
 void Theme_Tick() {
-    if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !A_DOWN) {
-        //mouseWasPressed = false;
-    }
-
     //Transition
     switch (currentThemeState) {
     //Blue theme
@@ -167,7 +171,7 @@ void Theme_Tick() {
         //Increase the time the current theme has been selected
         Theme_UpdateTime();
         //Set the theme if selected by user
-        if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
+        if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
             Var_SetColor1(BLUE);
             Var_SetColor2(BLACK);
             Var_SetColor3(WHITE);
@@ -184,7 +188,7 @@ void Theme_Tick() {
         //Increase the time the current theme has been selected
         Theme_UpdateTime();
         //Set the theme if selected by user
-        if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
+        if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
             Var_SetColor1(RED);
             Var_SetColor2(BLACK);
             Var_SetColor3(WHITE);
@@ -201,7 +205,7 @@ void Theme_Tick() {
         //Increase the time the current theme has been selected
         Theme_UpdateTime();
         //Set the theme if selected by user
-        if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
+        if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
             Var_SetColor1(GREEN);
             Var_SetColor2(BLACK);
             Var_SetColor3(WHITE);
@@ -218,7 +222,7 @@ void Theme_Tick() {
         //Increase the time the current theme has been selected
         Theme_UpdateTime();
         //Set the theme if selected by user
-        if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
+        if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
             Var_SetColor1(YELLOW);
             Var_SetColor2(BLACK);
             Var_SetColor3(WHITE);

@@ -107,11 +107,11 @@ static void UIPause_Draw(UIPauseState currentUIPauseState, ConsoleState currentC
     //Draw select text
     Vector2 selectSize = MeasureTextEx(Var_GetFontRegular(), UIPAUSE_SELECT, UIPAUSE_SELECT_SIZE, UIPAUSE_TITLE_SPACE);
     Vector2 select = {UIPAUSE_SELECT_X, UIPAUSE_SELECT_Y};
-    DrawTextEx(Var_GetFontRegular(), UIPAUSE_SELECT, select, UIPAUSE_SELECT_SIZE, UIPAUSE_TITLE_SPACE, Var_GetColor3());
+    DrawTextEx(Var_GetFontRegular(), UIPAUSE_SELECT, select, UIPAUSE_SELECT_SIZE, UIPAUSE_TITLE_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
     //Draw back text
     Vector2 backSize = MeasureTextEx(Var_GetFontRegular(), UIPAUSE_BACK, UIPAUSE_BACK_SIZE, UIPAUSE_TITLE_SPACE);
     Vector2 back = {UIPAUSE_BACK_X, UIPAUSE_BACK_Y};
-    DrawTextEx(Var_GetFontRegular(), UIPAUSE_BACK, back, UIPAUSE_BACK_SIZE, UIPAUSE_TITLE_SPACE, Var_GetColor3());
+    DrawTextEx(Var_GetFontRegular(), UIPAUSE_BACK, back, UIPAUSE_BACK_SIZE, UIPAUSE_TITLE_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
     //Draw outline on selected section
     if (currentUIPauseState == LIST) {
         DrawRectangleRoundedLinesEx(rectList, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, 2 * THICKNESS_UIPAUSE, Var_GetColor1());
@@ -168,12 +168,12 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 uipauseTimeElapsed = 0.0f;
             }
             //Display or stop displaying brightness options
-            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A() && Var_GetDisplayBright() == false) {
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A() && Var_GetDisplayBright() == false) {
                 Brightness_Init();
                 Var_SetDisplayBright(true);
                 Controller_SetWasPressed_A(true);
             }
-            else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
+            else if (IsKeyPressed(KEY_ESCAPE) || B_PRESS) {
                 Var_SetDisplayBright(false);
             }
             break;
@@ -189,12 +189,12 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 uipauseTimeElapsed = 0.0f;
             }
             //Display or stop displaying theme options
-            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A() && Var_GetDisplayTheme() == false) {
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A() && Var_GetDisplayTheme() == false) {
                 Theme_Init();
                 Var_SetDisplayTheme(true);
                 Controller_SetWasPressed_A(true);
             }
-            else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || B_PRESS) {
+            else if (IsKeyPressed(KEY_ESCAPE) || B_PRESS) {
                 Var_SetDisplayTheme(false);
             }
             break;
@@ -210,7 +210,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 uipauseTimeElapsed = 0.0f;
             }
             //Start or stop displaying diagnostics
-            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
                 bool diag = Var_GetDiag();
                 Var_SetDiag(!diag);
                 Var_UpdateUIFile();
@@ -273,7 +273,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
 
         case VIEW_DIAGNOSTICS:
             //If user selects this option
-            if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || A_PRESS) && !Controller_GetWasPressed_A()) {
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
                 //Change to the main menu or view diagnostics menu depending on which screen is being displayed
                 if (*currentConsoleState == STATE_VIEW_DIAG) {
                     *currentConsoleState = STATE_MAIN_MENU;

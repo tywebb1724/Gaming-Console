@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "config.h"
+#include "retro_bridge.h"
 
 //Variables for brightness
 static float brightness;
@@ -43,6 +44,9 @@ static float frameMsPeak;
 static float frameMsTotal;
 static float frameMsWorst;
 static int frameMsCount;
+//Emulator fps variables
+static float emuFps = 0.0f;
+static int emuFrameAccum = 0;
 
 
 //Initialize the variables
@@ -61,8 +65,17 @@ void Var_Init() {
     //Set display variables as false
     displayBrightness = false;
     displayTheme = false;
+    cpuTemp = 0;
+    cpuClock = 0;
+    diagTimer = DIAG_TIME;
+    frameMsAvg = 0;
+    frameMsPeak = 0;
+    frameMsTotal = 0;
+    frameMsWorst = 0;
+    frameMsCount = 0;
+    emuFps = 0.0f;
+    emuFrameAccum = 0;
 }
-
 
 //Get brightness value
 float Var_GetBright() {
@@ -282,7 +295,7 @@ void Var_UpdateTemp() {
         return;
     }
     //Temporary temperature variable (in thousandths of a degree)
-    int tempTemp = 0;
+    float tempTemp = 0;
     //Scan the file for the temperature and convert to degrees
     if (fscanf(f, "%f", &tempTemp) == 1) {
         cpuTemp = tempTemp / 1000.0f;
@@ -301,7 +314,6 @@ void Var_UpdateClock() {
     if (diagTimer < DIAG_TIME) {
         return;
     }
-    diagTimer = 0.0f;
     FILE* f = fopen("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", "r");
     //If the file will not open, keep the reading file already has
     if (f == NULL) {
@@ -348,6 +360,24 @@ float Var_GetFrameAvg() {
 
 //Get worst frame time
 float Var_GetFrameWorst() {
-    return frameMsWorst;
+    return frameMsPeak;
 }
 
+//Update emulator FPS
+void Var_UpdateEmuFps(void) {
+    // ccumulate the core frames produced since last call, every frame
+    emuFrameAccum += GetAndResetVRCBCount();
+
+    //Stop if time hasn't passed
+    if (diagTimer < DIAG_TIME) {
+        return;
+    }
+    //frames / seconds = FPS
+    emuFps = emuFrameAccum / DIAG_TIME;
+    emuFrameAccum = 0;
+}
+
+//Get emulator FPS
+float Var_GetEmuFps(void) {
+    return emuFps;
+}

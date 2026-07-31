@@ -11,17 +11,21 @@
 #include <unistd.h>
 #include "rlgl.h"
 #include "controller.h"
+#include "play/play.h"
 
 #ifndef RETRO_ENVIRONMENT_SET_SYSTEM_DIRECTORY
 #define RETRO_ENVIRONMENT_SET_SYSTEM_DIRECTORY 16
 #endif
 
+#define MOUSE_SENSITIVITY 1.0f
+#define RIGHT_STICK_TURN_SENSITIVITY 1.5f
 // External dependencies from your main Raylib application
 extern Texture2D emulator_texture;
 extern int your_key_map[RETRO_DEVICE_ID_JOYPAD_MASK];      // keyboard keys (KEY_*)
 extern int your_pad_map[RETRO_DEVICE_ID_JOYPAD_MASK];      // gamepad buttons (GAMEPAD_BUTTON_*)
 
 unsigned game_rotation = 0;
+static int vrcb_count = 0;
 
 
 
@@ -131,12 +135,10 @@ void StartRetroAudio(void) {
     SetAudioStreamCallback(retroStream, AudioStreamCallback);  // raylib pulls from our ring
     PlayAudioStream(retroStream);
     audioStreamReady = true;
-    printf("DEBUG: audio stream created at %u Hz\n", sampleRate);
 }
 
 void StopRetroAudio(void) {
     size_t sram_size = core_get_memory_size(RETRO_MEMORY_SAVE_RAM);
-printf("DEBUG: CORE SRAM SIZE: %zu\n", sram_size);
     if (audioStreamReady) {
         StopAudioStream(retroStream);
         UnloadAudioStream(retroStream);
@@ -155,7 +157,6 @@ if (batchCallCount % 60 == 0) {
         int v = data[i] < 0 ? -data[i] : data[i];
         if (v > maxVal) maxVal = v;
     }
-    printf("DEBUG: Sega audio peak sample = %d\n", maxVal);
 }
     for (unsigned int i = 0; i < samples; i++) {
         unsigned int next = ringWrite + 1;
@@ -228,7 +229,6 @@ void SaveBattery(const char* rom_path) {
 
 // Keep track of the pixel format the core decides to use
 static volatile enum retro_pixel_format global_pixel_fmt = RETRO_PIXEL_FORMAT_RGB565;
-static int vrcb_count = 0;
 
 int GetAndResetVRCBCount(void) {
     int c = vrcb_count;
@@ -254,6 +254,7 @@ void PresentFrame(void) {
 }
 
 static void video_refresh_cb(const void *data, unsigned width, unsigned height, size_t pitch) {
+    vrcb_count++;
     if (data == RETRO_HW_FRAME_BUFFER_VALID) {
         latest_w = (int)width;
         latest_h = (int)height;
@@ -329,25 +330,58 @@ static int16_t input_state_cb(unsigned port, unsigned device, unsigned index, un
     bool padOK = (slot >= 0);
     //The keyboard only ever drives player one
     bool kbdOK = (port == 0);
-
+    // ---- MOUSE (Doom mouse-look) ----
+if (device == RETRO_DEVICE_MOUSE) {
+    if (port != 0) return 0;   // only player 1
+    switch (id) {
+        case RETRO_DEVICE_ID_MOUSE_X: {
+            Vector2 d = GetMouseDelta();
+            return (int16_t)(d.x * MOUSE_SENSITIVITY);   // turn
+        }
+        case RETRO_DEVICE_ID_MOUSE_Y: {
+            Vector2 d = GetMouseDelta();
+            return (int16_t)(d.y * MOUSE_SENSITIVITY);   // usually unused in Doom
+        }
+        case RETRO_DEVICE_ID_MOUSE_LEFT:
+            return IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? 1 : 0;   // fire
+        case RETRO_DEVICE_ID_MOUSE_RIGHT:
+            return IsMouseButtonDown(MOUSE_BUTTON_RIGHT) ? 1 : 0;  // use/alt
+        default:
+            return 0;
+    }
+}
     // ---- DIGITAL BUTTONS (JOYPAD) ----
     if (device == RETRO_DEVICE_JOYPAD) {
-        int key = your_key_map[id];
-        int pad = your_pad_map[id];
-        if (kbdOK && key != 0 && IsKeyDown(key)) return 1;
-        if (pad != 0 && padOK && IsGamepadButtonDown(slot, pad)) return 1;
+    int key = your_key_map[id];
+    int pad = your_pad_map[id];
+    if (kbdOK && key != 0 && IsKeyDown(key)) return 1;
+    if (pad != 0 && padOK && IsGamepadButtonDown(slot, pad)) return 1;
 
-        // Left stick also acts as the D-pad for directional buttons:
-        if (padOK) {
-            float lx = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_LEFT_X);
-            float ly = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_LEFT_Y);
+    if (padOK) {
+        float lx = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_LEFT_X);
+        float ly = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_LEFT_Y);
+
+        if (Play_IsDoomActive()) {
+            // Left stick: forward/back + strafe
+            if (id == RETRO_DEVICE_ID_JOYPAD_UP    && ly < -0.5f) return 1;
+            if (id == RETRO_DEVICE_ID_JOYPAD_DOWN  && ly >  0.5f) return 1;
+            if (id == RETRO_DEVICE_ID_JOYPAD_L     && lx < -0.5f) return 1;  // strafe left
+            if (id == RETRO_DEVICE_ID_JOYPAD_R     && lx >  0.5f) return 1;  // strafe right
+
+            // Right stick: turn (only needed if the raw-analog test above didn't work)
+            float rx = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_RIGHT_X);
+            if (id == RETRO_DEVICE_ID_JOYPAD_LEFT  && rx < -0.5f) { printf("DIGITAL TURN LEFT rx=%.3f\n", rx); return 1; }
+if (id == RETRO_DEVICE_ID_JOYPAD_RIGHT && rx >  0.5f) { printf("DIGITAL TURN RIGHT rx=%.3f\n", rx); return 1; }
+        } else {
+            // Everything else: left stick as dpad (unchanged)
             if (id == RETRO_DEVICE_ID_JOYPAD_LEFT  && lx < -0.5f) return 1;
             if (id == RETRO_DEVICE_ID_JOYPAD_RIGHT && lx >  0.5f) return 1;
             if (id == RETRO_DEVICE_ID_JOYPAD_UP    && ly < -0.5f) return 1;
             if (id == RETRO_DEVICE_ID_JOYPAD_DOWN  && ly >  0.5f) return 1;
         }
-        return 0;
     }
+    return 0;
+}
 
     // ---- LEFT ANALOG STICK (movement for N64/PS1) ----
     if (device == RETRO_DEVICE_ANALOG && index == RETRO_DEVICE_INDEX_ANALOG_LEFT) {
@@ -375,14 +409,20 @@ static int16_t input_state_cb(unsigned port, unsigned device, unsigned index, un
     // ---- RIGHT ANALOG STICK (N64 C-buttons / PS1 right stick) ----
     if (device == RETRO_DEVICE_ANALOG && index == RETRO_DEVICE_INDEX_ANALOG_RIGHT) {
         if (id == RETRO_DEVICE_ID_ANALOG_X) {
-            if (kbdOK && IsKeyDown(KEY_J)) return -32767;   // C-left
-            if (kbdOK && IsKeyDown(KEY_L)) return  32767;   // C-right
-            if (padOK) {
-                float v = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_RIGHT_X);
-                if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
-            }
-            return 0;
-        }
+    if (kbdOK && IsKeyDown(KEY_J)) return -32767;
+    if (kbdOK && IsKeyDown(KEY_L)) return  32767;
+    if (padOK) {
+        float v = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_RIGHT_X);
+if (v < -0.2f || v > 0.2f) {
+    float scaled = v * 32767.0f * RIGHT_STICK_TURN_SENSITIVITY;
+    if (scaled >  32767.0f) scaled =  32767.0f;
+    if (scaled < -32767.0f) scaled = -32767.0f;
+    printf("v=%.3f sens=%.2f scaled=%.1f\n", v, RIGHT_STICK_TURN_SENSITIVITY, scaled);
+    return (int16_t)scaled;
+}
+    }
+    return 0;
+}
         if (id == RETRO_DEVICE_ID_ANALOG_Y) {
             if (kbdOK && IsKeyDown(KEY_I)) return -32767;   // C-up
             if (kbdOK && IsKeyDown(KEY_K)) return  32767;   // C-down
@@ -537,6 +577,11 @@ if (strcmp(var->key, "genesis_plus_gx_psg_preamp") == 0) { var->value = "150"; r
 if (strcmp(var->key, "genesis_plus_gx_fm_preamp") == 0)  { var->value = "100"; return true; }
 if (strcmp(var->key, "genesis_plus_gx_sound_output") == 0) { var->value = "stereo"; return true; }
 if (strcmp(var->key, "genesis_plus_gx_ym2612") == 0) { var->value = "mame (ym2612)"; return true; }
+
+if (strcmp(var->key, "prboom-mouse_on") == 0) {
+    var->value = "enabled";   // or whatever prboom's "on" value string is
+    return true;
+}
     //if (strcmp(var->key, "genesis_plus_gx_add_on") == 0) {
         //printf("DEBUG: Force-setting add_on to 'none'\n"); // ADD THIS
         //var->value = "none"; 

@@ -98,5 +98,9 @@ void Var_UpdateFrame();
 float Var_GetFrameAvg();
 //Get worst frame time
 float Var_GetFrameWorst();
+//Update emulator FPS
+void Var_UpdateEmuFps(void);
+//Get emulator FPS
+float Var_GetEmuFps(void);
 
 #endif

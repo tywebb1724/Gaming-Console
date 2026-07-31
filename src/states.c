@@ -76,7 +76,7 @@ void States_LoadGameImages() {
             //Load texture and unload image
             game_t* game = Games_Get(i);
             Image* image = Games_GetLoadedImage(i);
-            (*game).cover = LoadTextureFromImage(*image);
+            game->cover = LoadTextureFromImage(*image);
             UnloadImage(*image);
             isTextureUploaded[i] = true;
         }
@@ -271,7 +271,7 @@ void States_UpdateAndDraw() {
 
         //View consoles/games list
         case STATE_LIST:
-            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+            if (IsKeyPressed(KEY_ESCAPE)) {
                 //mouseWasPressed = true;
                 currentConsoleState = STATE_MAIN_MENU;
                 newConsoleState = STATE_MAIN_MENU;

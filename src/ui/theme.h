@@ -10,7 +10,7 @@
 //Drawing the theme colors
 #define THEME_RECT_X (UIPAUSE_RECT_X + 2 * UIPAUSE_TXT_SPACING_Y)
 #define THEME_RECT_W (UIPAUSE_RECT_W  - 4 * UIPAUSE_TXT_SPACING_Y)
-#define THEME_RECT_H (themeSize.y * 6.0f / 5)
+#define THEME_RECT_H (themeSize.y)
 #define THEME_RECT_1_Y (THEME_TXT_Y + themeSize.y + UIPAUSE_TXT_SPACING_Y / 2.0f)
 #define THEME_X2 (THEME_RECT_X + THEME_RECT_W / 3)
 #define THEME_X3 (THEME_X2 + THEME_RECT_W / 3)

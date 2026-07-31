@@ -1,5 +1,6 @@
 #include "controller.h"
 #include "raylib.h"
+#include <string.h>
 
 //Gamepad slots that are currently connected, packed low to high
 static int slots[CONTROLLER_MAX];
@@ -7,10 +8,16 @@ static int slots[CONTROLLER_MAX];
 static int count = 0;
 
 static bool wasPressed_A = false;
+static bool wasPressed_B = false;
 
 //Get whether A button was pressed
 bool Controller_GetWasPressed_A() {
     return wasPressed_A;
+}
+
+//Get whether B button was pressed
+bool Controller_GetWasPressed_B() {
+    return wasPressed_B;
 }
 
 //Set whetehr A button was pressed
@@ -18,15 +25,24 @@ void Controller_SetWasPressed_A(bool value) {
     wasPressed_A = value;
 }
 
+//Set whetehr B button was pressed
+void Controller_SetWasPressed_B(bool value) {
+    wasPressed_B = value;
+}
+
 //Rescan which gamepad slots are connected
 void Controller_Refresh(void) {
     count = 0;
-    //Walk every slot raylib supports
     for (int i = 0; i < CONTROLLER_MAX; i++) {
-        //If something is plugged into this slot, record it
         if (IsGamepadAvailable(i)) {
-            slots[count] = i;
-            count++;
+            const char *name = GetGamepadName(i);
+            //Only count real controllers — skip the mouse/other devices raylib exposes as gamepads
+            if (name && (strstr(name, "GameSir") || strstr(name, "Xbox") ||
+                         strstr(name, "X-Box")   || strstr(name, "Microsoft") ||
+                         strstr(name, "Controller"))) {
+                slots[count] = i;
+                count++;
+            }
         }
     }
 }
