@@ -202,7 +202,7 @@ void States_Init() {
     }
     UI_LoadLogo();
     UI_SetMaxLen(maxLen);
-    UI_LoadControlImg();
+    UI_LoadControlsImgs();
 }
 
 //Update states and variabels and draw the correct screen

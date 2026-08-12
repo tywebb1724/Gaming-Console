@@ -29,7 +29,6 @@ int main(void)
     SetTargetFPS(FPS);
     //Find any controllers that are already plugged in
     Controller_Refresh();
-    UI_Init();
     //Main game loop
     while (!IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && (!HOME_DOWN || !START_DOWN)) {
         //Pick up controllers being plugged in or unplugged
@@ -44,8 +43,7 @@ int main(void)
         //Start drawing
         BeginDrawing();
         //Update console and draw
-        //States_UpdateAndDraw();
-        UI_DrawLaunch(Games_GetDisplayed(3));
+        States_UpdateAndDraw();
         //Stop drawing
         EndDrawing();
         //Load game images (if not already loaded)

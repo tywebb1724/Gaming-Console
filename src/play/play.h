@@ -17,6 +17,7 @@
 #define PLAY_RESUME_RECT_H (resumeSize.y + Var_GetMonitorHeight() / 40.0f)
 
 bool Play_IsDoomActive(void);
+bool Play_IsN64Active(void);
 //Stop the game
 void Play_Stop(const game_t* game);
 //Play initialization

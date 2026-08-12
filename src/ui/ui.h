@@ -21,7 +21,7 @@ void UI_LoadLogo();
 //Draw the boot screen
 void UI_DrawBootScreen();
 //Load image of controller
-void UI_LoadControlImg();
+void UI_LoadControlsImgs();
 //Draw launching screen
 void UI_DrawLaunch(const game_t* game);
 //Display diagnostics on top left

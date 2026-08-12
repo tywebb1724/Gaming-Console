@@ -138,7 +138,6 @@ void StartRetroAudio(void) {
 }
 
 void StopRetroAudio(void) {
-    size_t sram_size = core_get_memory_size(RETRO_MEMORY_SAVE_RAM);
     if (audioStreamReady) {
         StopAudioStream(retroStream);
         UnloadAudioStream(retroStream);
@@ -370,9 +369,11 @@ if (device == RETRO_DEVICE_MOUSE) {
 
             // Right stick: turn (only needed if the raw-analog test above didn't work)
             float rx = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_RIGHT_X);
-            if (id == RETRO_DEVICE_ID_JOYPAD_LEFT  && rx < -0.5f) { printf("DIGITAL TURN LEFT rx=%.3f\n", rx); return 1; }
-if (id == RETRO_DEVICE_ID_JOYPAD_RIGHT && rx >  0.5f) { printf("DIGITAL TURN RIGHT rx=%.3f\n", rx); return 1; }
-        } else {
+            if (id == RETRO_DEVICE_ID_JOYPAD_LEFT  && rx < -0.5f) { return 1; }
+if (id == RETRO_DEVICE_ID_JOYPAD_RIGHT && rx >  0.5f) { return 1; }
+        } 
+        else if (Play_IsN64Active()) {}
+        else {
             // Everything else: left stick as dpad (unchanged)
             if (id == RETRO_DEVICE_ID_JOYPAD_LEFT  && lx < -0.5f) return 1;
             if (id == RETRO_DEVICE_ID_JOYPAD_RIGHT && lx >  0.5f) return 1;
@@ -384,27 +385,41 @@ if (id == RETRO_DEVICE_ID_JOYPAD_RIGHT && rx >  0.5f) { printf("DIGITAL TURN RIG
 }
 
     // ---- LEFT ANALOG STICK (movement for N64/PS1) ----
-    if (device == RETRO_DEVICE_ANALOG && index == RETRO_DEVICE_INDEX_ANALOG_LEFT) {
-        if (id == RETRO_DEVICE_ID_ANALOG_X) {
-            if (kbdOK && IsKeyDown(KEY_LEFT))  return -32767;
-            if (kbdOK && IsKeyDown(KEY_RIGHT)) return  32767;
-            if (padOK) {
-                float v = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_LEFT_X);
-                if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
+if (device == RETRO_DEVICE_ANALOG && index == RETRO_DEVICE_INDEX_ANALOG_LEFT) {
+    if (id == RETRO_DEVICE_ID_ANALOG_X) {
+        if (kbdOK) {
+            if (Play_IsN64Active()) {
+                if (IsKeyDown(KEY_A)) return -32767;
+                if (IsKeyDown(KEY_D)) return  32767;
+            } else {
+                if (IsKeyDown(KEY_LEFT))  return -32767;
+                if (IsKeyDown(KEY_RIGHT)) return  32767;
             }
-            return 0;
         }
-        if (id == RETRO_DEVICE_ID_ANALOG_Y) {
-            if (kbdOK && IsKeyDown(KEY_UP))   return -32767;
-            if (kbdOK && IsKeyDown(KEY_DOWN)) return  32767;
-            if (padOK) {
-                float v = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_LEFT_Y);
-                if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
-            }
-            return 0;
+        if (padOK) {
+            float v = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_LEFT_X);
+            if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
         }
         return 0;
     }
+    if (id == RETRO_DEVICE_ID_ANALOG_Y) {
+        if (kbdOK) {
+            if (Play_IsN64Active()) {
+                if (IsKeyDown(KEY_W)) return -32767;
+                if (IsKeyDown(KEY_S)) return  32767;
+            } else {
+                if (IsKeyDown(KEY_UP))   return -32767;
+                if (IsKeyDown(KEY_DOWN)) return  32767;
+            }
+        }
+        if (padOK) {
+            float v = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_LEFT_Y);
+            if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
+        }
+        return 0;
+    }
+    return 0;
+}
 
     // ---- RIGHT ANALOG STICK (N64 C-buttons / PS1 right stick) ----
     if (device == RETRO_DEVICE_ANALOG && index == RETRO_DEVICE_INDEX_ANALOG_RIGHT) {
@@ -417,7 +432,6 @@ if (v < -0.2f || v > 0.2f) {
     float scaled = v * 32767.0f * RIGHT_STICK_TURN_SENSITIVITY;
     if (scaled >  32767.0f) scaled =  32767.0f;
     if (scaled < -32767.0f) scaled = -32767.0f;
-    printf("v=%.3f sens=%.2f scaled=%.1f\n", v, RIGHT_STICK_TURN_SENSITIVITY, scaled);
     return (int16_t)scaled;
 }
     }

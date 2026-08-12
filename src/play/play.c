@@ -36,13 +36,20 @@ static bool is_game_running;
 static RenderTexture2D hw_target = {0}; 
 
 static bool g_isDoomActive = false;
+static bool g_isN64Active  = false;
+
 
 static void Play_SetCurrentCore(const char* corePath) {
     g_isDoomActive = (strcmp(corePath, PATH_PRBOOM) == 0);
+    g_isN64Active  = (strcmp(corePath, PATH_N64) == 0);
 }
 
 bool Play_IsDoomActive(void) {
     return g_isDoomActive;
+}
+
+bool Play_IsN64Active(void) {
+    return g_isN64Active;
 }
 
 //Tells whether the game uses libretro
@@ -131,14 +138,14 @@ static void Play_ApplyMaps(char* corePath) {
         }
         // PS1 and arcade controls
         else if (strcmp(corePath, PATH_PS1) == 0 || strcmp(corePath, PATH_ARCADE) == 0) {
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_B]  = KEY_J;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_A]  = KEY_K;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_Y]  = KEY_I;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_X]  = KEY_L;
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_B]  = KEY_K;
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_A]  = KEY_L;
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_Y]  = KEY_J;
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_X]  = KEY_I;
             your_key_map[RETRO_DEVICE_ID_JOYPAD_L]  = KEY_U;
             your_key_map[RETRO_DEVICE_ID_JOYPAD_R]  = KEY_O;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_L2] = KEY_H;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_R2] = KEY_P;
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_L2] = KEY_Q;
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_R2] = KEY_E;
             your_pad_map[RETRO_DEVICE_ID_JOYPAD_B]  = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
             your_pad_map[RETRO_DEVICE_ID_JOYPAD_A]  = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
             your_pad_map[RETRO_DEVICE_ID_JOYPAD_Y]  = GAMEPAD_BUTTON_RIGHT_FACE_LEFT;
@@ -150,10 +157,14 @@ static void Play_ApplyMaps(char* corePath) {
         }
         //N64 controls
         else if (strcmp(corePath, PATH_N64) == 0) {
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_Y]  = KEY_K;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_B]  = KEY_J;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_L]  = KEY_U;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_R]  = KEY_O;
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_UP]    = KEY_UP;
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_DOWN]  = KEY_DOWN;
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_LEFT]  = KEY_LEFT;
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_RIGHT] = KEY_RIGHT;
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_Y]  = KEY_U;
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_B]  = KEY_O;
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_L]  = KEY_Q;
+            your_key_map[RETRO_DEVICE_ID_JOYPAD_R]  = KEY_E;
             your_key_map[RETRO_DEVICE_ID_JOYPAD_L2] = KEY_SPACE; 
             your_pad_map[RETRO_DEVICE_ID_JOYPAD_Y]  = GAMEPAD_BUTTON_RIGHT_FACE_DOWN; 
             your_pad_map[RETRO_DEVICE_ID_JOYPAD_B]  = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
@@ -173,7 +184,6 @@ static void Play_ApplyMaps(char* corePath) {
             your_key_map[RETRO_DEVICE_ID_JOYPAD_A]  = KEY_SPACE;
             your_key_map[RETRO_DEVICE_ID_JOYPAD_Y]  = KEY_LEFT_SHIFT;
             your_key_map[RETRO_DEVICE_ID_JOYPAD_SELECT] = KEY_TAB;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_B]  = KEY_J; 
 
             your_pad_map[RETRO_DEVICE_ID_JOYPAD_X] = GAMEPAD_BUTTON_RIGHT_TRIGGER_2;   // Fire = Xbox RT
             your_pad_map[RETRO_DEVICE_ID_JOYPAD_A] = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;  // Use = Xbox A
