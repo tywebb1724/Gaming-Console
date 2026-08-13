@@ -9,7 +9,7 @@
 #define GAMES_LEN 56
 //Number of games displayed on the screen at once
 #define GAMES_ON_SCREEN 5
-//Paths for each console
+//Paths for libretro consoles console
 #define PATH_GBA "assets/cores/mgba_libretro.so"
 #define PATH_NES "assets/cores/fceumm_libretro.so"
 #define PATH_GENESIS "assets/cores/genesis_plus_gx_libretro.so"
@@ -21,12 +21,13 @@
 #define PATH_NGPC "assets/cores/mednafen_ngp_libretro.so"
 #define PATH_TG16 "assets/cores/mednafen_pce_fast_libretro.so"
 #define PATH_ARCADE "assets/cores/fbneo_libretro.so"
+#define PATH_PRBOOM "/home/tywebb1724/Desktop/Gaming-Console/assets/cores/prboom_libretro.so"
+//Commands for external consoles
 #define PATH_GAMECUBE "org.DolphinEmu.dolphin-emu"
 #define PATH_PSP "org.ppsspp.PPSSPP --fullscreen"
 #define PATH_DS "net.kuribo64.melonDS -f"
 #define PATH_DREAMCAST "org.flycast.Flycast"
 #define PATH_SATURN "io.github.strikerx3.ymir -f"
-#define PATH_PRBOOM "/home/tywebb1724/Desktop/Gaming-Console/assets/cores/prboom_libretro.so"
 
 
 //Types of game saves
