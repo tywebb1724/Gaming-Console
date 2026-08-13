@@ -9,6 +9,7 @@ static int count = 0;
 
 static bool wasPressed_A = false;
 static bool wasPressed_B = false;
+static bool wasPressed_Home = false;
 
 //Get whether A button was pressed
 bool Controller_GetWasPressed_A() {
@@ -20,6 +21,11 @@ bool Controller_GetWasPressed_B() {
     return wasPressed_B;
 }
 
+//Get whether home button was pressed
+bool Controller_GetWasPressed_Home() {
+    return wasPressed_Home;
+}
+
 //Set whetehr A button was pressed
 void Controller_SetWasPressed_A(bool value) {
     wasPressed_A = value;
@@ -28,6 +34,11 @@ void Controller_SetWasPressed_A(bool value) {
 //Set whetehr B button was pressed
 void Controller_SetWasPressed_B(bool value) {
     wasPressed_B = value;
+}
+
+//Set whetehr home button was pressed
+void Controller_SetWasPressed_Home(bool value) {
+    wasPressed_Home = value;
 }
 
 //Rescan which gamepad slots are connected

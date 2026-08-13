@@ -85,7 +85,7 @@
 #define BOTTOM_ROUND 0.1f
 #define BOTTOM_SEGMENTS 25
 #define GAME_TXT_Y (Var_GetMonitorHeight() * (7.0f / 8))
-#define BOTTOM_TXT "Press [A/ENTER] to play"
+#define BOTTOM_TXT "[A/ENTER] Play | [MENU/P] Erase game data"
 #define CONSOLE_TXT_Y (GAME_TXT_Y + gameSize.y + BOTTOM_TXT_SPACING_Y)
 #define BOTTOM_TXT_X (Var_GetMonitorWidth() / 40.0f)
 #define BOTTOM_TXT_Y (CONSOLE_TXT_Y + gameSize.y + BOTTOM_TXT_SPACING_Y)

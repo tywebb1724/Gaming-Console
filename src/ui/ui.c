@@ -19,6 +19,7 @@
 #include "config.h"
 #include "play/playpause.h"
 #include "retro_bridge.h"
+#include "erase.h"
 
 //Length of longest text line in the select box
 static float maxLen;
@@ -2215,9 +2216,13 @@ void UI_Tick(ConsoleState* currentConsoleState) {
                 UI_ResetCoords_Categ();
             }
         }
-        if (IsKeyPressed(KEY_TAB) || START_PRESS) {
+        if (IsKeyPressed(KEY_ESCAPE) || HOME_PRESS) {
             UIPause_Init();
             currentUIState = OPTIONS;
+        }
+        else if (IsKeyPressed(KEY_P) || START_PRESS) {
+            Erase_Init();
+            currentUIState = ERASE_DATA;
         }
         break;
 
@@ -2227,7 +2232,7 @@ void UI_Tick(ConsoleState* currentConsoleState) {
             alphaSelectTxt_Blink = true;
             alphaSelectTxt_TimeElapsed = 0.0f;
         }
-        if (IsKeyPressed(KEY_TAB) || START_PRESS) {
+        if (IsKeyPressed(KEY_ESCAPE) || HOME_PRESS) {
             UIPause_Init();
             currentUIState = OPTIONS;
         }
@@ -2263,17 +2268,21 @@ void UI_Tick(ConsoleState* currentConsoleState) {
             alphaSelectTxt_Blink = true;
             alphaSelectTxt_TimeElapsed = 0.0f;
         }
-        if (IsKeyPressed(KEY_TAB) || START_PRESS) {
+        if (IsKeyPressed(KEY_ESCAPE) || HOME_PRESS) {
             UIPause_Init();
             currentUIState = OPTIONS;
         }
         break;
 
     case OPTIONS:
-        if ((IsKeyPressed(KEY_ESCAPE) || START_PRESS || B_PRESS) && !Var_GetDisplayBright() && !Var_GetDisplayTheme()) {
+        if (HOME_PRESS || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Var_GetDisplayBright() && !Var_GetDisplayTheme())) {
             currentUIState = NORMAL;
             Controller_SetWasPressed_B(true);
         }
+        break;
+
+    case ERASE_DATA:
+        
         break;
     }
 
@@ -2360,6 +2369,19 @@ void UI_Tick(ConsoleState* currentConsoleState) {
         UI_DrawBottom();
         UI_DrawDispDiag(false);
         UIPause_Tick(currentConsoleState);
+        break;
+
+    case ERASE_DATA:
+        UI_DrawBase();
+        UI_ChangeAlpha_Static();
+        UI_DrawCateg_Static();
+        UI_DrawGames_Normal();
+        //Draw bumpers
+        UI_DrawTop();
+        //Draw bottom section of screen
+        UI_DrawBottom();
+        UI_DrawDispDiag(false);
+        Erase_Tick(Games_GetDisplayed(3), &currentUIState);
         break;
     }
 }

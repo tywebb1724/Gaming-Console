@@ -122,7 +122,7 @@ void Games_Refresh() {
 }
 
 //Clear game data
-void Games_ClearData(const game_t* game) {
+bool Games_ClearData(const game_t* game) {
     //If saves through battery method
     if (game->save == BATTERY) {
         //Get file path
@@ -131,9 +131,11 @@ void Games_ClearData(const game_t* game) {
         //Remove save file
         if (remove(save_path) == 0) {
             printf("Cleared save data: %s\n", save_path);
+            return true;
         } 
         else {
             printf("No save data to clear (or delete failed): %s\n", save_path);
+            return false;
         }
     }
     //If saves through other method
@@ -146,9 +148,11 @@ void Games_ClearData(const game_t* game) {
             //Remove save file
             if (remove(save_path) == 0) {
                 printf("Cleared save data: %s\n", save_path);
+                return true;
             } 
             else {
                 printf("No save data to clear (or delete failed): %s\n", save_path);
+                return false;
             }
         }
         else if (strcmp(game->console, "Sega CD") == 0) {
@@ -166,9 +170,11 @@ void Games_ClearData(const game_t* game) {
             //Remove save file
             if (remove(save_path) == 0) {
                 printf("Cleared save data: %s\n", save_path);
+                return true;
             } 
             else {
                 printf("No save data to clear (or delete failed): %s\n", save_path);
+                return false;
             }
         }
         else if (strcmp(game->console, "Sony PlayStation Portable") == 0) {
@@ -180,9 +186,11 @@ void Games_ClearData(const game_t* game) {
             //Check if command worked
             if (result == 0) {
                 printf("Cleared PSP save data for %s\n", game->serial);
+                return true;
             } 
             else {
                 printf("Failed to clear PSP save (or none existed)\n");
+                return false;
             }
         }
         else if (strcmp(game->console, "Sega Saturn") == 0) {
@@ -194,9 +202,11 @@ void Games_ClearData(const game_t* game) {
             //Check if command worked
             if (result == 0) {
                 printf("Cleared Saturn save data for %s\n", game->serial);
+                return true;
             } 
             else {
                 printf("Failed to clear Saturn save (or none existed)\n");
+                return false;
             }
         }
         else if (strcmp(game->console, "Nintendo DS") == 0) {
@@ -214,9 +224,11 @@ void Games_ClearData(const game_t* game) {
             //Remove save file
             if (remove(save_path) == 0) {
                 printf("Cleared save data: %s\n", save_path);
+                return true;
             } 
             else {
                 printf("No save data to clear (or delete failed): %s\n", save_path);
+                return false;
             }
         }
         else if (strcmp(game->console, "Nintendo GameCube") == 0) {
@@ -226,9 +238,11 @@ void Games_ClearData(const game_t* game) {
             //Remove save file
             if (remove(save_path) == 0) {
                 printf("Cleared save data: %s\n", save_path);
+                return true;
             } 
             else {
                 printf("No save data to clear (or delete failed): %s\n", save_path);
+                return false;
             }
         }
         else if (strcmp(game->console, "Sega Dreamcast") == 0) {
@@ -238,12 +252,15 @@ void Games_ClearData(const game_t* game) {
             //Remove save file
             if (remove(save_path) == 0) {
                 printf("Cleared save data: %s\n", save_path);
+                return true;
             } 
             else {
                 printf("No save data to clear (or delete failed): %s\n", save_path);
+                return false;
             }
         }
     }
+    return false;
 }
 
 //Initialize arcade games

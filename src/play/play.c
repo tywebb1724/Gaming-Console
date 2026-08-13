@@ -406,7 +406,8 @@ bool Play_Tick(const game_t* game) {
         case PLAY_GO:
             //Pause game on Home press (or ESCAPE)
             if (IsKeyPressed(KEY_ESCAPE) || HOME_PRESS) {
-               Controller_SetWasPressed_B(true);
+                Controller_SetWasPressed_B(true);
+                Controller_SetWasPressed_Home(true);
                 currentPlayState = PLAY_PAUSE;
                 pauseState = PLAY_PAUSE;
                 PlayPause_Init();

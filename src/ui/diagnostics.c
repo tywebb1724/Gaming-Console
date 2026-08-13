@@ -54,7 +54,7 @@ void Diagnostics_Tick(ConsoleState* currentConsoleState) {
         //Displaying diagnostics screen
         case DIAG_NORMAL:
             //If pause button pressed, display options
-            if (IsKeyPressed(KEY_TAB) || START_PRESS) {
+            if (IsKeyPressed(KEY_ESCAPE) || HOME_PRESS) {
                 currentDiagState = DIAG_OPTIONS;
                 UIPause_Init();
             }
@@ -63,7 +63,7 @@ void Diagnostics_Tick(ConsoleState* currentConsoleState) {
         //Displaying options menu
         case DIAG_OPTIONS:
             //If correct button(s) pressed, take away options menu
-            if (IsKeyPressed(KEY_TAB) || START_PRESS || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Var_GetDisplayBright() && !Var_GetDisplayTheme())) {
+            if (HOME_PRESS || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Var_GetDisplayBright() && !Var_GetDisplayTheme())) {
                 currentDiagState = DIAG_NORMAL;
                 Controller_SetWasPressed_B(true);
             }

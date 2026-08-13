@@ -9,7 +9,8 @@ typedef enum {
     NORMAL,
     SCROLL_GAMES,
     SCROLL_CATEGORIES,
-    OPTIONS
+    OPTIONS,
+    ERASE_DATA
 } UIState;
 
 //Set the max length variable

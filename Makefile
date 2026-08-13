@@ -52,6 +52,7 @@ SRCS := \
   src/ui/theme.c \
   src/ui/brightness.c \
   src/ui/diagnostics.c \
+  src/ui/erase.c \
   src/play/play.c \
   src/play/playpause.c \
   src/emulators/libretro/retro_bridge.c

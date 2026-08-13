@@ -40,6 +40,9 @@ int main(void)
         if ((!B_DOWN && !IsKeyDown(KEY_ESCAPE)) && Controller_GetWasPressed_B()) {
             Controller_SetWasPressed_B(false);
         }
+        if (!HOME_DOWN && Controller_GetWasPressed_Home()) {
+            Controller_SetWasPressed_Home(false);
+        }
         //Start drawing
         BeginDrawing();
         //Update console and draw

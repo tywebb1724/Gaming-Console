@@ -10,10 +10,14 @@
 bool Controller_GetWasPressed_A();
 //Get whether B button was pressed
 bool Controller_GetWasPressed_B();
+//Get whether home button was pressed
+bool Controller_GetWasPressed_Home();
 //Set whetehr A button was pressed
 void Controller_SetWasPressed_A(bool value);
 //Set whetehr B button was pressed
 void Controller_SetWasPressed_B(bool value);
+//Set whetehr home button was pressed
+void Controller_SetWasPressed_Home(bool value);
 //Rescan which gamepad slots are connected
 void Controller_Refresh(void);
 //How many controllers are connected right now

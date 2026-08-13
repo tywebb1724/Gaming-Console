@@ -1228,7 +1228,7 @@ PlayState PlayPause_Tick() {
                 UnloadTexture(arrowsImg);
                 return PLAY_RESUME;
             }
-            else if ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B()) {
+            else if ((HOME_PRESS && !Controller_GetWasPressed_Home()) || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B())) {
                 //Unload controls image texture
                 UnloadTexture(controlsImg);
                 UnloadTexture(keyImg);
@@ -1257,7 +1257,7 @@ PlayState PlayPause_Tick() {
                 return PLAY_RESTART;
             }
             //Resume game
-            if ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B()) {
+            if ((HOME_PRESS && !Controller_GetWasPressed_Home()) || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B())) {
                 /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
                 //Unload controls image texture
@@ -1282,9 +1282,9 @@ PlayState PlayPause_Tick() {
                 Controller_SetWasPressed_A(true);
             }
             //If B is pressed
-            else if ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B()) {
+            else if ((HOME_PRESS && !Controller_GetWasPressed_Home()) || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B())) {
                 //Resume game or stop displaying controls
-                if (displayControls == false) {
+                if (displayControls == false || HOME_DOWN) {
                     currentPlayPauseState = PLAYPAUSE_RESUME;
                     //Unload controls image texture
                     UnloadTexture(controlsImg);
@@ -1319,7 +1319,7 @@ PlayState PlayPause_Tick() {
                 Controller_SetWasPressed_A(true);
             }
             //Resume game
-            if ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B()) {
+            if ((HOME_PRESS && !Controller_GetWasPressed_Home()) || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B())) {
                 /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
                 //Unload controls image texture
@@ -1350,7 +1350,7 @@ PlayState PlayPause_Tick() {
                 return PLAY_EXIT;
             }
             //Resume game
-            if ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B()) {
+            if ((HOME_PRESS && !Controller_GetWasPressed_Home()) || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B())) {
                 /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
                 //Unload controls image texture
