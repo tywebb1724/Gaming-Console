@@ -9,6 +9,13 @@
 #define GAMES_LEN 56
 //Number of games displayed on the screen at once
 #define GAMES_ON_SCREEN 5
+
+#define CATEG_STR_LEN 30
+#define SAVE_PATH_LEN 512
+#define TEMP_PATH_LEN 256
+#define COMMAND_STR_LEN 1024
+
+#define CURRENT_GAME 3
 //Paths for libretro consoles console
 #define PATH_GBA "assets/cores/mgba_libretro.so"
 #define PATH_NES "assets/cores/fceumm_libretro.so"
@@ -16,12 +23,12 @@
 #define PATH_SNES "assets/cores/bsnes_libretro.so"
 #define PATH_PS1 "assets/cores/swanstation_libretro.so"
 #define PATH_GAMEBOY "assets/cores/gambatte_libretro.so"
-#define PATH_N64 "/home/tywebb1724/Desktop/Gaming-Console/assets/cores/parallel_n64_libretro.so"
+#define PATH_N64 "assets/cores/parallel_n64_libretro.so"
 #define PATH_LYNX "assets/cores/handy_libretro.so"
 #define PATH_NGPC "assets/cores/mednafen_ngp_libretro.so"
 #define PATH_TG16 "assets/cores/mednafen_pce_fast_libretro.so"
 #define PATH_ARCADE "assets/cores/fbneo_libretro.so"
-#define PATH_PRBOOM "/home/tywebb1724/Desktop/Gaming-Console/assets/cores/prboom_libretro.so"
+#define PATH_PRBOOM "assets/cores/prboom_libretro.so"
 //Commands for external consoles
 #define PATH_GAMECUBE "org.DolphinEmu.dolphin-emu"
 #define PATH_PSP "org.ppsspp.PPSSPP --fullscreen"

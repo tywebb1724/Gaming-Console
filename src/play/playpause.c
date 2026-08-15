@@ -26,8 +26,8 @@ static float playPauseTimeElapsed;
 static void PlayPause_UpdateTime() {
     playPauseTimeElapsed += GetFrameTime();
     //If the variable is getting too big, bring it back down
-    if (playPauseTimeElapsed > 1000000) {
-        playPauseTimeElapsed = 0.25f;
+    if (playPauseTimeElapsed > MAX_TIME_ELAPSED_PLAYPAUSE) {
+        playPauseTimeElapsed = THRESHOLD_TIME_ELAPSED_PLAYPAUSE;
     }
 }
 
@@ -45,13 +45,13 @@ static void PlayPause_DrawControls(const game_t* game) {
     Vector2 middleLineEnd = {PLAYPAUSE_KEYBOARD_X, PLAYPAUSE_CONTROLLER_Y + PLAYPAUSE_CONTROLLER_H};
     DrawLineEx(middleLineStart, middleLineEnd, PLAYPAUSE_CONTROL_OUTLINE_THICKNESS, GRAY);
     //Initialize the text variables for all the controls
-    char rDown_Txt[10] = "", rUp_Txt[10] = "", rLeft_Txt[10] = "", rRight_Txt[10] = "";
-    char dPad_Txt[10] = "", rs_Txt[10] = "", back_Txt[10] = "", start_Txt[10] = "";
-    char lt_Txt[10] = "", rt_Txt[10] = "", lb_Txt[15] = "", rb_Txt[15] = "", ls_Txt[10] = "";
-    char home_Txt[10] = "PAUSE";
-    char tab_Txt[10] = "", q_Txt[13] = "", w_Txt[10] = "", e_Txt[13] = "", u_Txt[10] = "", i_Txt[10] = "", o_Txt[10] = "";
-    char a_Txt[10] = "", s_Txt[10] = "", d_Txt[10] = "", f_Txt[10] = "", j_Txt[10] = "", k_Txt[10] = "", l_Txt[10] = "";
-    char enter_Txt[10] = "", lShift_Txt[10] = "", rShift_Txt[10] = "", space_Txt[10] = "", mouse_Txt[10] = "", lClick_Txt[10] = "", arrows_Txt[10] = "";
+    char rDown_Txt[PLAYPAUSE_STR_LEN] = "", rUp_Txt[PLAYPAUSE_STR_LEN] = "", rLeft_Txt[PLAYPAUSE_STR_LEN] = "", rRight_Txt[PLAYPAUSE_STR_LEN] = "";
+    char dPad_Txt[PLAYPAUSE_STR_LEN] = "", rs_Txt[PLAYPAUSE_STR_LEN] = "", back_Txt[PLAYPAUSE_STR_LEN] = "", start_Txt[PLAYPAUSE_STR_LEN] = "";
+    char lt_Txt[PLAYPAUSE_STR_LEN] = "", rt_Txt[PLAYPAUSE_STR_LEN] = "", lb_Txt[PLAYPAUSE_STR_LEN3] = "", rb_Txt[PLAYPAUSE_STR_LEN3] = "", ls_Txt[PLAYPAUSE_STR_LEN] = "";
+    char home_Txt[PLAYPAUSE_STR_LEN] = "PAUSE";
+    char tab_Txt[PLAYPAUSE_STR_LEN] = "", q_Txt[PLAYPAUSE_STR_LEN2] = "", w_Txt[PLAYPAUSE_STR_LEN] = "", e_Txt[PLAYPAUSE_STR_LEN2] = "", u_Txt[PLAYPAUSE_STR_LEN] = "", i_Txt[PLAYPAUSE_STR_LEN] = "", o_Txt[PLAYPAUSE_STR_LEN] = "";
+    char a_Txt[PLAYPAUSE_STR_LEN] = "", s_Txt[PLAYPAUSE_STR_LEN] = "", d_Txt[PLAYPAUSE_STR_LEN] = "", f_Txt[PLAYPAUSE_STR_LEN] = "", j_Txt[PLAYPAUSE_STR_LEN] = "", k_Txt[PLAYPAUSE_STR_LEN] = "", l_Txt[PLAYPAUSE_STR_LEN] = "";
+    char enter_Txt[PLAYPAUSE_STR_LEN] = "", lShift_Txt[PLAYPAUSE_STR_LEN] = "", rShift_Txt[PLAYPAUSE_STR_LEN] = "", space_Txt[PLAYPAUSE_STR_LEN] = "", mouse_Txt[PLAYPAUSE_STR_LEN] = "", lClick_Txt[PLAYPAUSE_STR_LEN] = "", arrows_Txt[PLAYPAUSE_STR_LEN] = "";
     //Draw circles and rectangles for backgrounds of each xbox control
     DrawCircle(PLAYPAUSE_RIGHT_FACE_DOWN_X, PLAYPAUSE_RIGHT_FACE_DOWN_Y, PLAYPAUSE_CONTROL_RADIUS, GRAY);
     DrawCircle(PLAYPAUSE_RIGHT_FACE_UP_X, PLAYPAUSE_RIGHT_FACE_UP_Y, PLAYPAUSE_CONTROL_RADIUS, GRAY);
@@ -1100,7 +1100,15 @@ static void PlayPause_Draw() {
         PLAYPAUSE_SELECT_RECT_H};
     DrawRectangleRoundedLinesEx(rectExit, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, Var_GetColor3());
     DrawTextEx(Var_GetFontRegular(), EXIT_TXT, exit, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE, Var_GetColor3());
-   
+    //Draw power off section
+    Vector2 powerOff = {POWER_OFF_X, POWER_OFF_Y};
+    Rectangle rectPowerOff = {
+        PLAYPAUSE_SELECT_RECT_X,
+        PLAYPAUSE_POWER_OFF_RECT_Y,
+        PLAYPAUSE_SELECT_RECT_W,
+        PLAYPAUSE_SELECT_RECT_H};
+    DrawRectangleRoundedLinesEx(rectPowerOff, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, Var_GetColor3());
+    DrawTextEx(Var_GetFontRegular(), POWER_OFF_TXT, powerOff, PLAYPAUSE_SIZE, PLAYPAUSE_SPACE, Var_GetColor3());
     //Draw select
     Vector2 selectSize = MeasureTextEx(Var_GetFontRegular(), SELECT_TXT, SELECT_SIZE, PLAYPAUSE_SPACE);
     Vector2 select = {SELECT_X, SELECT_Y};
@@ -1122,18 +1130,21 @@ static void PlayPause_Draw() {
     else if (currentPlayPauseState == PLAYPAUSE_DIAGNOSTICS) {
         DrawRectangleRoundedLinesEx(rectDiag, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, Var_GetColor1());
     }
-    else {
+    else if (currentPlayPauseState == PLAYPAUSE_EXIT){
         DrawRectangleRoundedLinesEx(rectExit, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, Var_GetColor1());
+    }
+    else {
+       DrawRectangleRoundedLinesEx(rectPowerOff, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, Var_GetColor1()); 
     }
 }
 
 //PlayPause initialization
 void PlayPause_Init() {
     //Load images
-    controlsImg = LoadTexture("/home/tywebb1724/Desktop/Gaming-Console/assets/covers/logo/controller.png");
-    keyImg = LoadTexture("/home/tywebb1724/Desktop/Gaming-Console/assets/covers/logo/keyboard.png");
-    mouseImg = LoadTexture("/home/tywebb1724/Desktop/Gaming-Console/assets/covers/logo/mouse.png");
-    arrowsImg = LoadTexture("/home/tywebb1724/Desktop/Gaming-Console/assets/covers/logo/arrowkeys.png");
+    controlsImg = LoadTexture("assets/images/other/controller.png");
+    keyImg = LoadTexture("assets/images/other/keyboard.png");
+    mouseImg = LoadTexture("assets/images/other/mouse.png");
+    arrowsImg = LoadTexture("assets/images/other/arrow_keys.png");
     //Time elapsed on selected section
     playPauseTimeElapsed = 0.0f;
     //Start pause menu at top section
@@ -1154,7 +1165,7 @@ PlayState PlayPause_Tick() {
                 playPauseTimeElapsed = 0.0f;
             }
             else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) {
-                currentPlayPauseState = PLAYPAUSE_EXIT;
+                currentPlayPauseState = PLAYPAUSE_POWER_OFF;
                 playPauseTimeElapsed = 0.0f;
             }
             break;
@@ -1204,7 +1215,7 @@ PlayState PlayPause_Tick() {
         case PLAYPAUSE_EXIT:
             //Move up or down a section
             if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && playPauseTimeElapsed >= 0.2f)) {
-                currentPlayPauseState = PLAYPAUSE_RESUME;
+                currentPlayPauseState = PLAYPAUSE_POWER_OFF;
                 playPauseTimeElapsed = 0.0f;
             }
             else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) {
@@ -1212,6 +1223,17 @@ PlayState PlayPause_Tick() {
                 playPauseTimeElapsed = 0.0f;
             }
             break;
+        
+        case PLAYPAUSE_POWER_OFF:
+            //Move up or down a section
+            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && playPauseTimeElapsed >= 0.2f)) {
+                currentPlayPauseState = PLAYPAUSE_RESUME;
+                playPauseTimeElapsed = 0.0f;
+            }
+            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) {
+                currentPlayPauseState = PLAYPAUSE_EXIT;
+                playPauseTimeElapsed = 0.0f;
+            }
     }
 
     // Action
@@ -1348,6 +1370,34 @@ PlayState PlayPause_Tick() {
                 UnloadTexture(arrowsImg);
                 Controller_SetWasPressed_A(true);
                 return PLAY_EXIT;
+            }
+            //Resume game
+            if ((HOME_PRESS && !Controller_GetWasPressed_Home()) || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B())) {
+                currentPlayPauseState = PLAYPAUSE_RESUME;
+                //Unload controls image texture
+                UnloadTexture(controlsImg);
+                UnloadTexture(keyImg);
+                UnloadTexture(mouseImg);
+                UnloadTexture(arrowsImg);
+                Controller_SetWasPressed_B(true);
+                return PLAY_RESUME;
+            }
+            UI_ChangeAlpha_Static();
+            //Draw menu and update time
+            PlayPause_Draw();
+            PlayPause_UpdateTime();
+            break;
+        
+        case PLAYPAUSE_POWER_OFF:
+            //Power off
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
+                Var_SetPowerOff(true);
+                //Unload controls image texture
+                UnloadTexture(controlsImg);
+                UnloadTexture(keyImg);
+                UnloadTexture(mouseImg);
+                UnloadTexture(arrowsImg);
+                Controller_SetWasPressed_A(true);
             }
             //Resume game
             if ((HOME_PRESS && !Controller_GetWasPressed_Home()) || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B())) {

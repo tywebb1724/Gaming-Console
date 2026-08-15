@@ -27,7 +27,7 @@ int Controller_Slot(int player);
 //Button state across every connected controller
 bool Controller_AnyPressed(int button);
 bool Controller_AnyDown(int button);
-//Left stick of whichever controller is pushed the furthest
+//Sticks of whichever controller is pushed the furthest
 float Controller_LeftStickX(void);
 float Controller_LeftStickY(void);
 

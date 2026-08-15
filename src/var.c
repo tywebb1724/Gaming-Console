@@ -3,6 +3,7 @@
 #include <string.h>
 #include "config.h"
 #include "retro_bridge.h"
+#include <dirent.h>
 
 //Variables for brightness
 static float brightness;
@@ -47,6 +48,10 @@ static int frameMsCount;
 //Emulator fps variables
 static float emuFps = 0.0f;
 static int emuFrameAccum = 0;
+//Power off variable
+static bool powerOff;
+
+static char cpuThermalPath[THERM_PATH_LEN] = "";
 
 
 //Initialize the variables
@@ -58,16 +63,19 @@ void Var_Init() {
     fontRegular = LoadFontEx("assets/fonts/Exo2-Regular.ttf", 64, NULL, 0);
     fontBold = LoadFontEx("assets/fonts/Exo2-Bold.ttf", 64, NULL, 0);
     //Load the backgrounds
-    backgroundBlue = LoadTexture("./assets/covers/logo/BlueBackground.png");
-    backgroundRed = LoadTexture("./assets/covers/logo/RedBackground.png");
-    backgroundGreen = LoadTexture("./assets/covers/logo/GreenBackground.png");
-    backgroundYellow = LoadTexture("./assets/covers/logo/YellowBackground.png");
+    backgroundBlue = LoadTexture("assets/images/other/blue_background.png");
+    backgroundRed = LoadTexture("assets/images/other/red_background.png");
+    backgroundGreen = LoadTexture("assets/images/other/green_background.png");
+    backgroundYellow = LoadTexture("assets/images/other/yellow_background.png");
     //Set display variables as false
     displayBrightness = false;
     displayTheme = false;
+    //Initialize cpu temperature and clock speed
     cpuTemp = 0;
     cpuClock = 0;
+    //Timer for diagnostics
     diagTimer = DIAG_TIME;
+    //Initialize frame variables to 0
     frameMsAvg = 0;
     frameMsPeak = 0;
     frameMsTotal = 0;
@@ -230,7 +238,7 @@ static const char *Var_ColorToName(Color c) {
 //Update the UI text file
 void Var_UpdateUIFile() {
     //Open the file
-    FILE *f = fopen("/home/tywebb1724/Desktop/Gaming-Console/assets/system/ui.txt", "w");
+    FILE *f = fopen("assets/txt/ui.txt", "w");
     //If it opens correctly, write the variables
     if (f) {
         fprintf(f, "%s\n", Var_ColorToName(Var_GetColor1()));
@@ -282,23 +290,47 @@ void Var_SetDisplayTheme(bool value) {
     displayTheme = value;
 }
 
+
+void Var_FindThermalZone() {
+    DIR* d = opendir("/sys/class/thermal");
+    if (!d) return;
+
+    struct dirent* entry;
+    while ((entry = readdir(d)) != NULL) {
+        if (strncmp(entry->d_name, "thermal_zone", 12) != 0) continue;
+        char typePath[300];
+        snprintf(typePath, sizeof(typePath), "/sys/class/thermal/%s/type", entry->d_name);
+
+        FILE* tf = fopen(typePath, "r");
+        if (!tf) continue;
+
+        char type[128] = "";
+        if (fgets(type, sizeof(type), tf)) {
+            // Common CPU-zone naming across vendors: "cpu", "soc", "cpu-thermal", "x86_pkg_temp"
+            if (strstr(type, "cpu") || strstr(type, "soc") || strstr(type, "pkg")) {
+                snprintf(cpuThermalPath, sizeof(cpuThermalPath),
+                         "/sys/class/thermal/%s/temp", entry->d_name);
+                fclose(tf);
+                closedir(d);
+                return;  // take the first plausible match
+            }
+        }
+        fclose(tf);
+    }
+    closedir(d);
+}
+
 //Update CPU temperature
-void Var_UpdateTemp() {
+void Var_UpdateTemp(void) {
     diagTimer += GetFrameTime();
-    //Not time to update
-    if (diagTimer < DIAG_TIME) {
-        return;
-    }
-    FILE* f = fopen("/sys/class/thermal/thermal_zone0/temp", "r");
-    //If the file will not open, keep the reading file already has
-    if (f == NULL) {
-        return;
-    }
-    //Temporary temperature variable (in thousandths of a degree)
+    if (diagTimer < DIAG_TIME) return;
+    if (cpuThermalPath[0] == '\0') return;  // no CPU zone found on this device
+
+    FILE* f = fopen(cpuThermalPath, "r");
+    if (f == NULL) return;
     float tempTemp = 0;
-    //Scan the file for the temperature and convert to degrees
     if (fscanf(f, "%f", &tempTemp) == 1) {
-        cpuTemp = tempTemp / 1000.0f;
+        cpuTemp = tempTemp / DEGREE_CONVERSION;
     }
     fclose(f);
 }
@@ -310,18 +342,20 @@ float Var_GetTemp() {
 
 //Update CPU clock speed
 void Var_UpdateClock() {
-    //Not time to update
-    if (diagTimer < DIAG_TIME) {
-        return;
+    int highest = 0;
+    for (int i = 0; i < 16; i++) {  // reasonable upper bound on core count
+        char path[128];
+        snprintf(path, sizeof(path),
+                 "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_cur_freq", i);
+        FILE* f = fopen(path, "r");
+        if (!f) break;  // no more cores past this index
+        int freq = 0;
+        if (fscanf(f, "%d", &freq) == 1 && freq > highest) {
+            highest = freq;
+        }
+        fclose(f);
     }
-    FILE* f = fopen("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", "r");
-    //If the file will not open, keep the reading file already has
-    if (f == NULL) {
-        return;
-    }
-    //Scan the file for the temperature and convert to degrees
-    fscanf(f, "%d", &cpuClock);
-    fclose(f);
+    cpuClock = highest;
 }
 
 //Get CPU clock speed
@@ -331,7 +365,7 @@ int Var_GetClock() {
 
 //Update frame time
 void Var_UpdateFrame() {
-    float ms = GetFrameTime() * 1000.0f;
+    float ms = GetFrameTime() * MICRO_TO_MILLI;
     frameMsTotal += ms;
     frameMsCount++;
     //Remember the worst frame in this window
@@ -367,7 +401,6 @@ float Var_GetFrameWorst() {
 void Var_UpdateEmuFps(void) {
     // ccumulate the core frames produced since last call, every frame
     emuFrameAccum += GetAndResetVRCBCount();
-
     //Stop if time hasn't passed
     if (diagTimer < DIAG_TIME) {
         return;
@@ -380,4 +413,14 @@ void Var_UpdateEmuFps(void) {
 //Get emulator FPS
 float Var_GetEmuFps(void) {
     return emuFps;
+}
+
+//Get power off variable
+bool Var_GetPowerOff(void) {
+    return powerOff;
+}
+
+//Set power off variable
+void Var_SetPowerOff(bool value) {
+    powerOff = value;
 }

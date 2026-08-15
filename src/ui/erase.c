@@ -12,8 +12,8 @@ static void Erase_UpdateTime() {
     //Increment the time elapsed
     eraseTimeElapsed += GetFrameTime();
     //If time getting too big, bring back to the threshold
-    if (eraseTimeElapsed > 1000000) {
-        eraseTimeElapsed = 0.25f;
+    if (eraseTimeElapsed > MAX_TIME_ELAPSED_ERASE) {
+        eraseTimeElapsed = THRESHOLD_TIME_ELAPSED_ERASE;
     }
 }
 
@@ -96,20 +96,25 @@ void Erase_DrawDone(const game_t* game) {
     DrawTextEx(Var_GetFontRegular(), UI_ERASE_CLOSE, close, UI_ERASE_CLOSE_SIZE, UI_ERASE_TITLE_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
 }
 
+//Erase game data init function
 void Erase_Init() {
     currentEraseState = ERASE;
     eraseTimeElapsed = 0.0f;
 }
 
+//Erase game data tick function
 void Erase_Tick(const game_t* game, UIState* currentUIState) {
     //Transition
     switch (currentEraseState) {
+        //Erase data selected
         case ERASE:
+            //Switch to other section of left or right is pressed
             if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_RIGHT) || 
                ((LS_LEFT || LS_RIGHT || IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT)) && eraseTimeElapsed >= 0.2f)) {
                 currentEraseState = CANCEL;
                 eraseTimeElapsed = 0.0f;
             }
+            //Erase data if section is pressed
             else if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
                 Controller_SetWasPressed_A(true);
                 erased = Games_ClearData(game);
@@ -117,20 +122,26 @@ void Erase_Tick(const game_t* game, UIState* currentUIState) {
             }
             break;
 
+        //Cancel erase selected
         case CANCEL:
+            //Switch to other section of left or right is pressed
             if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_RIGHT) || 
                ((LS_LEFT || LS_RIGHT || IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT)) && eraseTimeElapsed >= 0.2f)) {
                 currentEraseState = ERASE;
                 eraseTimeElapsed = 0.0f;
             }
             break;
+        
+        //Done erasing data
         case DONE:
             break;
     }
 
     //Action
     switch (currentEraseState) {
+        //Erase data selected
         case ERASE:
+            //Exit menu if back is pressed
             if ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B()) {
                 Controller_SetWasPressed_B(true);
                 *currentUIState = NORMAL;
@@ -139,7 +150,9 @@ void Erase_Tick(const game_t* game, UIState* currentUIState) {
             Erase_UpdateTime();
             break;
 
+        //Cancel erase selected
         case CANCEL:
+            //Exit menu if back is pressed or section is selected
             if ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B()) {
                 Controller_SetWasPressed_B(true);
                 *currentUIState = NORMAL;
@@ -152,7 +165,9 @@ void Erase_Tick(const game_t* game, UIState* currentUIState) {
             Erase_UpdateTime();
             break;
 
+        //Done erasing data
         case DONE:
+            //Exit menu if pressed
             if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
                 Controller_SetWasPressed_A(true);
                 *currentUIState = NORMAL;

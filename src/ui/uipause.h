@@ -3,13 +3,16 @@
 
 #include "var.h"
 
+#define MAX_TIME_ELAPSED_UIPAUSE 1000000
+#define THRESHOLD_TIME_ELAPSED_UIPAUSE 0.25f
+
 //States of the UI pause menu
 typedef enum {
-    LIST,
     BRIGHTNESS,
     THEME,
     DISPLAY_DIAGNOSTICS,
-    VIEW_DIAGNOSTICS
+    VIEW_DIAGNOSTICS,
+    POWER_OFF
 } UIPauseState;
 
 //Init function for pause menu

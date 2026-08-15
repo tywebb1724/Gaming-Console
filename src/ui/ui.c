@@ -44,6 +44,7 @@ static Texture2D controlsImg;
 static Texture2D keyImg;
 static Texture2D mouseImg;
 static Texture2D arrowsImg;
+static Texture2D xbox;
 
 
 //Set the max length variable
@@ -64,37 +65,37 @@ static float UI_CenterImg_Y(float height, float position) {
 //Reset the coordinates for the displayed games after games scroll
 static void UI_ResetCoords_Games() {
     // Reset x coordinates
-    Games_GetDisplayed(0)->x = LEFT3_GAME_X;
-    Games_GetDisplayed(1)->x = LEFT2_GAME_X;
-    Games_GetDisplayed(2)->x = LEFT1_GAME_X;
-    Games_GetDisplayed(3)->x = CENTER_GAME_X;
-    Games_GetDisplayed(4)->x = RIGHT1_GAME_X;
-    Games_GetDisplayed(5)->x = RIGHT2_GAME_X;
-    Games_GetDisplayed(6)->x = RIGHT3_GAME_X;
+    Games_GetDisplayed(GAME_LEFT3)->x = LEFT3_GAME_X;
+    Games_GetDisplayed(GAME_LEFT2)->x = LEFT2_GAME_X;
+    Games_GetDisplayed(GAME_LEFT1)->x = LEFT1_GAME_X;
+    Games_GetDisplayed(CURRENT_GAME)->x = CENTER_GAME_X;
+    Games_GetDisplayed(GAME_RIGHT1)->x = RIGHT1_GAME_X;
+    Games_GetDisplayed(GAME_RIGHT2)->x = RIGHT2_GAME_X;
+    Games_GetDisplayed(GAME_RIGHT3)->x = RIGHT3_GAME_X;
     // Reset y coordinates
-    Games_GetDisplayed(0)->y = SIDE3_GAME_Y;
-    Games_GetDisplayed(1)->y = SIDE2_GAME_Y;
-    Games_GetDisplayed(2)->y = SIDE1_GAME_Y;
-    Games_GetDisplayed(3)->y = CENTER_GAME_Y;
-    Games_GetDisplayed(4)->y = SIDE1_GAME_Y;
-    Games_GetDisplayed(5)->y = SIDE2_GAME_Y;
-    Games_GetDisplayed(6)->y = SIDE3_GAME_Y;
+    Games_GetDisplayed(GAME_LEFT3)->y = SIDE3_GAME_Y;
+    Games_GetDisplayed(GAME_LEFT2)->y = SIDE2_GAME_Y;
+    Games_GetDisplayed(GAME_LEFT1)->y = SIDE1_GAME_Y;
+    Games_GetDisplayed(CURRENT_GAME)->y = CENTER_GAME_Y;
+    Games_GetDisplayed(GAME_RIGHT1)->y = SIDE1_GAME_Y;
+    Games_GetDisplayed(GAME_RIGHT2)->y = SIDE2_GAME_Y;
+    Games_GetDisplayed(GAME_RIGHT3)->y = SIDE3_GAME_Y;
     // Reset width values
-    Games_GetDisplayed(0)->w = SIDE3_GAME_W;
-    Games_GetDisplayed(1)->w = SIDE2_GAME_W;
-    Games_GetDisplayed(2)->w = SIDE1_GAME_W;
-    Games_GetDisplayed(3)->w = CENTER_GAME_W;
-    Games_GetDisplayed(4)->w = SIDE1_GAME_W;
-    Games_GetDisplayed(5)->w = SIDE2_GAME_W;
-    Games_GetDisplayed(6)->w = SIDE3_GAME_W;
+    Games_GetDisplayed(GAME_LEFT3)->w = SIDE3_GAME_W;
+    Games_GetDisplayed(GAME_LEFT2)->w = SIDE2_GAME_W;
+    Games_GetDisplayed(GAME_LEFT1)->w = SIDE1_GAME_W;
+    Games_GetDisplayed(CURRENT_GAME)->w = CENTER_GAME_W;
+    Games_GetDisplayed(GAME_RIGHT1)->w = SIDE1_GAME_W;
+    Games_GetDisplayed(GAME_RIGHT2)->w = SIDE2_GAME_W;
+    Games_GetDisplayed(GAME_RIGHT3)->w = SIDE3_GAME_W;
     // Reset height values
-    Games_GetDisplayed(0)->h = SIDE3_GAME_H;
-    Games_GetDisplayed(1)->h = SIDE2_GAME_H;
-    Games_GetDisplayed(2)->h = SIDE1_GAME_H;
-    Games_GetDisplayed(3)->h = CENTER_GAME_H;
-    Games_GetDisplayed(4)->h = SIDE1_GAME_H;
-    Games_GetDisplayed(5)->h = SIDE2_GAME_H;
-    Games_GetDisplayed(6)->h = SIDE3_GAME_H;
+    Games_GetDisplayed(GAME_LEFT3)->h = SIDE3_GAME_H;
+    Games_GetDisplayed(GAME_LEFT2)->h = SIDE2_GAME_H;
+    Games_GetDisplayed(GAME_LEFT1)->h = SIDE1_GAME_H;
+    Games_GetDisplayed(CURRENT_GAME)->h = CENTER_GAME_H;
+    Games_GetDisplayed(GAME_RIGHT1)->h = SIDE1_GAME_H;
+    Games_GetDisplayed(GAME_RIGHT2)->h = SIDE2_GAME_H;
+    Games_GetDisplayed(GAME_RIGHT3)->h = SIDE3_GAME_H;
 }
 
 //Reset the coordinates for the displayed games after category scroll
@@ -102,39 +103,39 @@ static void UI_ResetCoords_Categ() {
     //If scrolling to the right
     if (Var_GetScrollCateg() == SCROLL_RIGHT) {
         //Reset x coordinates
-        Games_GetNew(0)->x = LEFT2_SCROLLL_X;
-        Games_GetNew(1)->x = LEFT1_SCROLLL_X;
-        Games_GetNew(2)->x = CENTER_SCROLLL_X;
-        Games_GetNew(3)->x = RIGHT1_SCROLLL_X;
-        Games_GetNew(4)->x = RIGHT2_SCROLLL_X;
+        Games_GetNew(NEW_GAME_LEFT2)->x = LEFT2_SCROLLL_X;
+        Games_GetNew(NEW_GAME_LEFT1)->x = LEFT1_SCROLLL_X;
+        Games_GetNew(NEW_GAME_CENTER)->x = CENTER_SCROLLL_X;
+        Games_GetNew(NEW_GAME_RIGHT1)->x = RIGHT1_SCROLLL_X;
+        Games_GetNew(NEW_GAME_RIGHT2)->x = RIGHT2_SCROLLL_X;
     }
     //If scrolling to the left
     else {
         //Reset x coordinates
-        Games_GetNew(0)->x = LEFT2_SCROLLR_X;
-        Games_GetNew(1)->x = LEFT1_SCROLLR_X;
-        Games_GetNew(2)->x = CENTER_SCROLLR_X;
-        Games_GetNew(3)->x = RIGHT1_SCROLLR_X;
-        Games_GetNew(4)->x = RIGHT2_SCROLLR_X;
+        Games_GetNew(NEW_GAME_LEFT2)->x = LEFT2_SCROLLR_X;
+        Games_GetNew(NEW_GAME_LEFT1)->x = LEFT1_SCROLLR_X;
+        Games_GetNew(NEW_GAME_CENTER)->x = CENTER_SCROLLR_X;
+        Games_GetNew(NEW_GAME_RIGHT1)->x = RIGHT1_SCROLLR_X;
+        Games_GetNew(NEW_GAME_RIGHT2)->x = RIGHT2_SCROLLR_X;
     }
     //Reset y coordinates
-    Games_GetNew(0)->y = SIDE2_GAME_Y;
-    Games_GetNew(1)->y = SIDE1_GAME_Y;
-    Games_GetNew(2)->y = CENTER_GAME_Y;
-    Games_GetNew(3)->y = SIDE1_GAME_Y;
-    Games_GetNew(4)->y = SIDE2_GAME_Y;
+    Games_GetNew(NEW_GAME_LEFT2)->y = SIDE2_GAME_Y;
+    Games_GetNew(NEW_GAME_LEFT1)->y = SIDE1_GAME_Y;
+    Games_GetNew(NEW_GAME_CENTER)->y = CENTER_GAME_Y;
+    Games_GetNew(NEW_GAME_RIGHT1)->y = SIDE1_GAME_Y;
+    Games_GetNew(NEW_GAME_RIGHT2)->y = SIDE2_GAME_Y;
     //Reset width values
-    Games_GetNew(0)->w = SIDE2_GAME_W;
-    Games_GetNew(1)->w = SIDE1_GAME_W;
-    Games_GetNew(2)->w = CENTER_GAME_W;
-    Games_GetNew(3)->w = SIDE1_GAME_W;
-    Games_GetNew(4)->w = SIDE2_GAME_W;
+    Games_GetNew(NEW_GAME_LEFT2)->w = SIDE2_GAME_W;
+    Games_GetNew(NEW_GAME_LEFT1)->w = SIDE1_GAME_W;
+    Games_GetNew(NEW_GAME_CENTER)->w = CENTER_GAME_W;
+    Games_GetNew(NEW_GAME_RIGHT1)->w = SIDE1_GAME_W;
+    Games_GetNew(NEW_GAME_RIGHT2)->w = SIDE2_GAME_W;
     //Reset height values
-    Games_GetNew(0)->h = SIDE2_GAME_H;
-    Games_GetNew(1)->h = SIDE1_GAME_H;
-    Games_GetNew(2)->h = CENTER_GAME_H;
-    Games_GetNew(3)->h = SIDE1_GAME_H;
-    Games_GetNew(4)->h = SIDE2_GAME_H;
+    Games_GetNew(NEW_GAME_LEFT2)->h = SIDE2_GAME_H;
+    Games_GetNew(NEW_GAME_LEFT1)->h = SIDE1_GAME_H;
+    Games_GetNew(NEW_GAME_CENTER)->h = CENTER_GAME_H;
+    Games_GetNew(NEW_GAME_RIGHT1)->h = SIDE1_GAME_H;
+    Games_GetNew(NEW_GAME_RIGHT2)->h = SIDE2_GAME_H;
 }
 
 //Draw an image
@@ -156,16 +157,11 @@ static void UI_DrawImage(float alpha) {
 //Draw options button at top right of screen
 void UI_DrawOptions() {
     // Draw options button
-    DrawCircle(OPTIONS_BTN_X, OPTIONS_BTN_Y, OPTIONS_RADIUS, Var_GetColor3());
-    Vector2 start1 = {OPTIONS_LINE_START_X, OPTIONS_LINE1_Y};
-    Vector2 end1 = {OPTIONS_LINE_END_X, OPTIONS_LINE1_Y};
-    DrawLineEx(start1, end1, OPTIONS_THICKNESS_LINE2, Var_GetColor2());
-    Vector2 start2 = {OPTIONS_LINE_START_X, OPTIONS_LINE2_Y};
-    Vector2 end2 = {OPTIONS_LINE_END_X, OPTIONS_LINE2_Y};
-    DrawLineEx(start2, end2, OPTIONS_THICKNESS_LINE1, Var_GetColor2());
-    Vector2 start3 = {OPTIONS_LINE_START_X, OPTIONS_LINE3_Y};
-    Vector2 end3 = {OPTIONS_LINE_END_X, OPTIONS_LINE3_Y};
-    DrawLineEx(start3, end3, OPTIONS_THICKNESS_LINE3, Var_GetColor2());
+    DrawCircle(XBOX_X, XBOX_Y, XBOX_RADIUS, WHITE);
+    Rectangle sourceRect = {0.0f, 0.0f, (float)xbox.width, (float)xbox.height};
+    Rectangle destRect = {UI_CenterImg_X(XBOX_SIZE, XBOX_X), UI_CenterImg_Y(XBOX_SIZE, XBOX_Y), XBOX_SIZE, XBOX_SIZE};
+    Vector2 origin = {0.0f, 0.0f};
+    DrawTexturePro(xbox, sourceRect, destRect, origin, 0.0f, WHITE);
     //Draw options text
     Vector2 optionsSize = MeasureTextEx(Var_GetFontBold(), OPTIONS_TXT, OPTIONS_TXT_SIZE, OPTIONS_TXT_SPACE);
     Vector2 options = {OPTIONS_TXT_X, OPTIONS_TXT_Y};
@@ -239,7 +235,7 @@ static void UI_DrawBottom() {
     Vector2 point6 = {LS_RIGHT_X - (LS_TRIANGLE_SIZE / 2), LS_Y - LS_TRIANGLE_SIZE / 2};
     DrawTriangle(point6, point5, point4, Fade(Var_GetColor2(), Var_GetAlphaSelect()));
     //Values for Text
-    Vector2 gameSize = MeasureTextEx(Var_GetFontBold(), Games_GetDisplayed(3)->title, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE);
+    Vector2 gameSize = MeasureTextEx(Var_GetFontBold(), Games_GetDisplayed(CURRENT_GAME)->title, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE);
     Vector2 bottomSize = MeasureTextEx(Var_GetFontBold(), BOTTOM_TXT, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE);
     Vector2 game = {BOTTOM_TXT_X, GAME_TXT_Y};
     Vector2 bottom = {BOTTOM_TXT_X, BOTTOM_TXT_Y};
@@ -253,15 +249,16 @@ static void UI_DrawBottom() {
     DrawRectangleRounded(rect, BOTTOM_ROUND, BOTTOM_SEGMENTS, Fade(Var_GetColor2(), alphaSelectBox));
     DrawRectangleRoundedLinesEx(rect, BOTTOM_ROUND, BOTTOM_SEGMENTS, THICKNESS_BOTTOM, Fade(Var_GetColor3(), alphaSelectBox));
     //Draw text
-    DrawTextEx(Var_GetFontBold(), Games_GetDisplayed(3)->title, game, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
-    DrawTextEx(Var_GetFontBold(), Games_GetDisplayed(3)->console, console, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
+    DrawTextEx(Var_GetFontBold(), Games_GetDisplayed(CURRENT_GAME)->title, game, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
+    DrawTextEx(Var_GetFontBold(), Games_GetDisplayed(CURRENT_GAME)->console, console, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
     DrawTextEx(Var_GetFontBold(), BOTTOM_TXT, bottom, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
 }
 
 //Load spider logo
 void UI_LoadLogo() {
     //Load the logo textures
-    spiderLogo = LoadTexture("/home/tywebb1724/Desktop/Gaming-Console/assets/covers/logo/LogoBlack.png");
+    spiderLogo = LoadTexture("assets/images/other/logo.png");
+    xbox = LoadTexture("assets/images/other/xbox.png");
 }
 
 //Draw the boot screen
@@ -277,10 +274,10 @@ void UI_DrawBootScreen() {
 
 //Load image of controller
 void UI_LoadControlsImgs() {
-    controlsImg = LoadTexture("/home/tywebb1724/Desktop/Gaming-Console/assets/covers/logo/controller.png");
-    keyImg = LoadTexture("/home/tywebb1724/Desktop/Gaming-Console/assets/covers/logo/keyboard.png");
-    mouseImg = LoadTexture("/home/tywebb1724/Desktop/Gaming-Console/assets/covers/logo/mouse.png");
-    arrowsImg = LoadTexture("/home/tywebb1724/Desktop/Gaming-Console/assets/covers/logo/arrowkeys.png");
+    controlsImg = LoadTexture("assets/images/other/controller.png");
+    keyImg = LoadTexture("assets/images/other/keyboard.png");
+    mouseImg = LoadTexture("assets/images/other/mouse.png");
+    arrowsImg = LoadTexture("assets/images/other/arrow_keys.png");
 }
 
 //Draw controls for libretro game
@@ -297,13 +294,13 @@ static void UI_DrawControls_Lib(const game_t* game) {
     Vector2 middleLineEnd = {LAUNCH_KEYBOARD_X, LAUNCH_CONTROLLER_Y + LAUNCH_CONTROLLER_H};
     DrawLineEx(middleLineStart, middleLineEnd, LAUNCH_CONTROL_OUTLINE_THICKNESS, GRAY);
     //Initialize the text variables for all the controls
-    char rDown_Txt[10] = "", rUp_Txt[10] = "", rLeft_Txt[10] = "", rRight_Txt[10] = "";
-    char dPad_Txt[10] = "", rs_Txt[10] = "", back_Txt[10] = "", start_Txt[10] = "";
-    char lt_Txt[10] = "", rt_Txt[10] = "", lb_Txt[15] = "", rb_Txt[15] = "", ls_Txt[10] = "";
-    char home_Txt[10] = "PAUSE";
-    char tab_Txt[10] = "", q_Txt[13] = "", w_Txt[10] = "", e_Txt[13] = "", u_Txt[10] = "", i_Txt[10] = "", o_Txt[10] = "";
-    char a_Txt[10] = "", s_Txt[10] = "", d_Txt[10] = "", f_Txt[10] = "", j_Txt[10] = "", k_Txt[10] = "", l_Txt[10] = "";
-    char enter_Txt[10] = "", lShift_Txt[10] = "", rShift_Txt[10] = "", space_Txt[10] = "", mouse_Txt[10] = "", lClick_Txt[10] = "", arrows_Txt[10] = "";
+    char rDown_Txt[LAUNCH_STR_LEN] = "", rUp_Txt[LAUNCH_STR_LEN] = "", rLeft_Txt[LAUNCH_STR_LEN] = "", rRight_Txt[LAUNCH_STR_LEN] = "";
+    char dPad_Txt[LAUNCH_STR_LEN] = "", rs_Txt[LAUNCH_STR_LEN] = "", back_Txt[LAUNCH_STR_LEN] = "", start_Txt[LAUNCH_STR_LEN] = "";
+    char lt_Txt[LAUNCH_STR_LEN] = "", rt_Txt[LAUNCH_STR_LEN] = "", lb_Txt[LAUNCH_STR_LEN3] = "", rb_Txt[LAUNCH_STR_LEN3] = "", ls_Txt[LAUNCH_STR_LEN] = "";
+    char home_Txt[LAUNCH_STR_LEN] = "PAUSE";
+    char tab_Txt[LAUNCH_STR_LEN] = "", q_Txt[LAUNCH_STR_LEN2] = "", w_Txt[LAUNCH_STR_LEN] = "", e_Txt[LAUNCH_STR_LEN2] = "", u_Txt[LAUNCH_STR_LEN] = "", i_Txt[LAUNCH_STR_LEN] = "", o_Txt[LAUNCH_STR_LEN] = "";
+    char a_Txt[LAUNCH_STR_LEN] = "", s_Txt[LAUNCH_STR_LEN] = "", d_Txt[LAUNCH_STR_LEN] = "", f_Txt[LAUNCH_STR_LEN] = "", j_Txt[LAUNCH_STR_LEN] = "", k_Txt[LAUNCH_STR_LEN] = "", l_Txt[LAUNCH_STR_LEN] = "";
+    char enter_Txt[LAUNCH_STR_LEN] = "", lShift_Txt[LAUNCH_STR_LEN] = "", rShift_Txt[LAUNCH_STR_LEN] = "", space_Txt[LAUNCH_STR_LEN] = "", mouse_Txt[LAUNCH_STR_LEN] = "", lClick_Txt[LAUNCH_STR_LEN] = "", arrows_Txt[LAUNCH_STR_LEN] = "";
     //Draw circles and rectangles for backgrounds of each xbox control
     DrawCircle(LAUNCH_RIGHT_FACE_DOWN_X, LAUNCH_RIGHT_FACE_DOWN_Y, LAUNCH_CONTROL_RADIUS, GRAY);
     DrawCircle(LAUNCH_RIGHT_FACE_UP_X, LAUNCH_RIGHT_FACE_UP_Y, LAUNCH_CONTROL_RADIUS, GRAY);
@@ -1295,13 +1292,13 @@ static void UI_DrawControls_Ext(const game_t* game) {
     Vector2 middleLineEnd = {LAUNCH_KEYBOARD_X, LAUNCH_CONTROLLER_Y + LAUNCH_CONTROLLER_H};
     DrawLineEx(middleLineStart, middleLineEnd, LAUNCH_CONTROL_OUTLINE_THICKNESS, GRAY);
     //Initialize the text variables for all the controls
-    char rDown_Txt[10] = "", rUp_Txt[10] = "", rLeft_Txt[10] = "", rRight_Txt[10] = "";
-    char dPad_Txt[10] = "", rs_Txt[10] = "", back_Txt[10] = "", start_Txt[10] = "";
-    char lt_Txt[10] = "", rt_Txt[10] = "", lb_Txt[15] = "", rb_Txt[15] = "", ls_Txt[10] = "";
-    char home_Txt[10] = "EXIT";
-    char tab_Txt[10] = "",  q_Txt[13] = "",  e_Txt[13] = "", w_Txt[10] = "", u_Txt[10] = "", i_Txt[10] = "", o_Txt[10] = "";
-    char a_Txt[10] = "", s_Txt[10] = "", d_Txt[10] = "", j_Txt[10] = "", k_Txt[10] = "", l_Txt[10] = "";
-    char enter_Txt[10] = "", rShift_Txt[10] = "", space_Txt[15] = "", mouse_Txt[10] = "", lClick_Txt[10] = "", arrows_Txt[10] = "";
+    char rDown_Txt[LAUNCH_STR_LEN] = "", rUp_Txt[LAUNCH_STR_LEN] = "", rLeft_Txt[LAUNCH_STR_LEN] = "", rRight_Txt[LAUNCH_STR_LEN] = "";
+    char dPad_Txt[LAUNCH_STR_LEN] = "", rs_Txt[LAUNCH_STR_LEN] = "", back_Txt[LAUNCH_STR_LEN] = "", start_Txt[LAUNCH_STR_LEN] = "";
+    char lt_Txt[LAUNCH_STR_LEN] = "", rt_Txt[LAUNCH_STR_LEN] = "", lb_Txt[LAUNCH_STR_LEN3] = "", rb_Txt[LAUNCH_STR_LEN3] = "", ls_Txt[LAUNCH_STR_LEN] = "";
+    char home_Txt[LAUNCH_STR_LEN] = "EXIT";
+    char tab_Txt[LAUNCH_STR_LEN] = "",  q_Txt[LAUNCH_STR_LEN2] = "",  e_Txt[LAUNCH_STR_LEN2] = "", w_Txt[LAUNCH_STR_LEN] = "", u_Txt[LAUNCH_STR_LEN] = "", i_Txt[LAUNCH_STR_LEN] = "", o_Txt[LAUNCH_STR_LEN] = "";
+    char a_Txt[LAUNCH_STR_LEN] = "", s_Txt[LAUNCH_STR_LEN] = "", d_Txt[LAUNCH_STR_LEN] = "", j_Txt[LAUNCH_STR_LEN] = "", k_Txt[LAUNCH_STR_LEN] = "", l_Txt[LAUNCH_STR_LEN] = "";
+    char enter_Txt[LAUNCH_STR_LEN] = "", rShift_Txt[LAUNCH_STR_LEN] = "", space_Txt[LAUNCH_STR_LEN3] = "", mouse_Txt[LAUNCH_STR_LEN] = "", lClick_Txt[LAUNCH_STR_LEN] = "", arrows_Txt[LAUNCH_STR_LEN] = "";
     //Draw circles and rectangles for backgrounds of each xbox control
     DrawCircle(LAUNCH_RIGHT_FACE_DOWN_X, LAUNCH_RIGHT_FACE_DOWN_Y, LAUNCH_CONTROL_RADIUS, GRAY);
     DrawCircle(LAUNCH_RIGHT_FACE_UP_X, LAUNCH_RIGHT_FACE_UP_Y, LAUNCH_CONTROL_RADIUS, GRAY);
@@ -1709,10 +1706,10 @@ void UI_DrawLaunch(const game_t* game) {
     Vector2 gameTxt_Pos = {LAUNCH_GAME_X, LAUNCH_GAME_Y};
     DrawTextEx(Var_GetFontBold(), game->title, gameTxt_Pos, LAUNCH_TXT_SIZE, LAUNCH_SPACE, WHITE);
     char homeTxt[55];
+    //Draw the controls based on whether it is libretro or external app
     if (game->libRetro) {
         snprintf(homeTxt, sizeof(homeTxt), LAUNCH_HOME_LIB);
         UI_DrawControls_Lib(game);
-        //sleep(5);
     }
     else {
         snprintf(homeTxt, sizeof(homeTxt), LAUNCH_HOME_EXT);
@@ -1722,7 +1719,6 @@ void UI_DrawLaunch(const game_t* game) {
     Vector2 homeTxt_Size = MeasureTextEx(Var_GetFontRegular(), homeTxt, LAUNCH_SMALL_SIZE, LAUNCH_SPACE);
     Vector2 homeTxt_Pos = {LAUNCH_HOME_X, LAUNCH_HOME_Y};
     DrawTextEx(Var_GetFontRegular(), homeTxt, homeTxt_Pos, LAUNCH_SMALL_SIZE, LAUNCH_SPACE, WHITE);
-    
 }
 
 //Display diagnostics on top left
@@ -1743,6 +1739,7 @@ void UI_DrawDispDiag(bool in_game) {
         DrawTextEx(Var_GetFontRegular(), TextFormat("CPU Temp:  %.1f C", Var_GetTemp()), temp, DISP_DIAG_SIZE, DISP_DIAG_SPACE, Var_GetColor3());
         Vector2 clock = {DISP_DIAG_CLOCK_X, DISP_DIAG_CLOCK_Y};
         DrawTextEx(Var_GetFontRegular(), TextFormat("Clock Speed:  %.2f GHz", Var_GetClock() / 1000000.0f), clock, DISP_DIAG_SIZE, DISP_DIAG_SPACE, Var_GetColor3());
+        //Change the FPS depending on whether in game or not
         if (in_game) {
             DrawTextEx(Var_GetFontRegular(), TextFormat("Emulator FPS:  %.1f / %.1f    Frame:  %.1f    Worst: %.1f", Var_GetEmuFps(), GetCoreTargetFPS(), Var_GetFrameAvg(), Var_GetFrameWorst()), diagnosticsFPS, DISP_DIAG_SIZE, DISP_DIAG_SPACE, Var_GetColor3());
         }
@@ -1777,7 +1774,7 @@ void UI_ChangeAlpha_Static() {
     if (alphaSelectTxt_Blink == true) {
         // If less than 1, increment
         if (Var_GetAlphaSelect() < 1.0f) {
-            Var_AddAlphaSelect(0.04f * GetFrameTime() * 60.0f);
+            Var_AddAlphaSelect(ALPHA_SELECT_INCREMENT_STATIC * GetFrameTime() * FPS);
         }
         //If alpha has reached 1
         else if (Var_GetAlphaSelect() >= 1.0f) {
@@ -1792,14 +1789,14 @@ void UI_ChangeAlpha_Static() {
     else
     {
         // If less than 1, increment
-        if (Var_GetAlphaSelect() > 0.1f) {
-            Var_AddAlphaSelect(- 0.04f * GetFrameTime() * 60.0f);
+        if (Var_GetAlphaSelect() > ALPHA_SELECT_MIN) {
+            Var_AddAlphaSelect(- ALPHA_SELECT_INCREMENT_STATIC * GetFrameTime() * FPS);
         }
         //If alpha has gotten low enough
-        else if (Var_GetAlphaSelect() <= 0.1f) {
+        else if (Var_GetAlphaSelect() <= ALPHA_SELECT_MIN) {
             alphaSelectTxt_TimeElapsed += GetFrameTime();
             //If enough time has passed, keep blinking
-            if (alphaSelectTxt_TimeElapsed >= 0.1) {
+            if (alphaSelectTxt_TimeElapsed >= SELECT_BLINK_TIME_LOW) {
                 alphaSelectTxt_Blink = true;
                 alphaSelectTxt_TimeElapsed = 0.0f;
             }
@@ -1807,7 +1804,7 @@ void UI_ChangeAlpha_Static() {
     }
     //If less than 1, increment
     if (alphaGames < 1.0f) {
-        alphaGames += (0.25f * GetFrameTime() * 60.0f);
+        alphaGames += (ALPHA_GAMES_INCREMENT * GetFrameTime() * FPS);
     }
     //If greater than 1, bring back to 1
     else if (alphaGames > 1.0f) {
@@ -1815,7 +1812,7 @@ void UI_ChangeAlpha_Static() {
     }
     //If less than 1, increment
     if (alphaSelectBox < 1.0f) {
-        alphaSelectBox += (0.25f * GetFrameTime() * 60.0f);
+        alphaSelectBox += (ALPHA_SELECT_BOX_INCREMENT * GetFrameTime() * FPS);
     }
     //If greater than 1, bring back to 1
     else if (alphaSelectBox > 1.0f) {
@@ -1831,7 +1828,7 @@ static void UI_ChangeAlpha_ScrollGames() {
     }
     //If greater than 0, decrement
     else if (Var_GetAlphaSelect() > 0.0f) {
-        Var_AddAlphaSelect(- 0.25f * GetFrameTime() * 60.0f);
+        Var_AddAlphaSelect(- ALPHA_SELECT_INCREMENT_SCROLL * GetFrameTime() * FPS);
     }
     //If less than 0, bring to 0
     if (alphaGames < 0.0f) {
@@ -1839,11 +1836,11 @@ static void UI_ChangeAlpha_ScrollGames() {
     }
     //If greater than 0, decrement
     else if (alphaGames > 0.0f) {
-        alphaGames -= (0.25f * GetFrameTime() * 60.0f);
+        alphaGames -= (ALPHA_GAMES_INCREMENT * GetFrameTime() * FPS);
     }
     //If less than 1, increment
     if (alphaSelectBox < 1.0f) {
-        alphaSelectBox += (0.25f * GetFrameTime() * 60.0f);
+        alphaSelectBox += (ALPHA_SELECT_BOX_INCREMENT * GetFrameTime() * FPS);
     }
     //If greater than 1, bring to 1
     else if (alphaSelectBox > 1.0f) {
@@ -1859,7 +1856,7 @@ static void UI_ChangeAlpha_ScrollCateg() {
     }
     // If greater than 0, decrement
     else if (Var_GetAlphaSelect() > 0.0f) {
-        Var_AddAlphaSelect(- 0.25f * GetFrameTime() * 60.0f);
+        Var_AddAlphaSelect(- ALPHA_SELECT_INCREMENT_SCROLL * GetFrameTime() * FPS);
     }
     // If less than 0, bring to 0
     if (alphaGames < 0.0f) {
@@ -1867,10 +1864,10 @@ static void UI_ChangeAlpha_ScrollCateg() {
     }
     // If greater than 0, decrement
     else if (alphaGames > 0.0f) {
-        alphaGames -= (0.25f * GetFrameTime() * 60.0f);
+        alphaGames -= (ALPHA_GAMES_INCREMENT * GetFrameTime() * FPS);
     }
     if (alphaSelectBox > 0.0f) {
-        alphaSelectBox -= (0.25f * GetFrameTime() * 60.0f);
+        alphaSelectBox -= (ALPHA_SELECT_BOX_INCREMENT * GetFrameTime() * FPS);
     }
     else if (alphaSelectBox < 0.0f) {
         alphaSelectBox = 0.0f;
@@ -1881,7 +1878,7 @@ static void UI_ChangeAlpha_ScrollCateg() {
     }
     // If less than 1, increment up
     else if (alphaCategories_In < 1.0f) {
-        alphaCategories_In += (0.05f * GetFrameTime() * 60.0f);
+        alphaCategories_In += (ALPHA_CATEG_IN_INCREMENT * GetFrameTime() * FPS);
     }
     // If less than 0, bring to 0
     if (alphaCategories_Out < 0.0f) {
@@ -1889,7 +1886,7 @@ static void UI_ChangeAlpha_ScrollCateg() {
     }
     // If greater than 0, decrement
     else if (alphaCategories_Out > 0.0f) {
-        alphaCategories_Out -= (0.1f * GetFrameTime() * 60.0f);
+        alphaCategories_Out -= (ALPHA_CATEG_OUT_INCREMENT * GetFrameTime() * FPS);
     }
 }
 
@@ -1911,7 +1908,7 @@ static void UI_DrawCateg_Scroll() {
     //If scrolling to the right
     if (Var_GetScrollCateg() == SCROLL_RIGHT) {
         //If images close enough to final spot
-        if (fabsf(Games_GetNew(2)->x - CENTER_GAME_X) <= SCROLL_CATEG_THRESHOLD) {
+        if (fabsf(Games_GetNew(NEW_GAME_CENTER)->x - CENTER_GAME_X) <= SCROLL_CATEG_THRESHOLD) {
             //Update displayed categories
             Categories_ScrollRight();
             Games_UpdateIndexes(Categories_GetDisplayed(2));
@@ -1934,22 +1931,22 @@ static void UI_DrawCateg_Scroll() {
             return;
         }
         //Update x coordinates for new games
-        Games_GetNew(0)->x = Lerp(Games_GetNew(0)->x, LEFT2_GAME_X, SCROLL_CATEG_IN_SPEED);
-        Games_GetNew(1)->x = Lerp(Games_GetNew(1)->x, LEFT1_GAME_X, SCROLL_CATEG_IN_SPEED);
-        Games_GetNew(2)->x = Lerp(Games_GetNew(2)->x, CENTER_GAME_X, SCROLL_CATEG_IN_SPEED);
-        Games_GetNew(3)->x = Lerp(Games_GetNew(3)->x, RIGHT1_GAME_X, SCROLL_CATEG_IN_SPEED);
-        Games_GetNew(4)->x = Lerp(Games_GetNew(4)->x, RIGHT2_GAME_X, SCROLL_CATEG_IN_SPEED);
+        Games_GetNew(NEW_GAME_LEFT2)->x = Lerp(Games_GetNew(NEW_GAME_LEFT2)->x, LEFT2_GAME_X, SCROLL_CATEG_IN_SPEED);
+        Games_GetNew(NEW_GAME_LEFT1)->x = Lerp(Games_GetNew(NEW_GAME_LEFT1)->x, LEFT1_GAME_X, SCROLL_CATEG_IN_SPEED);
+        Games_GetNew(NEW_GAME_CENTER)->x = Lerp(Games_GetNew(NEW_GAME_CENTER)->x, CENTER_GAME_X, SCROLL_CATEG_IN_SPEED);
+        Games_GetNew(NEW_GAME_RIGHT1)->x = Lerp(Games_GetNew(NEW_GAME_RIGHT1)->x, RIGHT1_GAME_X, SCROLL_CATEG_IN_SPEED);
+        Games_GetNew(NEW_GAME_RIGHT2)->x = Lerp(Games_GetNew(NEW_GAME_RIGHT2)->x, RIGHT2_GAME_X, SCROLL_CATEG_IN_SPEED);
         //Update x coordinates for old games
-        Games_GetDisplayed(1)->x = Lerp(Games_GetDisplayed(1)->x, LEFT2_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
-        Games_GetDisplayed(2)->x = Lerp(Games_GetDisplayed(2)->x, LEFT1_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
-        Games_GetDisplayed(3)->x = Lerp(Games_GetDisplayed(3)->x, CENTER_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
-        Games_GetDisplayed(4)->x = Lerp(Games_GetDisplayed(4)->x, RIGHT1_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
-        Games_GetDisplayed(5)->x = Lerp(Games_GetDisplayed(5)->x, RIGHT2_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
+        Games_GetDisplayed(GAME_LEFT2)->x = Lerp(Games_GetDisplayed(GAME_LEFT2)->x, LEFT2_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
+        Games_GetDisplayed(GAME_LEFT1)->x = Lerp(Games_GetDisplayed(GAME_LEFT1)->x, LEFT1_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
+        Games_GetDisplayed(CURRENT_GAME)->x = Lerp(Games_GetDisplayed(CURRENT_GAME)->x, CENTER_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
+        Games_GetDisplayed(GAME_RIGHT1)->x = Lerp(Games_GetDisplayed(GAME_RIGHT1)->x, RIGHT1_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
+        Games_GetDisplayed(GAME_RIGHT2)->x = Lerp(Games_GetDisplayed(GAME_RIGHT2)->x, RIGHT2_SCROLLR_X, SCROLL_CATEG_OUT_SPEED);
     }
     //If scrolling to the left
     else {
         //If images close enough to final spot
-        if (fabsf(Games_GetNew(2)->x - CENTER_GAME_X) <= SCROLL_CATEG_THRESHOLD) {
+        if (fabsf(Games_GetNew(NEW_GAME_CENTER)->x - CENTER_GAME_X) <= SCROLL_CATEG_THRESHOLD) {
             //Update displayed categories
             Categories_ScrollLeft();
             Games_UpdateIndexes(Categories_GetDisplayed(2));
@@ -1973,17 +1970,17 @@ static void UI_DrawCateg_Scroll() {
             return;
         }
         // Update x coordinates for new games
-        Games_GetNew(0)->x = Lerp(Games_GetNew(0)->x, LEFT2_GAME_X, SCROLL_CATEG_IN_SPEED);
-        Games_GetNew(1)->x = Lerp(Games_GetNew(1)->x, LEFT1_GAME_X, SCROLL_CATEG_IN_SPEED);
-        Games_GetNew(2)->x = Lerp(Games_GetNew(2)->x, CENTER_GAME_X, SCROLL_CATEG_IN_SPEED);
-        Games_GetNew(3)->x = Lerp(Games_GetNew(3)->x, RIGHT1_GAME_X, SCROLL_CATEG_IN_SPEED);
-        Games_GetNew(4)->x = Lerp(Games_GetNew(4)->x, RIGHT2_GAME_X, SCROLL_CATEG_IN_SPEED);
+        Games_GetNew(NEW_GAME_LEFT2)->x = Lerp(Games_GetNew(NEW_GAME_LEFT2)->x, LEFT2_GAME_X, SCROLL_CATEG_IN_SPEED);
+        Games_GetNew(NEW_GAME_LEFT1)->x = Lerp(Games_GetNew(NEW_GAME_LEFT1)->x, LEFT1_GAME_X, SCROLL_CATEG_IN_SPEED);
+        Games_GetNew(NEW_GAME_CENTER)->x = Lerp(Games_GetNew(NEW_GAME_CENTER)->x, CENTER_GAME_X, SCROLL_CATEG_IN_SPEED);
+        Games_GetNew(NEW_GAME_RIGHT1)->x = Lerp(Games_GetNew(NEW_GAME_RIGHT1)->x, RIGHT1_GAME_X, SCROLL_CATEG_IN_SPEED);
+        Games_GetNew(NEW_GAME_RIGHT2)->x = Lerp(Games_GetNew(NEW_GAME_RIGHT2)->x, RIGHT2_GAME_X, SCROLL_CATEG_IN_SPEED);
         // Update x coordinates for old games
-        Games_GetDisplayed(1)->x = Lerp(Games_GetDisplayed(1)->x, LEFT2_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
-        Games_GetDisplayed(2)->x = Lerp(Games_GetDisplayed(2)->x, LEFT1_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
-        Games_GetDisplayed(3)->x = Lerp(Games_GetDisplayed(3)->x, CENTER_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
-        Games_GetDisplayed(4)->x = Lerp(Games_GetDisplayed(4)->x, RIGHT1_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
-        Games_GetDisplayed(5)->x = Lerp(Games_GetDisplayed(5)->x, RIGHT2_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
+        Games_GetDisplayed(GAME_LEFT2)->x = Lerp(Games_GetDisplayed(GAME_LEFT2)->x, LEFT2_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
+        Games_GetDisplayed(GAME_LEFT1)->x = Lerp(Games_GetDisplayed(GAME_LEFT1)->x, LEFT1_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
+        Games_GetDisplayed(CURRENT_GAME)->x = Lerp(Games_GetDisplayed(CURRENT_GAME)->x, CENTER_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
+        Games_GetDisplayed(GAME_RIGHT1)->x = Lerp(Games_GetDisplayed(GAME_RIGHT1)->x, RIGHT1_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
+        Games_GetDisplayed(GAME_RIGHT2)->x = Lerp(Games_GetDisplayed(GAME_RIGHT2)->x, RIGHT2_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
     }
 }
 
@@ -2033,39 +2030,39 @@ static void UI_DrawGame(int i, float alpha, bool scroll) {
 
 //Draw the games when scrolling to the left
 static void UI_DrawGames_Left() {
-    UI_DrawGame(0, 1.0f, false);
-    UI_DrawGame(1, 1.0f, false);
-    UI_DrawGame(5, 1.0f, false);
-    UI_DrawGame(4, 1.0f, false);
-    UI_DrawGame(3, 1.0f, false);
-    UI_DrawGame(2, 1.0f, false);
+    UI_DrawGame(GAME_LEFT3, 1.0f, false);
+    UI_DrawGame(GAME_LEFT2, 1.0f, false);
+    UI_DrawGame(GAME_RIGHT2, 1.0f, false);
+    UI_DrawGame(GAME_RIGHT1, 1.0f, false);
+    UI_DrawGame(CURRENT_GAME, 1.0f, false);
+    UI_DrawGame(GAME_LEFT1, 1.0f, false);
 }
 
 //Draw the games when scrolling to the right
 static void UI_DrawGames_Right() {
-    UI_DrawGame(6, 1.0f, false);
-    UI_DrawGame(1, 1.0f, false);
-    UI_DrawGame(5, 1.0f, false);
-    UI_DrawGame(2, 1.0f, false);
-    UI_DrawGame(3, 1.0f, false);
-    UI_DrawGame(4, 1.0f, false);
+    UI_DrawGame(GAME_RIGHT3, 1.0f, false);
+    UI_DrawGame(GAME_LEFT2, 1.0f, false);
+    UI_DrawGame(GAME_RIGHT2, 1.0f, false);
+    UI_DrawGame(GAME_LEFT1, 1.0f, false);
+    UI_DrawGame(CURRENT_GAME, 1.0f, false);
+    UI_DrawGame(GAME_RIGHT1, 1.0f, false);
 }
 
 //Draw games when not scrolling
 static void UI_DrawGames_Normal() {
     //Draw new games
     if (Var_GetScrollCateg() != SCROLL_NO) {
-        UI_DrawGame(0, alphaCategories_In, true);
-        UI_DrawGame(4, alphaCategories_In, true);
-        UI_DrawGame(1, alphaCategories_In, true);
-        UI_DrawGame(3, alphaCategories_In, true);
-        UI_DrawGame(2, alphaCategories_In, true);
+        UI_DrawGame(GAME_LEFT3, alphaCategories_In, true);
+        UI_DrawGame(GAME_RIGHT1, alphaCategories_In, true);
+        UI_DrawGame(GAME_LEFT2, alphaCategories_In, true);
+        UI_DrawGame(CURRENT_GAME, alphaCategories_In, true);
+        UI_DrawGame(GAME_LEFT1, alphaCategories_In, true);
     }
-    UI_DrawGame(1, alphaCategories_Out, false);
-    UI_DrawGame(5, alphaCategories_Out, false);
-    UI_DrawGame(2, alphaCategories_Out, false);
-    UI_DrawGame(4, alphaCategories_Out, false);
-    UI_DrawGame(3, alphaCategories_Out, false);
+    UI_DrawGame(GAME_LEFT2, alphaCategories_Out, false);
+    UI_DrawGame(GAME_RIGHT2, alphaCategories_Out, false);
+    UI_DrawGame(GAME_LEFT1, alphaCategories_Out, false);
+    UI_DrawGame(GAME_RIGHT1, alphaCategories_Out, false);
+    UI_DrawGame(CURRENT_GAME, alphaCategories_Out, false);
 
     // Draw outline for selected game
     DrawRectangleLinesEx(
@@ -2085,7 +2082,7 @@ static void UI_DrawGames_Scroll() {
         //Draw the games
         UI_DrawGames_Right();
         //If images close enough to final spot
-        if (fabsf(Games_GetDisplayed(4)->x - CENTER_GAME_X) <= SCROLL_GAMES_THRESHOLD) {
+        if (fabsf(Games_GetDisplayed(GAME_RIGHT1)->x - CENTER_GAME_X) <= SCROLL_GAMES_THRESHOLD) {
             if ((!IsKeyDown(KEY_RIGHT) && !LS_RIGHT) || currentUIState == OPTIONS) {
                 Var_SetScrollGames(SCROLL_NO);
             }
@@ -2096,40 +2093,40 @@ static void UI_DrawGames_Scroll() {
             return;
         }
         //Update x coordinates
-        Games_GetDisplayed(1)->x = Lerp(Games_GetDisplayed(1)->x, LEFT3_GAME_X, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(2)->x = Lerp(Games_GetDisplayed(2)->x, LEFT2_GAME_X, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(3)->x = Lerp(Games_GetDisplayed(3)->x, LEFT1_GAME_X, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(4)->x = Lerp(Games_GetDisplayed(4)->x, CENTER_GAME_X, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(5)->x = Lerp(Games_GetDisplayed(5)->x, RIGHT1_GAME_X, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(6)->x = Lerp(Games_GetDisplayed(6)->x, RIGHT2_GAME_X, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT2)->x = Lerp(Games_GetDisplayed(GAME_LEFT2)->x, LEFT3_GAME_X, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT1)->x = Lerp(Games_GetDisplayed(GAME_LEFT1)->x, LEFT2_GAME_X, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(CURRENT_GAME)->x = Lerp(Games_GetDisplayed(CURRENT_GAME)->x, LEFT1_GAME_X, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT1)->x = Lerp(Games_GetDisplayed(GAME_RIGHT1)->x, CENTER_GAME_X, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT2)->x = Lerp(Games_GetDisplayed(GAME_RIGHT2)->x, RIGHT1_GAME_X, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT3)->x = Lerp(Games_GetDisplayed(GAME_RIGHT3)->x, RIGHT2_GAME_X, SCROLL_GAMES_SPEED);
         //Update y coordinates
-        Games_GetDisplayed(1)->y = Lerp(Games_GetDisplayed(1)->y, SIDE3_GAME_Y, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(2)->y = Lerp(Games_GetDisplayed(2)->y, SIDE2_GAME_Y, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(3)->y = Lerp(Games_GetDisplayed(3)->y, SIDE1_GAME_Y, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(4)->y = Lerp(Games_GetDisplayed(4)->y, CENTER_GAME_Y, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(5)->y = Lerp(Games_GetDisplayed(5)->y, SIDE1_GAME_Y, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(6)->y = Lerp(Games_GetDisplayed(6)->y, SIDE2_GAME_Y, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT2)->y = Lerp(Games_GetDisplayed(GAME_LEFT2)->y, SIDE3_GAME_Y, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT1)->y = Lerp(Games_GetDisplayed(GAME_LEFT1)->y, SIDE2_GAME_Y, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(CURRENT_GAME)->y = Lerp(Games_GetDisplayed(CURRENT_GAME)->y, SIDE1_GAME_Y, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT1)->y = Lerp(Games_GetDisplayed(GAME_RIGHT1)->y, CENTER_GAME_Y, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT2)->y = Lerp(Games_GetDisplayed(GAME_RIGHT2)->y, SIDE1_GAME_Y, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT3)->y = Lerp(Games_GetDisplayed(GAME_RIGHT3)->y, SIDE2_GAME_Y, SCROLL_GAMES_SPEED);
         //Update width values
-        Games_GetDisplayed(1)->w = Lerp(Games_GetDisplayed(1)->w, SIDE3_GAME_W, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(2)->w = Lerp(Games_GetDisplayed(2)->w, SIDE2_GAME_W, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(3)->w = Lerp(Games_GetDisplayed(3)->w, SIDE1_GAME_W, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(4)->w = Lerp(Games_GetDisplayed(4)->w, CENTER_GAME_W, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(5)->w = Lerp(Games_GetDisplayed(5)->w, SIDE1_GAME_W, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(6)->w = Lerp(Games_GetDisplayed(6)->w, SIDE2_GAME_W, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT2)->w = Lerp(Games_GetDisplayed(GAME_LEFT2)->w, SIDE3_GAME_W, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT1)->w = Lerp(Games_GetDisplayed(GAME_LEFT1)->w, SIDE2_GAME_W, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(CURRENT_GAME)->w = Lerp(Games_GetDisplayed(CURRENT_GAME)->w, SIDE1_GAME_W, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT1)->w = Lerp(Games_GetDisplayed(GAME_RIGHT1)->w, CENTER_GAME_W, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT2)->w = Lerp(Games_GetDisplayed(GAME_RIGHT2)->w, SIDE1_GAME_W, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT3)->w = Lerp(Games_GetDisplayed(GAME_RIGHT3)->w, SIDE2_GAME_W, SCROLL_GAMES_SPEED);
         //Update height values
-        Games_GetDisplayed(1)->h = Lerp(Games_GetDisplayed(1)->h, SIDE3_GAME_H, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(2)->h = Lerp(Games_GetDisplayed(2)->h, SIDE2_GAME_H, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(3)->h = Lerp(Games_GetDisplayed(3)->h, SIDE1_GAME_H, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(4)->h = Lerp(Games_GetDisplayed(4)->h, CENTER_GAME_H, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(5)->h = Lerp(Games_GetDisplayed(5)->h, SIDE1_GAME_H, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(6)->h = Lerp(Games_GetDisplayed(6)->h, SIDE2_GAME_H, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT2)->h = Lerp(Games_GetDisplayed(GAME_LEFT2)->h, SIDE3_GAME_H, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT1)->h = Lerp(Games_GetDisplayed(GAME_LEFT1)->h, SIDE2_GAME_H, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(CURRENT_GAME)->h = Lerp(Games_GetDisplayed(CURRENT_GAME)->h, SIDE1_GAME_H, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT1)->h = Lerp(Games_GetDisplayed(GAME_RIGHT1)->h, CENTER_GAME_H, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT2)->h = Lerp(Games_GetDisplayed(GAME_RIGHT2)->h, SIDE1_GAME_H, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT3)->h = Lerp(Games_GetDisplayed(GAME_RIGHT3)->h, SIDE2_GAME_H, SCROLL_GAMES_SPEED);
     }
     //If scrolling to the left
     else if (Var_GetScrollGames() == SCROLL_LEFT) {
         //Draw the games
         UI_DrawGames_Left();
         //If images close enough to final spot
-        if (fabsf(Games_GetDisplayed(2)->x - CENTER_GAME_X) <= SCROLL_GAMES_THRESHOLD) {
+        if (fabsf(Games_GetDisplayed(GAME_LEFT1)->x - CENTER_GAME_X) <= SCROLL_GAMES_THRESHOLD) {
             if ((!IsKeyDown(KEY_LEFT) && !LS_LEFT) || currentUIState == OPTIONS) {
                 Var_SetScrollGames(SCROLL_NO);
             }
@@ -2140,39 +2137,38 @@ static void UI_DrawGames_Scroll() {
             return;
         }
         //Update x coordinates
-        Games_GetDisplayed(0)->x = Lerp(Games_GetDisplayed(0)->x, LEFT2_GAME_X, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(1)->x = Lerp(Games_GetDisplayed(1)->x, LEFT1_GAME_X, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(2)->x = Lerp(Games_GetDisplayed(2)->x, CENTER_GAME_X, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(3)->x = Lerp(Games_GetDisplayed(3)->x, RIGHT1_GAME_X, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(4)->x = Lerp(Games_GetDisplayed(4)->x, RIGHT2_GAME_X, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(5)->x = Lerp(Games_GetDisplayed(5)->x, RIGHT3_GAME_X, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT3)->x = Lerp(Games_GetDisplayed(GAME_LEFT3)->x, LEFT2_GAME_X, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT2)->x = Lerp(Games_GetDisplayed(GAME_LEFT2)->x, LEFT1_GAME_X, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT1)->x = Lerp(Games_GetDisplayed(GAME_LEFT1)->x, CENTER_GAME_X, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(CURRENT_GAME)->x = Lerp(Games_GetDisplayed(CURRENT_GAME)->x, RIGHT1_GAME_X, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT1)->x = Lerp(Games_GetDisplayed(GAME_RIGHT1)->x, RIGHT2_GAME_X, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT2)->x = Lerp(Games_GetDisplayed(GAME_RIGHT2)->x, RIGHT3_GAME_X, SCROLL_GAMES_SPEED);
         //Update y coordinates
-        Games_GetDisplayed(0)->y = Lerp(Games_GetDisplayed(0)->y, SIDE2_GAME_Y, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(1)->y = Lerp(Games_GetDisplayed(1)->y, SIDE1_GAME_Y, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(2)->y = Lerp(Games_GetDisplayed(2)->y, CENTER_GAME_Y, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(3)->y = Lerp(Games_GetDisplayed(3)->y, SIDE1_GAME_Y, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(4)->y = Lerp(Games_GetDisplayed(4)->y, SIDE2_GAME_Y, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(5)->y = Lerp(Games_GetDisplayed(5)->y, SIDE3_GAME_Y, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT3)->y = Lerp(Games_GetDisplayed(GAME_LEFT3)->y, SIDE2_GAME_Y, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT2)->y = Lerp(Games_GetDisplayed(GAME_LEFT2)->y, SIDE1_GAME_Y, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT1)->y = Lerp(Games_GetDisplayed(GAME_LEFT1)->y, CENTER_GAME_Y, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(CURRENT_GAME)->y = Lerp(Games_GetDisplayed(CURRENT_GAME)->y, SIDE1_GAME_Y, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT1)->y = Lerp(Games_GetDisplayed(GAME_RIGHT1)->y, SIDE2_GAME_Y, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT2)->y = Lerp(Games_GetDisplayed(GAME_RIGHT2)->y, SIDE3_GAME_Y, SCROLL_GAMES_SPEED);
         //Update width values
-        Games_GetDisplayed(0)->w = Lerp(Games_GetDisplayed(0)->w, SIDE2_GAME_W, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(1)->w = Lerp(Games_GetDisplayed(1)->w, SIDE1_GAME_W, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(2)->w = Lerp(Games_GetDisplayed(2)->w, CENTER_GAME_W, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(3)->w = Lerp(Games_GetDisplayed(3)->w, SIDE1_GAME_W, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(4)->w = Lerp(Games_GetDisplayed(4)->w, SIDE2_GAME_W, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(5)->w = Lerp(Games_GetDisplayed(5)->w, SIDE3_GAME_W, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT3)->w = Lerp(Games_GetDisplayed(GAME_LEFT3)->w, SIDE2_GAME_W, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT2)->w = Lerp(Games_GetDisplayed(GAME_LEFT2)->w, SIDE1_GAME_W, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT1)->w = Lerp(Games_GetDisplayed(GAME_LEFT1)->w, CENTER_GAME_W, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(CURRENT_GAME)->w = Lerp(Games_GetDisplayed(CURRENT_GAME)->w, SIDE1_GAME_W, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT1)->w = Lerp(Games_GetDisplayed(GAME_RIGHT1)->w, SIDE2_GAME_W, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT2)->w = Lerp(Games_GetDisplayed(GAME_RIGHT2)->w, SIDE3_GAME_W, SCROLL_GAMES_SPEED);
         //Update height values
-        Games_GetDisplayed(0)->h = Lerp(Games_GetDisplayed(0)->h, SIDE2_GAME_H, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(1)->h = Lerp(Games_GetDisplayed(1)->h, SIDE1_GAME_H, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(2)->h = Lerp(Games_GetDisplayed(2)->h, CENTER_GAME_H, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(3)->h = Lerp(Games_GetDisplayed(3)->h, SIDE1_GAME_H, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(4)->h = Lerp(Games_GetDisplayed(4)->h, SIDE2_GAME_H, SCROLL_GAMES_SPEED);
-        Games_GetDisplayed(5)->h = Lerp(Games_GetDisplayed(5)->h, SIDE3_GAME_H, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT3)->h = Lerp(Games_GetDisplayed(GAME_LEFT3)->h, SIDE2_GAME_H, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT2)->h = Lerp(Games_GetDisplayed(GAME_LEFT2)->h, SIDE1_GAME_H, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_LEFT1)->h = Lerp(Games_GetDisplayed(GAME_LEFT1)->h, CENTER_GAME_H, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(CURRENT_GAME)->h = Lerp(Games_GetDisplayed(CURRENT_GAME)->h, SIDE1_GAME_H, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT1)->h = Lerp(Games_GetDisplayed(GAME_RIGHT1)->h, SIDE2_GAME_H, SCROLL_GAMES_SPEED);
+        Games_GetDisplayed(GAME_RIGHT2)->h = Lerp(Games_GetDisplayed(GAME_RIGHT2)->h, SIDE3_GAME_H, SCROLL_GAMES_SPEED);
     }
 }
 
 //Tick function for the main UI
 void UI_Tick(ConsoleState* currentConsoleState) {
-
     // Transition
     switch (currentUIState) {
     case NORMAL:
@@ -2282,7 +2278,6 @@ void UI_Tick(ConsoleState* currentConsoleState) {
         break;
 
     case ERASE_DATA:
-        
         break;
     }
 
@@ -2381,7 +2376,7 @@ void UI_Tick(ConsoleState* currentConsoleState) {
         //Draw bottom section of screen
         UI_DrawBottom();
         UI_DrawDispDiag(false);
-        Erase_Tick(Games_GetDisplayed(3), &currentUIState);
+        Erase_Tick(Games_GetDisplayed(CURRENT_GAME), &currentUIState);
         break;
     }
 }

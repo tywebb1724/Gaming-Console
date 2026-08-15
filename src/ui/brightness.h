@@ -37,10 +37,9 @@ typedef enum {
     RIGHT_PRESS
 } BrightnessState;
 
-//Brightness options init function
+//Brightness init function
 void Brightness_Init();
-//Brightness options tick function
+//Brightness otick function
 void Brightness_Tick();
-
 
 #endif

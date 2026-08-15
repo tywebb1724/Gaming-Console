@@ -496,13 +496,13 @@ static bool retro_environment_cb(unsigned cmd, void *data) {
     return true;
 }
 case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY: {
-    *(const char**)data = "/home/tywebb1724/Desktop/Gaming-Console/assets/saves";
+    *(const char**)data = "assets/saves";
     
     printf("DEBUG: Core requested save dir.\n");
     return true;
 }
         case RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY: {
-    const char *my_dir = "/home/tywebb1724/Desktop/Gaming-Console/assets/system/";
+    const char *my_dir = "assets/system/";
     *(const char**)data = my_dir;
     printf("DEBUG: Core requested system dir. Providing: %s\n", my_dir);
     return true;

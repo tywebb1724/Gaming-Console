@@ -13,6 +13,9 @@ static game_t* gamesDisplayed[GAMES_ON_SCREEN + 2];
 static game_t* newGamesDisplayed[GAMES_ON_SCREEN];
 //Array to hold loaded images during boot up
 static Image LoadedImages[GAMES_LEN];
+
+static int games_init_index = 0;
+static int temp_start_section = 0;
 //Indexes and range to keep track of current and new games
 static int games_index;
 static int start_index;
@@ -41,7 +44,7 @@ game_t* Games_GetNew(int i) {
 
 //Update the indexes for the new game category
 void Games_UpdateNewIndexes(int direction) {
-    char categ[30];
+    char categ[CATEG_STR_LEN];
     //If scrolling to the right
     if (direction == RIGHT) {
         //If it is the last category in the array, the new category starts at the beginning
@@ -114,6 +117,7 @@ void Games_NewRefresh() {
 void Games_Refresh() {
     int offset;
     int targetIndex;
+    //Update all games displayed
     for (int i = 0; i < GAMES_ON_SCREEN + 2; i++) {
         offset = i - 2;
         targetIndex = start_index + (games_index - start_index + offset + games_range) % (games_range);
@@ -126,7 +130,7 @@ bool Games_ClearData(const game_t* game) {
     //If saves through battery method
     if (game->save == BATTERY) {
         //Get file path
-        char save_path[512];
+        char save_path[SAVE_PATH_LEN];
         snprintf(save_path, sizeof(save_path), "%s.srm", game->romPath);
         //Remove save file
         if (remove(save_path) == 0) {
@@ -143,8 +147,8 @@ bool Games_ClearData(const game_t* game) {
         //Check which console
         if (strcmp(game->console, "Sony PlayStation") == 0) {
             //Get file path
-            char save_path[512];
-            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/Desktop/Gaming-Console/assets/saves/%s.mcd", game->serial);
+            char save_path[SAVE_PATH_LEN];
+            snprintf(save_path, sizeof(save_path), "assets/saves/%s.mcd", game->serial);
             //Remove save file
             if (remove(save_path) == 0) {
                 printf("Cleared save data: %s\n", save_path);
@@ -157,8 +161,8 @@ bool Games_ClearData(const game_t* game) {
         }
         else if (strcmp(game->console, "Sega CD") == 0) {
             //Get file path
-            char save_path[512];
-            char path[256];
+            char save_path[SAVE_PATH_LEN];
+            char path[TEMP_PATH_LEN];
             snprintf(path, sizeof(path), "%s", game->romPath);
             const char* filename = strrchr(path, '/');
             filename = filename ? filename + 1 : path; 
@@ -166,7 +170,7 @@ bool Games_ClearData(const game_t* game) {
             if (dot) {
                 *dot = '\0';
             }
-            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/Desktop/Gaming-Console/assets/saves/%s.brm", filename);
+            snprintf(save_path, sizeof(save_path), "assets/saves/%s.brm", filename);
             //Remove save file
             if (remove(save_path) == 0) {
                 printf("Cleared save data: %s\n", save_path);
@@ -179,7 +183,7 @@ bool Games_ClearData(const game_t* game) {
         }
         else if (strcmp(game->console, "Sony PlayStation Portable") == 0) {
             //Create command for removing file
-            char command[1024] = "";
+            char command[COMMAND_STR_LEN] = "";
             snprintf(command, sizeof(command), "rm -rf \"/home/tywebb1724/.var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SAVEDATA/%s\"", game->serial);
             //Run command
             int result = system(command);
@@ -195,7 +199,7 @@ bool Games_ClearData(const game_t* game) {
         }
         else if (strcmp(game->console, "Sega Saturn") == 0) {
             //Create command for removing file
-            char command[1024] = "";
+            char command[COMMAND_STR_LEN] = "";
             snprintf(command, sizeof(command), "rm -rf \"/home/tywebb1724/.var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates/%s\"", game->serial);
             //Run command
             int result = system(command);
@@ -211,8 +215,8 @@ bool Games_ClearData(const game_t* game) {
         }
         else if (strcmp(game->console, "Nintendo DS") == 0) {
             //Get file path
-            char save_path[512];
-            char path[256];
+            char save_path[SAVE_PATH_LEN];
+            char path[TEMP_PATH_LEN];
             snprintf(path, sizeof(path), "%s", game->romPath);
             const char* filename = strrchr(path, '/');
             filename = filename ? filename + 1 : path; 
@@ -220,7 +224,7 @@ bool Games_ClearData(const game_t* game) {
             if (dot) {
                 *dot = '\0';
             }
-            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/ds/%s.sav", filename);
+            snprintf(save_path, sizeof(save_path), "assets/roms/ds/%s.sav", filename);
             //Remove save file
             if (remove(save_path) == 0) {
                 printf("Cleared save data: %s\n", save_path);
@@ -233,7 +237,7 @@ bool Games_ClearData(const game_t* game) {
         }
         else if (strcmp(game->console, "Nintendo GameCube") == 0) {
             //Get file path
-            char save_path[512];
+            char save_path[SAVE_PATH_LEN];
             snprintf(save_path, sizeof(save_path), "/home/tywebb1724/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/USA/Card A/%s.gci", game->serial);
             //Remove save file
             if (remove(save_path) == 0) {
@@ -247,7 +251,7 @@ bool Games_ClearData(const game_t* game) {
         }
         else if (strcmp(game->console, "Sega Dreamcast") == 0) {
             //Get file path
-            char save_path[512];
+            char save_path[SAVE_PATH_LEN];
             snprintf(save_path, sizeof(save_path), "/home/tywebb1724/.var/app/org.flycast.Flycast/data/flycast/%s_vmu_save_A1.bin", game->serial);
             //Remove save file
             if (remove(save_path) == 0) {
@@ -265,37 +269,38 @@ bool Games_ClearData(const game_t* game) {
 
 //Initialize arcade games
 static void Games_Arcade_Init() {
+    temp_start_section = games_init_index;
     //Title, cover, and rom for each game
-    gamesLibrary[0].title = "Metal Slug 3";
-    gamesLibrary[0].coverPath = "./assets/covers/arcade/metal_slug_3.png";
-    gamesLibrary[0].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/arcade/mslug3.zip";
-    
-    gamesLibrary[1].title = "Pac-Man";
-    gamesLibrary[1].coverPath = "./assets/covers/arcade/pac-man.png";
-    gamesLibrary[1].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/arcade/pacman.zip";
-
-    gamesLibrary[2].title = "Simpsons Arcade Game";
-    gamesLibrary[2].coverPath = "./assets/covers/arcade/simpsons_arcade.png";
-    gamesLibrary[2].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/arcade/simpsons2p.zip";
-
-    gamesLibrary[3].title = "Street Fighter Alpha 3";
-    gamesLibrary[3].coverPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/covers/arcade/sf_alpha_3.png";
-    gamesLibrary[3].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/arcade/sfa3.zip";
-
-    gamesLibrary[4].title = "Teenage Mutant Ninja Turtles: Turtles in Time";
-    gamesLibrary[4].coverPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/covers/arcade/tmnt_turt_in_time.png";
-    gamesLibrary[4].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/arcade/tmnt22pu.zip";
-
-    gamesLibrary[5].title = "The Punisher Arcade";
-    gamesLibrary[5].coverPath = "./assets/covers/arcade/punisher_arcade.png";
-    gamesLibrary[5].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/arcade/punisher.zip";
-
-    gamesLibrary[6].title = "X-Men Arcade";
-    gamesLibrary[6].coverPath = "./assets/covers/arcade/x-men_arcade.png";
-    gamesLibrary[6].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/arcade/xmen2pa.zip";
-
+    gamesLibrary[games_init_index].title = "Metal Slug 3";
+    gamesLibrary[games_init_index].coverPath = "assets/images/arcade/metal_slug_3.png";
+    gamesLibrary[games_init_index].romPath = "assets/roms/arcade/mslug3.zip";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Pac-Man";
+    gamesLibrary[games_init_index].coverPath = "assets/images/arcade/pac-man.png";
+    gamesLibrary[games_init_index].romPath = "assets/roms/arcade/pacman.zip";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Simpsons Arcade Game";
+    gamesLibrary[games_init_index].coverPath = "assets/images/arcade/simpsons_arcade.png";
+    gamesLibrary[games_init_index].romPath = "assets/roms/arcade/simpson2p.zip";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Street Fighter Alpha 3";
+    gamesLibrary[games_init_index].coverPath = "assets/images/arcade/sf_alpha_3.png";
+    gamesLibrary[games_init_index].romPath = "assets/roms/arcade/sfa3.zip";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Teenage Mutant Ninja Turtles: Turtles in Time";
+    gamesLibrary[games_init_index].coverPath = "assets/images/arcade/tmnt_turt_in_time.png";
+    gamesLibrary[games_init_index].romPath = "assets/roms/arcade/tmnt22pu.zip";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "The Punisher Arcade";
+    gamesLibrary[games_init_index].coverPath = "assets/images/arcade/punisher_arcade.png";
+    gamesLibrary[games_init_index].romPath = "assets/roms/arcade/punisher.zip";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "X-Men Arcade";
+    gamesLibrary[games_init_index].coverPath = "assets/images/arcade/x-men_arcade.png";
+    gamesLibrary[games_init_index].romPath = "assets/roms/arcade/xmen2pa.zip";
+    games_init_index += 1;
     //All arcade games have same save type, path, console, and category. All are libretro as well
-    for (int i = 0; i < 7; i++) {
+    for (int i = temp_start_section; i < games_init_index; i++) {
         gamesLibrary[i].save = NONE;
         gamesLibrary[i].libRetro = true;
         gamesLibrary[i].corePath = PATH_ARCADE;
@@ -306,66 +311,67 @@ static void Games_Arcade_Init() {
 
 //Initialize handheld classics games
 static void Games_Handheld_Init() {
+    temp_start_section = games_init_index;
     //Title, cover, console, rom, and (if applys) serial for each game
-    gamesLibrary[7].title = "Grand Theft Auto: Liberty City Stories";
-    gamesLibrary[7].coverPath = "./assets/covers/handheld/gta_liberty.png";
-    gamesLibrary[7].console = "Sony PlayStation Portable";
-    gamesLibrary[7].romPath = "assets/roms/psp/GTALibertyCity.iso";
-    gamesLibrary[7].serial = "ULUS10041S0";
-
-    gamesLibrary[8].title = "Mario Kart DS";
-    gamesLibrary[8].coverPath = "./assets/covers/handheld/mario_kart_ds.png";
-    gamesLibrary[8].console = "Nintendo DS";
-    gamesLibrary[8].romPath = "assets/roms/ds/MarioKartDS.nds";
-
-    gamesLibrary[9].title = "Pokemon HeartGold";
-    gamesLibrary[9].coverPath = "./assets/covers/handheld/pokemon_heartgold.png";
-    gamesLibrary[9].console = "Nintendo DS";
-    gamesLibrary[9].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/ds/PokemonHeartGold.nds";
-
-    gamesLibrary[10].title = "Pokemon SoulSilver";
-    gamesLibrary[10].coverPath = "./assets/covers/handheld/pokemon_soulsilver.png";
-    gamesLibrary[10].console = "Nintendo DS";
-    gamesLibrary[10].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/ds/PokemonSoulSilver.nds";
-
-    gamesLibrary[11].title = "The Legend of Zelda: The Minish Cap";
-    gamesLibrary[11].coverPath = "./assets/covers/handheld/zelda_minish_cap.png";
-    gamesLibrary[11].console = "Game Boy Advance";
-    gamesLibrary[11].romPath = "assets/roms/gba/MinishChap.gba";
-
-    gamesLibrary[12].title = "Chrono Trigger";
-    gamesLibrary[12].coverPath = "./assets/covers/handheld/chrono_trigger.png";
-    gamesLibrary[12].console = "Nintendo DS";
-    gamesLibrary[12].romPath = "assets/roms/ds/ChronoTrigger.nds";
-
-    gamesLibrary[13].title = "Monster Hunter Freedom Unite";
-    gamesLibrary[13].coverPath = "./assets/covers/handheld/monst_hunt_free_unite.png";
-    gamesLibrary[13].console = "Sony PlayStation Portable";
-    gamesLibrary[13].romPath = "assets/roms/psp/MonsterHunterFreeUnite.iso";
-    gamesLibrary[13].serial = "ULUS10391";
-
-    gamesLibrary[14].title = "Super Mario Bros. Deluxe";
-    gamesLibrary[14].coverPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/covers/handheld/mario_bros_deluxe.png";
-    gamesLibrary[14].console = "Game Boy Color";
-    gamesLibrary[14].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/gbc/SupMarBrosDeluxe.gbc";
-
-    gamesLibrary[15].title = "Metal Slug - 2nd Mission";
-    gamesLibrary[15].coverPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/covers/handheld/met_slug_2nd.png";
-    gamesLibrary[15].console = "Neo Geo Pocket Color";
-    gamesLibrary[15].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/neogeoc/MetalSlug2ndMission.ngc";
-
-    gamesLibrary[16].title = "Ninja Gaiden";
-    gamesLibrary[16].coverPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/covers/handheld/ninja_gaiden.png";
-    gamesLibrary[16].console = "Atari Lynx";
-    gamesLibrary[16].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/lynx/NinjaGaiden.lyx";
-
-    gamesLibrary[17].title = "Sonic Blast";
-    gamesLibrary[17].coverPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/covers/handheld/sonic_blast.png";
-    gamesLibrary[17].console = "Sega Game Gear";
-    gamesLibrary[17].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/gamegear/SonicBlast.gg";
-
+    gamesLibrary[games_init_index].title = "Grand Theft Auto: Liberty City Stories";
+    gamesLibrary[games_init_index].coverPath = "assets/images/handheld/gta_liberty.png";
+    gamesLibrary[games_init_index].console = "Sony PlayStation Portable";
+    gamesLibrary[games_init_index].romPath = "assets/roms/psp/GTALibertyCity.iso";
+    gamesLibrary[games_init_index].serial = "ULUS10041S0";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Mario Kart DS";
+    gamesLibrary[games_init_index].coverPath = "assets/images/handheld/mario_kart_ds.png";
+    gamesLibrary[games_init_index].console = "Nintendo DS";
+    gamesLibrary[games_init_index].romPath = "assets/roms/ds/MarioKartDS.nds";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Pokemon HeartGold";
+    gamesLibrary[games_init_index].coverPath = "assets/images/handheld/pokemon_heartgold.png";
+    gamesLibrary[games_init_index].console = "Nintendo DS";
+    gamesLibrary[games_init_index].romPath = "assets/roms/ds/PokemonHeartGold.nds";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Pokemon SoulSilver";
+    gamesLibrary[games_init_index].coverPath = "assets/images/handheld/pokemon_soulsilver.png";
+    gamesLibrary[games_init_index].console = "Nintendo DS";
+    gamesLibrary[games_init_index].romPath = "assets/roms/ds/PokemonSoulSilver.nds";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "The Legend of Zelda: The Minish Cap";
+    gamesLibrary[games_init_index].coverPath = "assets/images/handheld/zelda_minish_cap.png";
+    gamesLibrary[games_init_index].console = "Game Boy Advance";
+    gamesLibrary[games_init_index].romPath = "assets/roms/gba/MinishChap.gba";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Chrono Trigger";
+    gamesLibrary[games_init_index].coverPath = "assets/images/handheld/chrono_trigger.png";
+    gamesLibrary[games_init_index].console = "Nintendo DS";
+    gamesLibrary[games_init_index].romPath = "assets/roms/ds/ChronoTrigger.nds";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Monster Hunter Freedom Unite";
+    gamesLibrary[games_init_index].coverPath = "assets/images/handheld/monst_hunt_free_unite.png";
+    gamesLibrary[games_init_index].console = "Sony PlayStation Portable";
+    gamesLibrary[games_init_index].romPath = "assets/roms/psp/MonsterHunterFreeUnite.iso";
+    gamesLibrary[games_init_index].serial = "ULUS10391";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Super Mario Bros. Deluxe";
+    gamesLibrary[games_init_index].coverPath = "assets/images/handheld/mario_bros_deluxe.png";
+    gamesLibrary[games_init_index].console = "Game Boy Color";
+    gamesLibrary[games_init_index].romPath = "assets/roms/gbc/SupMarBrosDeluxe.gbc";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Metal Slug - 2nd Mission";
+    gamesLibrary[games_init_index].coverPath = "assets/images/handheld/met_slug_2nd.png";
+    gamesLibrary[games_init_index].console = "Neo Geo Pocket Color";
+    gamesLibrary[games_init_index].romPath = "assets/roms/neogeoc/MetalSlug2ndMission.ngc";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Ninja Gaiden";
+    gamesLibrary[games_init_index].coverPath = "assets/images/handheld/ninja_gaiden.png";
+    gamesLibrary[games_init_index].console = "Atari Lynx";
+    gamesLibrary[games_init_index].romPath = "assets/roms/lynx/NinjaGaiden.lyx";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Sonic Blast";
+    gamesLibrary[games_init_index].coverPath = "assets/images/handheld/sonic_blast.png";
+    gamesLibrary[games_init_index].console = "Sega Game Gear";
+    gamesLibrary[games_init_index].romPath = "assets/roms/gamegear/SonicBlast.gg";
+    games_init_index += 1;
     //All games have same category. The paths and save type and whether they are libretro depends on the game
-    for (int i = 7; i < 18; i++) {
+    for (int i = temp_start_section; i < games_init_index; i++) {
         gamesLibrary[i].category = "Handheld Classics";
         //Depending on the console, set the path, save type, and whether it is libretro
         if (strcmp(gamesLibrary[i].console, "Sega Game Gear") == 0) {
@@ -408,48 +414,49 @@ static void Games_Handheld_Init() {
 
 //Initialize Nintendo 3D games
 static void Games_Nint3D_Init() {
-    //Titles, covers, consoles, and roms for each game
-    gamesLibrary[18].title = "Super Mario 64";
-    gamesLibrary[18].coverPath = "./assets/covers/nint_3d/mario_64.png";
-    gamesLibrary[18].console = "Nintendo 64";
-    gamesLibrary[18].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/n64/SuperMario64.z64";
-
-    gamesLibrary[19].title = "Super Mario Sunshine";
-    gamesLibrary[19].coverPath = "./assets/covers/nint_3d/mario_sunshine.png";
-    gamesLibrary[19].console = "Nintendo GameCube";
-    gamesLibrary[19].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/gamecube/MarioSunshine.ciso";
-    gamesLibrary[19].serial = "01-GMSE-super_mario_sunshine";
-
-    gamesLibrary[20].title = "Starfox 64";
-    gamesLibrary[20].coverPath = "./assets/covers/nint_3d/starfox_64.png";
-    gamesLibrary[20].console = "Nintendo 64";
-    gamesLibrary[20].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/n64/StarFox64.z64";
-
-    gamesLibrary[21].title = "The Legend of Zelda: Ocarina of Time";
-    gamesLibrary[21].coverPath = "./assets/covers/nint_3d/zelda_ocarina.png";
-    gamesLibrary[21].console = "Nintendo 64";
-    gamesLibrary[21].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/n64/OcarinaOfTime.z64";
-
-    gamesLibrary[22].title = "The Legend of Zelda: The Wind Waker";
-    gamesLibrary[22].coverPath = "./assets/covers/nint_3d/zelda_windwaker.png";
-    gamesLibrary[22].console = "Nintendo GameCube";
-    gamesLibrary[22].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/gamecube/WindWaker.ciso";
-    gamesLibrary[22].serial = "01-GZLE-gczelda";
-
-    gamesLibrary[23].title = "Super Smash Bros: Melee";
-    gamesLibrary[23].coverPath = "./assets/covers/nint_3d/smash_bros_melee.png";
-    gamesLibrary[23].console = "Nintendo GameCube";
-    gamesLibrary[23].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/gamecube/SmashBrosMelee.ciso";
-    gamesLibrary[23].serial = "01-GALE-SuperSmashBros0110290334";
-
-    gamesLibrary[24].title = "The Legend of Zelda: Twilight Princess";
-    gamesLibrary[24].coverPath = "./assets/covers/nint_3d/zelda_twilight.png";
-    gamesLibrary[24].console = "Nintendo GameCube";
-    gamesLibrary[24].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/gamecube/TwilightPrincess.ciso";
-    gamesLibrary[24].serial = "01-GZ2E-gczelda2";
-
+    temp_start_section = games_init_index;
+    //Titles, images, consoles, and roms for each game
+    gamesLibrary[games_init_index].title = "Super Mario 64";
+    gamesLibrary[games_init_index].coverPath = "assets/images/nint_3d/mario_64.png";
+    gamesLibrary[games_init_index].console = "Nintendo 64";
+    gamesLibrary[games_init_index].romPath = "assets/roms/n64/SuperMario64.z64";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Super Mario Sunshine";
+    gamesLibrary[games_init_index].coverPath = "assets/images/nint_3d/mario_sunshine.png";
+    gamesLibrary[games_init_index].console = "Nintendo GameCube";
+    gamesLibrary[games_init_index].romPath = "assets/roms/gamecube/MarioSunshine.ciso";
+    gamesLibrary[games_init_index].serial = "01-GMSE-super_mario_sunshine";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Starfox 64";
+    gamesLibrary[games_init_index].coverPath = "assets/images/nint_3d/starfox_64.png";
+    gamesLibrary[games_init_index].console = "Nintendo 64";
+    gamesLibrary[games_init_index].romPath = "assets/roms/n64/StarFox64.z64";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "The Legend of Zelda: Ocarina of Time";
+    gamesLibrary[games_init_index].coverPath = "assets/images/nint_3d/zelda_ocarina.png";
+    gamesLibrary[games_init_index].console = "Nintendo 64";
+    gamesLibrary[games_init_index].romPath = "assets/roms/n64/OcarinaOfTime.z64";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "The Legend of Zelda: The Wind Waker";
+    gamesLibrary[games_init_index].coverPath = "assets/images/nint_3d/zelda_windwaker.png";
+    gamesLibrary[games_init_index].console = "Nintendo GameCube";
+    gamesLibrary[games_init_index].romPath = "assets/roms/gamecube/WindWaker.ciso";
+    gamesLibrary[games_init_index].serial = "01-GZLE-gczelda";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Super Smash Bros: Melee";
+    gamesLibrary[games_init_index].coverPath = "assets/images/nint_3d/smash_bros_melee.png";
+    gamesLibrary[games_init_index].console = "Nintendo GameCube";
+    gamesLibrary[games_init_index].romPath = "assets/roms/gamecube/SmashBrosMelee.ciso";
+    gamesLibrary[games_init_index].serial = "01-GALE-SuperSmashBros0110290334";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "The Legend of Zelda: Twilight Princess";
+    gamesLibrary[games_init_index].coverPath = "assets/images/nint_3d/zelda_twilight.png";
+    gamesLibrary[games_init_index].console = "Nintendo GameCube";
+    gamesLibrary[games_init_index].romPath = "assets/roms/gamecube/TwilightPrincess.ciso";
+    gamesLibrary[games_init_index].serial = "01-GZ2E-gczelda2";
+    games_init_index += 1;
     //All have same category. Path and save type and whether it is libretro depends on the console
-    for (int i = 18; i < 25; i++) {
+    for (int i = temp_start_section; i < games_init_index; i++) {
         gamesLibrary[i].category = "Nintendo 3D";
         //Depending on the console, set the path, save type, and whether it is libretro
         if (strcmp(gamesLibrary[i].console, "Nintendo GameCube") == 0) {
@@ -467,44 +474,45 @@ static void Games_Nint3D_Init() {
 
 //Initialize retro Nintendo games
 static void Games_NintRet_Init() {
-    //Titles, covers, consoles, and roms for each game
-    gamesLibrary[25].title = "Donkey Kong Country 2: Diddy's Kong Quest";
-    gamesLibrary[25].coverPath = "./assets/covers/nint_ret/dk_country_2.png";
-    gamesLibrary[25].console = "Super Nintendo Entertainment System";
-    gamesLibrary[25].romPath = "assets/roms/snes/DK2.smc";
-
-    gamesLibrary[26].title = "Mike Tyson's Punch-Out!!";
-    gamesLibrary[26].coverPath = "./assets/covers/nint_ret/punch-out.png";
-    gamesLibrary[26].console = "Nintendo Entertainment System";
-    gamesLibrary[26].romPath = "assets/roms/snes/Punch-Out.nes";
-
-    gamesLibrary[27].title = "Super Mario World";
-    gamesLibrary[27].coverPath = "./assets/covers/nint_ret/super_mario_world.png";
-    gamesLibrary[27].console = "Super Nintendo Entertainment System";
-    gamesLibrary[27].romPath = "assets/roms/snes/SuperMarioWorld.smc";
-
-    gamesLibrary[28].title = "Super Metroid";
-    gamesLibrary[28].coverPath = "./assets/covers/nint_ret/super_metroid.png";
-    gamesLibrary[28].console = "Super Nintendo Entertainment System";
-    gamesLibrary[28].romPath = "assets/roms/snes/SuperMetroid.smc";
-
-    gamesLibrary[29].title = "The Legend of Zelda";
-    gamesLibrary[29].coverPath = "./assets/covers/nint_ret/zelda.png";
-    gamesLibrary[29].console = "Nintendo Entertainment System";
-    gamesLibrary[29].romPath = "assets/roms/nes/LegendOfZelda.nes";
-
-    gamesLibrary[30].title = "EarthBound";
-    gamesLibrary[30].coverPath = "./assets/covers/nint_ret/earth_bound.png";
-    gamesLibrary[30].console = "Super Nintendo Entertainment System";
-    gamesLibrary[30].romPath = "assets/roms/snes/EarthBound.sfc";
-
-    gamesLibrary[31].title = "Megaman X2";
-    gamesLibrary[31].coverPath = "./assets/covers/nint_ret/megaman_x2.png";
-    gamesLibrary[31].console = "Super Nintendo Entertainment System";
-    gamesLibrary[31].romPath = "assets/roms/snes/MegamanX2.sfc";
-
+    temp_start_section = games_init_index;
+    //Titles, images, consoles, and roms for each game
+    gamesLibrary[games_init_index].title = "Donkey Kong Country 2: Diddy's Kong Quest";
+    gamesLibrary[games_init_index].coverPath = "assets/images/nint_ret/dk_country_2.png";
+    gamesLibrary[games_init_index].console = "Super Nintendo Entertainment System";
+    gamesLibrary[games_init_index].romPath = "assets/roms/snes/DK2.smc";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Mike Tyson's Punch-Out!!";
+    gamesLibrary[games_init_index].coverPath = "assets/images/nint_ret/punch-out.png";
+    gamesLibrary[games_init_index].console = "Nintendo Entertainment System";
+    gamesLibrary[games_init_index].romPath = "assets/roms/snes/Punch-Out.nes";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Super Mario World";
+    gamesLibrary[games_init_index].coverPath = "assets/images/nint_ret/super_mario_world.png";
+    gamesLibrary[games_init_index].console = "Super Nintendo Entertainment System";
+    gamesLibrary[games_init_index].romPath = "assets/roms/snes/SuperMarioWorld.smc";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Super Metroid";
+    gamesLibrary[games_init_index].coverPath = "assets/images/nint_ret/super_metroid.png";
+    gamesLibrary[games_init_index].console = "Super Nintendo Entertainment System";
+    gamesLibrary[games_init_index].romPath = "assets/roms/snes/SuperMetroid.smc";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "The Legend of Zelda";
+    gamesLibrary[games_init_index].coverPath = "assets/images/nint_ret/zelda.png";
+    gamesLibrary[games_init_index].console = "Nintendo Entertainment System";
+    gamesLibrary[games_init_index].romPath = "assets/roms/nes/LegendOfZelda.nes";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "EarthBound";
+    gamesLibrary[games_init_index].coverPath = "assets/images/nint_ret/earth_bound.png";
+    gamesLibrary[games_init_index].console = "Super Nintendo Entertainment System";
+    gamesLibrary[games_init_index].romPath = "assets/roms/snes/EarthBound.sfc";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Megaman X2";
+    gamesLibrary[games_init_index].coverPath = "assets/images/nint_ret/megaman_x2.png";
+    gamesLibrary[games_init_index].console = "Super Nintendo Entertainment System";
+    gamesLibrary[games_init_index].romPath = "assets/roms/snes/MegamanX2.sfc";
+    games_init_index += 1;
     //All have same category and save type and all are libretro. Path depends on console
-    for (int i = 25; i < 32; i++) {
+    for (int i = temp_start_section; i < games_init_index; i++) {
         gamesLibrary[i].libRetro = true;
         gamesLibrary[i].save = BATTERY;
         gamesLibrary[i].category = "Retro Nintendo";
@@ -520,54 +528,55 @@ static void Games_NintRet_Init() {
 
 //Initialize retro PC & Indie games
 static void Games_PCIndie_Init() {
-    //Titles, covers, consoles, and roms for each game
-    gamesLibrary[32].title = "Blazing Lazers";
-    gamesLibrary[32].coverPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/covers/pc_ind/blaz_laz.png";
-    gamesLibrary[32].console = "TurboGrafx-16";
-    gamesLibrary[32].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/pc/BlazingLazers.pce";
-
-    gamesLibrary[33].title = "Doom 2";
-    gamesLibrary[33].coverPath = "./assets/covers/pc_ind/doom_2.png";
-    gamesLibrary[33].console = "PC";
-    gamesLibrary[33].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/pc/DOOM.WAD";
-
-    gamesLibrary[34].title = "Doom";
-    gamesLibrary[34].coverPath = "./assets/covers/pc_ind/doom.png";
-    gamesLibrary[34].console = "PC";
-    gamesLibrary[34].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/pc/DOOM2.WAD";
-
-    gamesLibrary[35].title = "Ys Book I & II";
-    gamesLibrary[35].coverPath = "./assets/covers/pc_ind/ys.png";
-    gamesLibrary[35].console = "TurboGrafx-CD";
-    gamesLibrary[35].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/pc/YsBook.chd";
-
-    gamesLibrary[36].title = "Lords of Thunder";
-    gamesLibrary[36].coverPath = "./assets/covers/pc_ind/lord_thund.png";
-    gamesLibrary[36].console = "TurboGrafx-CD";
-    gamesLibrary[36].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/pc/LordofThund.chd";
-
-    gamesLibrary[37].title = "Air Zonk";
-    gamesLibrary[37].coverPath = "./assets/covers/pc_ind/air_zonk.png";
-    gamesLibrary[37].console = "TurboGrafx-16";
-    gamesLibrary[37].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/pc/AirZonk.pce";
-
-    gamesLibrary[38].title = "Dragon Slayer - The Legend of Heroes";
-    gamesLibrary[38].coverPath = "./assets/covers/pc_ind/drag_slay.png";
-    gamesLibrary[38].console = "TurboGrafx-CD";
-    gamesLibrary[38].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/pc/DragSlay.chd";
-
-    gamesLibrary[39].title = "Splatterhouse";
-    gamesLibrary[39].coverPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/covers/pc_ind/splatterhouse.png";
-    gamesLibrary[39].console = "TurboGrafx-16";
-    gamesLibrary[39].romPath = "assets/roms/trbogrfx/Splatterhouse.pce";
-
-    gamesLibrary[40].title = "Cosmic Fantasy 2";
-    gamesLibrary[40].coverPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/covers/pc_ind/cos_fant_2.png";
-    gamesLibrary[40].console = "TurboGrafx-CD";
-    gamesLibrary[40].romPath = "assets/roms/trbogrfx/CosmicFantasy2.chd";
-
+    temp_start_section = games_init_index;
+    //Titles, images, consoles, and roms for each game
+    gamesLibrary[games_init_index].title = "Blazing Lazers";
+    gamesLibrary[games_init_index].coverPath = "assets/images/pc_ind/blaz_laz.png";
+    gamesLibrary[games_init_index].console = "TurboGrafx-16";
+    gamesLibrary[games_init_index].romPath = "assets/roms/pc/BlazingLazers.pce";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Doom 2";
+    gamesLibrary[games_init_index].coverPath = "assets/images/pc_ind/doom_2.png";
+    gamesLibrary[games_init_index].console = "PC";
+    gamesLibrary[games_init_index].romPath = "assets/roms/pc/DOOM.WAD";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Doom";
+    gamesLibrary[games_init_index].coverPath = "assets/images/pc_ind/doom.png";
+    gamesLibrary[games_init_index].console = "PC";
+    gamesLibrary[games_init_index].romPath = "assets/roms/pc/DOOM2.WAD";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Ys Book I & II";
+    gamesLibrary[games_init_index].coverPath = "assets/images/pc_ind/ys.png";
+    gamesLibrary[games_init_index].console = "TurboGrafx-CD";
+    gamesLibrary[games_init_index].romPath = "assets/roms/pc/YsBook.chd";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Lords of Thunder";
+    gamesLibrary[games_init_index].coverPath = "assets/images/pc_ind/lord_thund.png";
+    gamesLibrary[games_init_index].console = "TurboGrafx-CD";
+    gamesLibrary[games_init_index].romPath = "assets/roms/pc/LordofThund.chd";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Air Zonk";
+    gamesLibrary[games_init_index].coverPath = "assets/images/pc_ind/air_zonk.png";
+    gamesLibrary[games_init_index].console = "TurboGrafx-16";
+    gamesLibrary[games_init_index].romPath = "assets/roms/pc/AirZonk.pce";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Dragon Slayer - The Legend of Heroes";
+    gamesLibrary[games_init_index].coverPath = "assets/images/pc_ind/drag_slay.png";
+    gamesLibrary[games_init_index].console = "TurboGrafx-CD";
+    gamesLibrary[games_init_index].romPath = "assets/roms/pc/DragSlay.chd";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Splatterhouse";
+    gamesLibrary[games_init_index].coverPath = "assets/images/pc_ind/splatterhouse.png";
+    gamesLibrary[games_init_index].console = "TurboGrafx-16";
+    gamesLibrary[games_init_index].romPath = "assets/roms/trbogrfx/Splatterhouse.pce";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Cosmic Fantasy 2";
+    gamesLibrary[games_init_index].coverPath = "assets/images/pc_ind/cos_fant_2.png";
+    gamesLibrary[games_init_index].console = "TurboGrafx-CD";
+    gamesLibrary[games_init_index].romPath = "assets/roms/trbogrfx/CosmicFantasy2.chd";
+    games_init_index += 1;
     //All have same category and save type and all are libretro. Path depends on console
-    for (int i = 32; i < 41; i++) {
+    for (int i = temp_start_section; i < games_init_index; i++) {
         gamesLibrary[i].category = "TurboGrafx/PC/Other";
         gamesLibrary[i].save = BATTERY;
         gamesLibrary[i].libRetro = true;
@@ -583,53 +592,54 @@ static void Games_PCIndie_Init() {
 
 //Initialize Sega games
 static void Games_Sega_Init() {
-    //Titles, covers, consoles, roms, and (if applys) serials for each game
-    gamesLibrary[41].title = "Crazy Taxi";
-    gamesLibrary[41].coverPath = "./assets/covers/sega/crazy_taxi.png";
-    gamesLibrary[41].console = "Sega Dreamcast";
-    gamesLibrary[41].romPath = "assets/roms/dreamcast/CrazyTaxi.chd";
-    gamesLibrary[41].serial = "MK-51035";
-
-    gamesLibrary[42].title = "Fighting Vipers";
-    gamesLibrary[42].coverPath = "./assets/covers/sega/fighting_vipers.png";
-    gamesLibrary[42].console = "Sega Saturn";
-    gamesLibrary[42].romPath = "assets/roms/saturn/FightingVipers.chd";
-    gamesLibrary[42].serial = "B1334F8949ED55769416D83D7A19F1C5";
-
-    gamesLibrary[43].title = "Sonic the Hedgehog 3 & Knuckles";
-    gamesLibrary[43].coverPath = "./assets/covers/sega/sonic_3_and_knuckles.png";
-    gamesLibrary[43].console = "Sega Genesis";
-    gamesLibrary[43].romPath = "assets/roms/genesis/Sonic3&Knuckles.md";
-
-    gamesLibrary[44].title = "Sonic CD";
-    gamesLibrary[44].coverPath = "./assets/covers/sega/sonic_cd.png";
-    gamesLibrary[44].console = "Sega CD";
-    gamesLibrary[44].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/cd/SonicCD.chd";
-    
-    gamesLibrary[45].title = "NBA Jam: Tournament Edition";
-    gamesLibrary[45].coverPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/covers/sega/nba_jam_te.png";
-    gamesLibrary[45].console = "Sega Saturn";
-    gamesLibrary[45].romPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/roms/saturn/NBAJam.chd";
-    gamesLibrary[45].serial = "DBA9351F1D9322E87F3D7F511992DEB3";
-
-    gamesLibrary[46].title = "Daytona USA";
-    gamesLibrary[46].coverPath = "./assets/covers/sega/daytona_usa.png";
-    gamesLibrary[46].console = "Sega Saturn";
-    gamesLibrary[46].romPath = "assets/roms/saturn/DaytonaUSA.chd";
-    gamesLibrary[46].serial = "C8355C918C5A97B9E4AB9322DDAFDB1E";
-
-    gamesLibrary[47].title = "Gunstar Heroes";
-    gamesLibrary[47].coverPath = "./assets/covers/sega/gunstar_heroes.png";
-    gamesLibrary[47].console = "Sega Genesis";
-    gamesLibrary[47].romPath = "assets/roms/genesis/GunstarHeroes.md";
-
-    gamesLibrary[48].title = "Wonder Boy";
-    gamesLibrary[48].coverPath = "/home/tywebb1724/Desktop/Gaming-Console/assets/covers/sega/wonder_boy.png";
-    gamesLibrary[48].console = "Sega Master System";
-    gamesLibrary[48].romPath = "assets/roms/mastsys/WonderBoy.sms";
-
+    temp_start_section = games_init_index;
+    //Titles, images, consoles, roms, and (if applys) serials for each game
+    gamesLibrary[games_init_index].title = "Crazy Taxi";
+    gamesLibrary[games_init_index].coverPath = "assets/images/sega/crazy_taxi.png";
+    gamesLibrary[games_init_index].console = "Sega Dreamcast";
+    gamesLibrary[games_init_index].romPath = "assets/roms/dreamcast/CrazyTaxi.chd";
+    gamesLibrary[games_init_index].serial = "MK-51035";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Fighting Vipers";
+    gamesLibrary[games_init_index].coverPath = "assets/images/sega/fighting_vipers.png";
+    gamesLibrary[games_init_index].console = "Sega Saturn";
+    gamesLibrary[games_init_index].romPath = "assets/roms/saturn/FightingVipers.chd";
+    gamesLibrary[games_init_index].serial = "B1334F8949ED55769416D83D7A19F1C5";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Sonic the Hedgehog 3 & Knuckles";
+    gamesLibrary[games_init_index].coverPath = "assets/images/sega/sonic_3_and_knuckles.png";
+    gamesLibrary[games_init_index].console = "Sega Genesis";
+    gamesLibrary[games_init_index].romPath = "assets/roms/genesis/Sonic3&Knuckles.md";
+    games_init_index += 1;  
+    gamesLibrary[games_init_index].title = "Sonic CD";
+    gamesLibrary[games_init_index].coverPath = "assets/images/sega/sonic_cd.png";
+    gamesLibrary[games_init_index].console = "Sega CD";
+    gamesLibrary[games_init_index].romPath = "assets/roms/cd/SonicCD.chd";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "NBA Jam: Tournament Edition";
+    gamesLibrary[games_init_index].coverPath = "assets/images/sega/nba_jam_te.png";
+    gamesLibrary[games_init_index].console = "Sega Saturn";
+    gamesLibrary[games_init_index].romPath = "assets/roms/saturn/NBAJam.chd";
+    gamesLibrary[games_init_index].serial = "DBA9351F1D9322E87F3D7F511992DEB3";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Daytona USA";
+    gamesLibrary[games_init_index].coverPath = "assets/images/sega/daytona_usa.png";
+    gamesLibrary[games_init_index].console = "Sega Saturn";
+    gamesLibrary[games_init_index].romPath = "assets/roms/saturn/DaytonaUSA.chd";
+    gamesLibrary[games_init_index].serial = "C8355C918C5A97B9E4AB9322DDAFDB1E";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Gunstar Heroes";
+    gamesLibrary[games_init_index].coverPath = "assets/images/sega/gunstar_heroes.png";
+    gamesLibrary[games_init_index].console = "Sega Genesis";
+    gamesLibrary[games_init_index].romPath = "assets/roms/genesis/GunstarHeroes.md";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Wonder Boy";
+    gamesLibrary[games_init_index].coverPath = "assets/images/sega/wonder_boy.png";
+    gamesLibrary[games_init_index].console = "Sega Master System";
+    gamesLibrary[games_init_index].romPath = "assets/roms/mastsys/WonderBoy.sms";
+    games_init_index += 1;
     //All have same category. Path, save type, and whether it is libretro depends on console
-    for (int i = 41; i < 49; i++) {
+    for (int i = temp_start_section; i < games_init_index; i++) {
         gamesLibrary[i].category = "Sega";
         //Depending on the console, set the path, save type, and whether it is libretro
         if (strcmp(gamesLibrary[i].console, "Sega Master System") == 0) {
@@ -662,44 +672,45 @@ static void Games_Sega_Init() {
 
 //Initialize Playstation games
 static void Games_Playstation_Init() {
-    //Titles, covers, roms, and serials for each game
-    gamesLibrary[49].title = "Mega Man X4";
-    gamesLibrary[49].coverPath = "./assets/covers/playstation/megaman_x4.png";
-    gamesLibrary[49].romPath = "assets/roms/ps1/MegaManX4.chd";
-    gamesLibrary[49].serial = "SLUS-00561_1";
-
-    gamesLibrary[50].title = "Pac-Man World";
-    gamesLibrary[50].coverPath = "./assets/covers/playstation/pac-man_world.png";
-    gamesLibrary[50].romPath = "assets/roms/ps1/Pac-ManWorld.chd";
-    gamesLibrary[50].serial = "SLUS-00439_1";
-
-    gamesLibrary[51].title = "Soul Blade";
-    gamesLibrary[51].coverPath = "./assets/covers/playstation/soulblade.png";
-    gamesLibrary[51].romPath = "assets/roms/ps1/SoulBlade.chd";
-    gamesLibrary[51].serial = "SLUS-00240_1";
-
-    gamesLibrary[52].title = "Spider-Man (2000)";
-    gamesLibrary[52].coverPath = "./assets/covers/playstation/spider-man.png";
-    gamesLibrary[52].romPath = "assets/roms/ps1/Spider-Man.chd";
-    gamesLibrary[52].serial = "SLUS-00875_1";
-
-    gamesLibrary[53].title = "Street Fighter: Alpha 3";
-    gamesLibrary[53].coverPath = "./assets/covers/playstation/street_fighter_alpha_3.png";
-    gamesLibrary[53].romPath = "assets/roms/ps1/StreetFighterAlpha3.chd";
-    gamesLibrary[53].serial = "SLUS-00821_1";
-
-    gamesLibrary[54].title = "Metal Gear Solid";
-    gamesLibrary[54].coverPath = "./assets/covers/playstation/met_gear_solid.png";
-    gamesLibrary[54].romPath = "assets/roms/ps1/MetalGearSolid.m3u";
-    gamesLibrary[54].serial = "SLUS-00594_1";
-
-    gamesLibrary[55].title = "Twisted Metal 2";
-    gamesLibrary[55].coverPath = "./assets/covers/playstation/twist_met_2.png";
-    gamesLibrary[55].romPath = "assets/roms/ps1/TwistedMetal2.chd";
-    gamesLibrary[55].serial = "SCUS-94306_1";
-
+    temp_start_section = games_init_index;
+    //Titles, images, roms, and serials for each game
+    gamesLibrary[games_init_index].title = "Mega Man X4";
+    gamesLibrary[games_init_index].coverPath = "assets/images/playstation/megaman_x4.png";
+    gamesLibrary[games_init_index].romPath = "assets/roms/ps1/MegaManX4.chd";
+    gamesLibrary[games_init_index].serial = "SLUS-00561_1";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Pac-Man World";
+    gamesLibrary[games_init_index].coverPath = "assets/images/playstation/pac-man_world.png";
+    gamesLibrary[games_init_index].romPath = "assets/roms/ps1/Pac-ManWorld.chd";
+    gamesLibrary[games_init_index].serial = "SLUS-00439_1";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Soul Blade";
+    gamesLibrary[games_init_index].coverPath = "assets/images/playstation/soulblade.png";
+    gamesLibrary[games_init_index].romPath = "assets/roms/ps1/SoulBlade.chd";
+    gamesLibrary[games_init_index].serial = "SLUS-00240_1";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Spider-Man (2000)";
+    gamesLibrary[games_init_index].coverPath = "assets/images/playstation/spider-man.png";
+    gamesLibrary[games_init_index].romPath = "assets/roms/ps1/Spider-Man.chd";
+    gamesLibrary[games_init_index].serial = "SLUS-00875_1";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Street Fighter: Alpha 3";
+    gamesLibrary[games_init_index].coverPath = "assets/images/playstation/street_fighter_alpha_3.png";
+    gamesLibrary[games_init_index].romPath = "assets/roms/ps1/StreetFighterAlpha3.chd";
+    gamesLibrary[games_init_index].serial = "SLUS-00821_1";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Metal Gear Solid";
+    gamesLibrary[games_init_index].coverPath = "assets/images/playstation/met_gear_solid.png";
+    gamesLibrary[games_init_index].romPath = "assets/roms/ps1/MetalGearSolid.m3u";
+    gamesLibrary[games_init_index].serial = "SLUS-00594_1";
+    games_init_index += 1;
+    gamesLibrary[games_init_index].title = "Twisted Metal 2";
+    gamesLibrary[games_init_index].coverPath = "assets/images/playstation/twist_met_2.png";
+    gamesLibrary[games_init_index].romPath = "assets/roms/ps1/TwistedMetal2.chd";
+    gamesLibrary[games_init_index].serial = "SCUS-94306_1";
+    games_init_index += 1;
     //All have same category, save type, path, and console and all are libretro
-    for (int i = 49; i < 56; i++) {
+    for (int i = temp_start_section; i < games_init_index; i++) {
         gamesLibrary[i].category = "PlayStation";
         gamesLibrary[i].libRetro = true;
         gamesLibrary[i].save = EXTERNAL;
@@ -724,7 +735,6 @@ void Games_Init() {
     Games_Sega_Init();
     //Sony Playstation games
     Games_Playstation_Init();
-
     //Start with the Nintendo 3D games
     Games_UpdateIndexes("Nintendo 3D");
     Games_Refresh();
@@ -777,7 +787,7 @@ void* Games_LoadImages(void *args) {
 
 //Unload game cover textures
 void Games_UnloadTextures() {
-    //Unload all covers
+    //Unload all images
     for (int i = 0; i < GAMES_LEN; i++) {
         UnloadTexture(gamesLibrary[i].cover);
     }

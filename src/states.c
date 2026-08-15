@@ -13,7 +13,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 //State of the console
 static ConsoleState currentConsoleState;
 static ConsoleState newConsoleState;
@@ -25,14 +24,15 @@ static int gamesLoaded;
 static bool allLoaded;
 //Thread for loaded images
 static pthread_t loadThread;
-//All textures start not uploaded yet
-static bool isTextureUploaded[GAMES_LEN] = { false };
 //Variable to indicate if game is running
 static bool is_game_running;
 //Timer to track app launch
 static float launchTimer;
 //Length of longest text line in the select box
 static float maxLen;
+
+//All textures start not uploaded yet
+static bool isTextureUploaded[GAMES_LEN] = { false };
 
 
 //Extract a color from the color name
@@ -62,12 +62,14 @@ static Color States_NametoColor(char *c) {
 
 //Load all game images (if not loaded already)
 void States_LoadGameImages() {
+    //Ignore if all images are loaded
     if (allLoaded) {
         return;
     }
     bool pending = false;
     //Search through all the games
     for (int i = 0; i < GAMES_LEN; i++) {
+        //If texture already loaded, go to next one
         if (isTextureUploaded[i]) {
             continue;
         }
@@ -80,10 +82,12 @@ void States_LoadGameImages() {
             UnloadImage(*image);
             isTextureUploaded[i] = true;
         }
+        //If image not loaded, it is pending
         else {
             pending = true;
         }
     }
+    //If not pending, all images are loaded
     if (!pending) {
         allLoaded = true;
     }
@@ -110,7 +114,7 @@ void States_Init() {
     //Game starts not running
     is_game_running = false;
     //Load mappings file
-    char *mappings = LoadFileText("/home/tywebb1724/Desktop/Gaming-Console/assets/system/gamecontrollerdb.txt");
+    char *mappings = LoadFileText("assets/txt/gamecontrollerdb.txt");
     //If file loaded successfully, set mappings and unload file
     if (mappings != NULL) {
         SetGamepadMappings(mappings);
@@ -118,10 +122,11 @@ void States_Init() {
     }
     //Initialize audio
     InitAudioDevice();
+    Var_FindThermalZone();
     //Strings to hold the text in the file
-    char color1[10] = "", color2[10] = "", color3[10] = "", bright[32] = "", diag[5] = "";
+    char color1[COLOR_LEN] = "", color2[COLOR_LEN] = "", color3[COLOR_LEN] = "", bright[BRIGHT_LEN] = "", diag[DIAG_LEN] = "";
     //Open the file
-    FILE* f = fopen("/home/tywebb1724/Desktop/Gaming-Console/assets/system/ui.txt", "r");
+    FILE* f = fopen("assets/txt/ui.txt", "r");
     //Chech if the file opened successfully
     if (f) {
         //Get theme color 1 and set the variables for the color and the background
@@ -205,9 +210,8 @@ void States_Init() {
     UI_LoadControlsImgs();
 }
 
-//Update states and variabels and draw the correct screen
+//Update states and variables and draw the correct screen
 void States_UpdateAndDraw() {
-
     //Transition
     switch(currentConsoleState) {
         //Console boots up
@@ -226,9 +230,6 @@ void States_UpdateAndDraw() {
                 currentConsoleState = STATE_LAUNCHING;
                 launchTimer = 0;
             }
-            else if (newConsoleState == STATE_LIST) {
-                currentConsoleState = STATE_LIST;
-            }
             else if (newConsoleState == STATE_VIEW_DIAG) {
                 Diagnostics_Init();
                 currentConsoleState = STATE_VIEW_DIAG;
@@ -241,7 +242,7 @@ void States_UpdateAndDraw() {
             if (launchTimer >= LAUNCH_TIME) {
                 currentConsoleState = STATE_APP_LAUNCHER;
                 //Initialize the game and free up the FPS
-                Play_Init(Games_GetDisplayed(3));
+                Play_Init(Games_GetDisplayed(CURRENT_GAME));
                 SetTargetFPS(0);
             }
             break;
@@ -249,7 +250,7 @@ void States_UpdateAndDraw() {
         //Running app
         case STATE_APP_LAUNCHER:
             //If game is libretro
-            if (Games_GetDisplayed(3)->libRetro == true) {
+            if (Games_GetDisplayed(CURRENT_GAME)->libRetro == true) {
                 //If game is no longer running, transition back to main menu
                 if (!is_game_running) {
                     currentConsoleState = STATE_MAIN_MENU;
@@ -269,23 +270,10 @@ void States_UpdateAndDraw() {
             }
             break;
 
-        //View consoles/games list
-        case STATE_LIST:
-            if (IsKeyPressed(KEY_ESCAPE)) {
-                //mouseWasPressed = true;
-                currentConsoleState = STATE_MAIN_MENU;
-                newConsoleState = STATE_MAIN_MENU;
-                UI_Init();
-            }
-            break;
-
         //View diagnostics menu
         case STATE_VIEW_DIAG:
             //Check if console is transitioning to a new state, and transition accordingly
-            if (newConsoleState == STATE_LIST) {
-                currentConsoleState = STATE_LIST;
-            }
-            else if (newConsoleState == STATE_MAIN_MENU) {
+            if (newConsoleState == STATE_MAIN_MENU) {
                 currentConsoleState = STATE_MAIN_MENU;
                 UI_Init();
             }
@@ -307,10 +295,6 @@ void States_UpdateAndDraw() {
 
         //Drawing the main menu
         case STATE_MAIN_MENU:
-            //If user pressed M, clear the game data
-            if (IsKeyPressed(KEY_M)) {
-                Games_ClearData(Games_GetDisplayed(3));
-            }
             //Draw UI for the menu
             UI_Tick(&newConsoleState);
             //Draw brightness
@@ -319,7 +303,7 @@ void States_UpdateAndDraw() {
 
         //Launching app
         case STATE_LAUNCHING:
-            UI_DrawLaunch(Games_GetDisplayed(3));
+            UI_DrawLaunch(Games_GetDisplayed(CURRENT_GAME));
             //Increment timer
             launchTimer += GetFrameTime();
             //Draw brightness
@@ -329,18 +313,12 @@ void States_UpdateAndDraw() {
         //Running app
         case STATE_APP_LAUNCHER:
             //If the game is libretro
-            if (Games_GetDisplayed(3)->libRetro == true) {
+            if (Games_GetDisplayed(CURRENT_GAME)->libRetro == true) {
                 //Call play tick function and check if game is still running
-                is_game_running = Play_Tick(Games_GetDisplayed(3));
+                is_game_running = Play_Tick(Games_GetDisplayed(CURRENT_GAME));
                 //Draw brightness
                 DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             }    
-            break;
-
-        //View consoles/games list
-        case STATE_LIST:
-            //Draw brightness
-            DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
 
         //View diagnostics menu

@@ -12,6 +12,9 @@ typedef enum {
 } EraseState;
 
 
+#define MAX_TIME_ELAPSED_ERASE 1000000
+#define THRESHOLD_TIME_ELAPSED_ERASE 0.25f
+
 //Thickness for the uipause menu
 #define THICKNESS_UI_ERASE (Var_GetMonitorHeight() / 500.0f)
 //Macros for drawing the menu background

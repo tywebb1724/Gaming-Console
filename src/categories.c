@@ -1,10 +1,8 @@
 #include "categories.h"
 
-
 //Arrays to hold all categories and those displayed on the screen
 static char *categories[CATEGORIES_LEN];
-static char *categoriesDisplayed[CATEGORIES_ON_SCREEN + 2];
-
+static char *categoriesDisplayed[CATEGORIES_DISPLAYED];
 //Index for the current category
 static int categoriesIndex;
 
@@ -24,7 +22,7 @@ static void Categories_Refresh() {
     int offset;
     int targetIndex;
     //Cycle through the categories
-    for (int i = 0; i < CATEGORIES_ON_SCREEN + 2; i++) {
+    for (int i = 0; i < CATEGORIES_DISPLAYED; i++) {
         offset = i - 2;
         targetIndex = (categoriesIndex + offset) % CATEGORIES_LEN;
         //If the offset causes the index to be negative, add the category length
@@ -39,16 +37,15 @@ static void Categories_Refresh() {
 //Init function for the consoles
 void Categories_Init() {
     //Set all the categories
-    categories[0] = "Arcade";
-    categories[1] = "Handheld Classics";
-    categories[2] = "Nintendo 3D";
-    categories[3] = "Retro Nintendo";
-    categories[4] = "TurboGrafx/PC/Other";
-    categories[5] = "Sega";
-    categories[6] = "PlayStation";
-
+    categories[ARCADE_INDEX] = "Arcade";
+    categories[HANDHELD_INDEX] = "Handheld Classics";
+    categories[NIN3D_INDEX] = "Nintendo 3D";
+    categories[NINRET_INDEX] = "Retro Nintendo";
+    categories[OTHER_INDEX] = "TurboGrafx/PC/Other";
+    categories[SEGA_INDEX] = "Sega";
+    categories[PS_INDEX] = "PlayStation";
     //Start with the Nintendo 3D category
-    categoriesIndex = 2;
+    categoriesIndex = NIN3D_INDEX;
     //Update the initial displayed categories
     Categories_Refresh();
 }

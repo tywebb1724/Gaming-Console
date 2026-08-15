@@ -3,7 +3,13 @@
 
 #include "raylib.h"
 
+//Time to update diagnostics
 #define DIAG_TIME 1.0f
+//Conversion values
+#define MICRO_TO_MILLI 1000
+#define DEGREE_CONVERSION 1000.0f
+
+#define THERM_PATH_LEN 300
 
 //Scrolling states
 typedef enum {
@@ -18,7 +24,6 @@ typedef enum {
     STATE_MAIN_MENU,
     STATE_LAUNCHING,
     STATE_APP_LAUNCHER,
-    STATE_LIST,
     STATE_VIEW_DIAG
 } ConsoleState;
 
@@ -84,6 +89,7 @@ void Var_SetDisplayBright(bool value);
 bool Var_GetDisplayTheme();
 //Set whether theme options are being displayed
 void Var_SetDisplayTheme(bool value);
+void Var_FindThermalZone();
 //Update CPU temperature
 void Var_UpdateTemp();
 //Get CPU temperature
@@ -102,5 +108,9 @@ float Var_GetFrameWorst();
 void Var_UpdateEmuFps(void);
 //Get emulator FPS
 float Var_GetEmuFps(void);
+//Get power off variable
+bool Var_GetPowerOff(void);
+//Set power off variable
+void Var_SetPowerOff(bool value);
 
 #endif

@@ -10,7 +10,8 @@ typedef enum {
     PLAYPAUSE_RESTART,
     PLAYPAUSE_CONTROLS,
     PLAYPAUSE_DIAGNOSTICS,
-    PLAYPAUSE_EXIT
+    PLAYPAUSE_EXIT,
+    PLAYPAUSE_POWER_OFF
 } PlayPauseState;
 
 //State of game after it has been launched

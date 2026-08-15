@@ -44,16 +44,14 @@ static void Brightness_Draw() {
     Vector2 brightnessPercentSize = MeasureTextEx(Var_GetFontBold(), percentTxt, BRIGHTNESS_PERCENT_SIZE, UIPAUSE_TITLE_SPACE);
     Vector2 brightnessPercent = {BRIGHTNESS_PERCENT_X, BRIGHTNESS_PERCENT_Y};
     DrawTextEx(Var_GetFontBold(), percentTxt, brightnessPercent, BRIGHTNESS_PERCENT_SIZE, UIPAUSE_TITLE_SPACE, Var_GetColor3());
-
 }
 
-//Brightness options init function
+//Brightness init function
 void Brightness_Init() {
-    //Start not changing the brightness
     currentBrightnessState = NEITHER;
 }
 
-//Brightness options tick function
+//Brightness tick function
 void Brightness_Tick() {
     //Transition
     switch (currentBrightnessState) {

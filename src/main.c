@@ -8,16 +8,18 @@
 #include "play/play.h"
 #include "controller.h"
 #include "play/playpause.h"
+#include "var.h"
 
+#define RESOLUTION_LEN 1920
+#define RESOLUTION_WIDTH 1080
 
 //Main function
-int main(void)
-{
+int main(void) {
     //Synch refresh rates
     SetConfigFlags(FLAG_VSYNC_HINT);
     SetConfigFlags(FLAG_WINDOW_UNDECORATED);
     //Initialize a window 
-    InitWindow(1920, 1080, "Custom Console OS");
+    InitWindow(RESOLUTION_LEN, RESOLUTION_WIDTH, "Custom Console OS");
     //Go fullscreen
     ToggleFullscreen();
     //Initialize state machines
@@ -29,8 +31,10 @@ int main(void)
     SetTargetFPS(FPS);
     //Find any controllers that are already plugged in
     Controller_Refresh();
+    //Not powering off
+    Var_SetPowerOff(false);
     //Main game loop
-    while (!IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && (!HOME_DOWN || !START_DOWN)) {
+    while (!Var_GetPowerOff()) {
         //Pick up controllers being plugged in or unplugged
         Controller_Refresh();
         //Check if buttons are pressed
@@ -53,7 +57,7 @@ int main(void)
         States_LoadGameImages();
     }
     //Stop any possibly running game
-    Play_Stop(Games_GetDisplayed(3));
+    Play_Stop(Games_GetDisplayed(CURRENT_GAME));
     //Unload game textures and close window
     Games_UnloadTextures();
     //Close window

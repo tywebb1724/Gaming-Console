@@ -19,8 +19,8 @@ static void UIPause_UpdateTime() {
     //Increment the time elapsed
     uipauseTimeElapsed += GetFrameTime();
     //If time getting too big, bring back to the threshold
-    if (uipauseTimeElapsed > 1000000) {
-        uipauseTimeElapsed = 0.25f;
+    if (uipauseTimeElapsed > MAX_TIME_ELAPSED_UIPAUSE) {
+        uipauseTimeElapsed = THRESHOLD_TIME_ELAPSED_UIPAUSE;
     }
 }
 
@@ -38,16 +38,6 @@ static void UIPause_Draw(UIPauseState currentUIPauseState, ConsoleState currentC
     Vector2 titleSize = MeasureTextEx(Var_GetFontBold(), UIPAUSE_TITLE, UIPAUSE_TITLE_SIZE, UIPAUSE_TITLE_SPACE);
     Vector2 title = {UIPAUSE_TITLE_X, UIPAUSE_TITLE_Y};
     DrawTextEx(Var_GetFontBold(), UIPAUSE_TITLE, title, UIPAUSE_TITLE_SIZE, UIPAUSE_TITLE_SPACE, Var_GetColor3());
-    //Draw view list
-    Vector2 listSize = MeasureTextEx(Var_GetFontRegular(), UIPAUSE_VIEW_LIST, UIPAUSE_VIEW_LIST_SIZE, UIPAUSE_TITLE_SPACE);
-    Vector2 list = {UIPAUSE_VIEW_LIST_X, UIPAUSE_VIEW_LIST_Y};
-    Rectangle rectList = {
-        UIPAUSE_SELECT_RECT_X,
-        UIPAUSE_VIEW_LIST_RECT_Y,
-        UIPAUSE_SELECT_RECT_W,
-        UIPAUSE_SELECT_RECT_H};
-    DrawRectangleRoundedLinesEx(rectList, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, THICKNESS_UIPAUSE, Var_GetColor3());
-    DrawTextEx(Var_GetFontRegular(), UIPAUSE_VIEW_LIST, list, UIPAUSE_VIEW_LIST_SIZE, UIPAUSE_TITLE_SPACE, Var_GetColor3());
     //Draw brightness section
     Vector2 brightnessSize = MeasureTextEx(Var_GetFontRegular(), UIPAUSE_BRIGHTNESS, UIPAUSE_BRIGHTNESS_SIZE, UIPAUSE_TITLE_SPACE);
     Vector2 brightness = {UIPAUSE_BRIGHTNESS_X, UIPAUSE_BRIGHTNESS_Y};
@@ -104,6 +94,16 @@ static void UIPause_Draw(UIPauseState currentUIPauseState, ConsoleState currentC
         menuTxt = UIPAUSE_DIAGNOSTICS;
     }
     DrawTextEx(Var_GetFontRegular(), menuTxt, diag, UIPAUSE_DIAGNOSTICS_SIZE, UIPAUSE_TITLE_SPACE, Var_GetColor3());
+    //Draw power off section
+    Vector2 powerOffSize = MeasureTextEx(Var_GetFontRegular(), UIPAUSE_POWER_OFF, UIPAUSE_POWER_OFF_SIZE, UIPAUSE_TITLE_SPACE);
+    Vector2 powerOff = {UIPAUSE_POWER_OFF_X, UIPAUSE_POWER_OFF_Y};
+    Rectangle rectPowerOff = {
+        UIPAUSE_SELECT_RECT_X,
+        UIPAUSE_POWER_OFF_RECT_Y,
+        UIPAUSE_SELECT_RECT_W,
+        UIPAUSE_SELECT_RECT_H};
+    DrawRectangleRoundedLinesEx(rectPowerOff, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, THICKNESS_UIPAUSE, Var_GetColor3());
+    DrawTextEx(Var_GetFontRegular(), UIPAUSE_POWER_OFF, powerOff, UIPAUSE_POWER_OFF_SIZE, UIPAUSE_TITLE_SPACE, Var_GetColor3());
     //Draw select text
     Vector2 selectSize = MeasureTextEx(Var_GetFontRegular(), UIPAUSE_SELECT, UIPAUSE_SELECT_SIZE, UIPAUSE_TITLE_SPACE);
     Vector2 select = {UIPAUSE_SELECT_X, UIPAUSE_SELECT_Y};
@@ -113,10 +113,7 @@ static void UIPause_Draw(UIPauseState currentUIPauseState, ConsoleState currentC
     Vector2 back = {UIPAUSE_BACK_X, UIPAUSE_BACK_Y};
     DrawTextEx(Var_GetFontRegular(), UIPAUSE_BACK, back, UIPAUSE_BACK_SIZE, UIPAUSE_TITLE_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
     //Draw outline on selected section
-    if (currentUIPauseState == LIST) {
-        DrawRectangleRoundedLinesEx(rectList, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, 2 * THICKNESS_UIPAUSE, Var_GetColor1());
-    }
-    else if (currentUIPauseState == BRIGHTNESS) {
+    if (currentUIPauseState == BRIGHTNESS) {
         DrawRectangleRoundedLinesEx(rectBright, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, 2 * THICKNESS_UIPAUSE, Var_GetColor1());
     }
     else if (currentUIPauseState == THEME) {
@@ -125,15 +122,18 @@ static void UIPause_Draw(UIPauseState currentUIPauseState, ConsoleState currentC
     else if (currentUIPauseState == DISPLAY_DIAGNOSTICS) {
         DrawRectangleRoundedLinesEx(rectDDiag, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, 2 * THICKNESS_UIPAUSE, Var_GetColor1());
     }
-    else {
+    else if (currentUIPauseState == VIEW_DIAGNOSTICS) {
         DrawRectangleRoundedLinesEx(rectDiag, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, 2 * THICKNESS_UIPAUSE, Var_GetColor1());
+    }
+    else {
+        DrawRectangleRoundedLinesEx(rectPowerOff, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, 2 * THICKNESS_UIPAUSE, Var_GetColor1());
     }
 }
 
 //Init function for pause menu
 void UIPause_Init() {
     //Start with the list option selected
-    currentUIPauseState = LIST;
+    currentUIPauseState = BRIGHTNESS;
     //Start with no time on the selected option
     uipauseTimeElapsed = 0.0f;
     //Not display brightness or theme options
@@ -145,18 +145,6 @@ void UIPause_Init() {
 void UIPause_Tick(ConsoleState* currentConsoleState) {
     //Transition
     switch (currentUIPauseState) {
-        case LIST:
-            //Move selected option up or down depending on input
-            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
-                currentUIPauseState = BRIGHTNESS;
-                uipauseTimeElapsed = 0.0f;
-            }
-            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) {
-                currentUIPauseState = VIEW_DIAGNOSTICS;
-                uipauseTimeElapsed = 0.0f;
-            }
-            break;
-
         case BRIGHTNESS:
             //Move selected option up or down depending on input
             if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBright() == false) {
@@ -164,17 +152,8 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 uipauseTimeElapsed = 0.0f;
             }
             else if (((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBright() == false) {
-                currentUIPauseState = LIST;
+                currentUIPauseState = POWER_OFF;
                 uipauseTimeElapsed = 0.0f;
-            }
-            //Display or stop displaying brightness options
-            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A() && Var_GetDisplayBright() == false) {
-                Brightness_Init();
-                Var_SetDisplayBright(true);
-                Controller_SetWasPressed_A(true);
-            }
-            else if (IsKeyPressed(KEY_ESCAPE) || B_PRESS) {
-                Var_SetDisplayBright(false);
             }
             break;
 
@@ -188,15 +167,6 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 currentUIPauseState = BRIGHTNESS;
                 uipauseTimeElapsed = 0.0f;
             }
-            //Display or stop displaying theme options
-            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A() && Var_GetDisplayTheme() == false) {
-                Theme_Init();
-                Var_SetDisplayTheme(true);
-                Controller_SetWasPressed_A(true);
-            }
-            else if (IsKeyPressed(KEY_ESCAPE) || B_PRESS) {
-                Var_SetDisplayTheme(false);
-            }
             break;
 
         case DISPLAY_DIAGNOSTICS:
@@ -209,19 +179,12 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 currentUIPauseState = THEME;
                 uipauseTimeElapsed = 0.0f;
             }
-            //Start or stop displaying diagnostics
-            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
-                bool diag = Var_GetDiag();
-                Var_SetDiag(!diag);
-                Var_UpdateUIFile();
-                Controller_SetWasPressed_A(true);
-            }
             break;
 
         case VIEW_DIAGNOSTICS:
             //Move selected option up or down depending on input
             if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
-                currentUIPauseState = LIST;
+                currentUIPauseState = POWER_OFF;
                 uipauseTimeElapsed = 0.0f;
             }
             else if ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) {
@@ -229,17 +192,21 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 uipauseTimeElapsed = 0.0f;
             }
             break;
+
+        case POWER_OFF:
+            //Move selected option up or down depending on input
+            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
+                currentUIPauseState = BRIGHTNESS;
+                uipauseTimeElapsed = 0.0f;
+            }
+            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) {
+                currentUIPauseState = VIEW_DIAGNOSTICS;
+                uipauseTimeElapsed = 0.0f;
+            }
         }
 
     //Action
     switch (currentUIPauseState) {
-        case LIST:
-            //Draw pause menu
-            UIPause_Draw(currentUIPauseState, *currentConsoleState);
-            //Update elapsed time
-            UIPause_UpdateTime();
-            break;
-
         case BRIGHTNESS:
             //Display brightness options or normal options
             if (Var_GetDisplayBright() == true) {
@@ -249,6 +216,15 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 UIPause_Draw(currentUIPauseState, *currentConsoleState);
                 //Update elapsed time
                 UIPause_UpdateTime();
+            }
+            //Display or stop displaying brightness options
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A() && Var_GetDisplayBright() == false) {
+                Brightness_Init();
+                Var_SetDisplayBright(true);
+                Controller_SetWasPressed_A(true);
+            }
+            else if (IsKeyPressed(KEY_ESCAPE) || B_PRESS) {
+                Var_SetDisplayBright(false);
             }
             break;
 
@@ -262,9 +238,25 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 //Update elapsed time
                 UIPause_UpdateTime();
             }
+            //Display or stop displaying theme options
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A() && Var_GetDisplayTheme() == false) {
+                Theme_Init();
+                Var_SetDisplayTheme(true);
+                Controller_SetWasPressed_A(true);
+            }
+            else if (IsKeyPressed(KEY_ESCAPE) || B_PRESS) {
+                Var_SetDisplayTheme(false);
+            }
             break;
 
         case DISPLAY_DIAGNOSTICS:
+            //Start or stop displaying diagnostics
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
+                bool diag = Var_GetDiag();
+                Var_SetDiag(!diag);
+                Var_UpdateUIFile();
+                Controller_SetWasPressed_A(true);
+            }
             //Draw options menu
             UIPause_Draw(currentUIPauseState, *currentConsoleState);
             //Update elapsed time
@@ -289,6 +281,16 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             //Update elapsed time
             UIPause_UpdateTime();
             break;
+        
+        case POWER_OFF:
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
+                Var_SetPowerOff(true); 
+            }
+            //Draw options menu
+            UIPause_Draw(currentUIPauseState, *currentConsoleState);
+            //Update elapsed time
+            UIPause_UpdateTime();
+            
     }
 }
 

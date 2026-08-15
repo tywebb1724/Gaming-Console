@@ -15,8 +15,8 @@ static void Theme_UpdateTime() {
     //Increment the time elapsed
     themeTimeElapsed += GetFrameTime();
     //If time getting too big, bring back to the threshold
-    if (themeTimeElapsed > 1000000) {
-        themeTimeElapsed = 0.25f;
+    if (themeTimeElapsed > MAX_TIME_ELAPSED_THEME) {
+        themeTimeElapsed = THRESHOLD_TIME_ELAPSED_THEME;
     }
 }
 

@@ -34,20 +34,22 @@ static bool is_game_running;
 
 //Used for hardware rendering
 static RenderTexture2D hw_target = {0}; 
-
+//Whether these cores are active
 static bool g_isDoomActive = false;
 static bool g_isN64Active  = false;
 
-
+//Set active core variables 
 static void Play_SetCurrentCore(const char* corePath) {
     g_isDoomActive = (strcmp(corePath, PATH_PRBOOM) == 0);
     g_isN64Active  = (strcmp(corePath, PATH_N64) == 0);
 }
 
+//Get whether doom core is active
 bool Play_IsDoomActive(void) {
     return g_isDoomActive;
 }
 
+//Get whether n64 core is active
 bool Play_IsN64Active(void) {
     return g_isN64Active;
 }
@@ -66,7 +68,6 @@ static bool Play_IsLibRetro(const game_t* game) {
 //Apply the key and pad maps
 static void Play_ApplyMaps(char* corePath) {
     for (int i = 0; i < RETRO_DEVICE_ID_JOYPAD_R3 + 1; i++) { your_key_map[i] = 0; your_pad_map[i] = 0; }
-
         //Common controls
         your_key_map[RETRO_DEVICE_ID_JOYPAD_UP]     = KEY_W;
         your_key_map[RETRO_DEVICE_ID_JOYPAD_DOWN]   = KEY_S;
@@ -80,7 +81,6 @@ static void Play_ApplyMaps(char* corePath) {
         your_pad_map[RETRO_DEVICE_ID_JOYPAD_RIGHT]  = GAMEPAD_BUTTON_LEFT_FACE_RIGHT;
         your_pad_map[RETRO_DEVICE_ID_JOYPAD_START]  = GAMEPAD_BUTTON_MIDDLE_RIGHT;
         your_pad_map[RETRO_DEVICE_ID_JOYPAD_SELECT] = GAMEPAD_BUTTON_MIDDLE_LEFT;
-
         //NES and Atari Lynx controls
         if (strcmp(corePath, PATH_NES) == 0 || strcmp(corePath, PATH_LYNX) == 0) {
             your_key_map[RETRO_DEVICE_ID_JOYPAD_A] = KEY_K;
@@ -197,19 +197,19 @@ static void Play_ApplyMaps(char* corePath) {
 static float Play_GetConsoleAspect(const char* console) {
     //Depending on the console, return the correct aspect ratio
     if (strcmp(console, "Game Boy Color") == 0) {
-       return 10.0f / 9.0f;
+       return ASPECT_GB;
     }
     else if (strcmp(console, "Game Boy Advance") == 0) {
-        return 3.0f / 2.0f;
+        return ASPECT_GBA;
     }    
     else if (strcmp(console, "Sega Game Gear") == 0) {
-        return 6.0f / 5.0f;
+        return ASPECT_GG;
     }
     else if (strcmp(console, "Neo Geo Pocket Color") == 0) {
-        return 20.0f / 19.0f;
+        return ASPECT_NGPC;
     }
     //Default aspect ratio
-    return 4.0f / 3.0f;
+    return ASPECT_OTHER;
 }
 
 //Stop the game
@@ -239,12 +239,12 @@ void Play_Stop(const game_t* game) {
 //Advance the game
 static void Play_Advance() {
     //How long one frame should take
-    double step = 1.0 / core_fps;
+    double step = 1.0f / core_fps;
     //How long last frame took
     double frameTime = GetFrameTime();
     //Guard against stalls
-    if (frameTime > 0.25) {
-        frameTime = 0.25;
+    if (frameTime > MAX_FRAME_TIME) {
+        frameTime = MAX_FRAME_TIME;
     }
     //Keep track how long this frame has been up
     accumulator += frameTime;
@@ -267,7 +267,7 @@ static void Play_Draw(const game_t* game) {
     //Determine whether game must be rotated
     unsigned game_rotation = GetGameRotation();
     //If game is rotated sideways (rotated 90 or 270 degrees)
-    bool swapped = (game_rotation == 1 || game_rotation == 3);
+    bool swapped = (game_rotation == ROTATION_90 || game_rotation == ROTATION_270);
     //Width and height of the texture
     float texW = (float)emulator_texture.width;
     float texH = (float)emulator_texture.height;
@@ -326,7 +326,7 @@ void Play_Init(const game_t* game) {
         //Unload the previous texture from the last emulator ran
         UnloadTexture(emulator_texture);
         //Generate blank texture for game to render on
-        Image blank = GenImageColor(640, 480, BLACK);
+        Image blank = GenImageColor(BLANK_GAME_TEXT_W, BLANK_GAME_TEXT_H, BLACK);
         emulator_texture = LoadTextureFromImage(blank);
         UnloadImage(blank);
         //Keep pixels sharp
@@ -343,7 +343,7 @@ void Play_Init(const game_t* game) {
                 is_game_running = true;
                 //For hardware rendered games
                 if (hw_target.id == 0) {
-                    hw_target = LoadRenderTexture(640, 480);
+                    hw_target = LoadRenderTexture(BLANK_GAME_TEXT_W, BLANK_GAME_TEXT_H);
                 }
                 SetHWFramebuffer(hw_target.id);
                 //Reinitialize GPU resources
@@ -375,11 +375,11 @@ void Play_Init(const game_t* game) {
     else {
         //If it is a DS or Saturn game, start the script for exiting the applcication when the right button is pressed
         if (strcmp(game->corePath, PATH_DS) == 0) {
-            system("flatpak run io.github.antimicrox.antimicrox --profile /home/tywebb1724/Desktop/Gaming-Console/assets/antimicro/micro_ds.gamecontroller.amgp --hidden &");
+            system("flatpak run io.github.antimicrox.antimicrox --profile assets/antimicro/micro_ds.gamecontroller.amgp --hidden &");
             sleep(4);
         }
         else if (strcmp(game->corePath, PATH_SATURN) == 0) {
-            system("flatpak run io.github.antimicrox.antimicrox --profile /home/tywebb1724/Desktop/Gaming-Console/assets/antimicro/micro_saturn.gamecontroller.amgp --hidden &");
+            system("flatpak run io.github.antimicrox.antimicrox --profile assets/antimicro/micro_saturn.gamecontroller.amgp --hidden &");
             sleep(4);
         }
         //Run the correct command depending on the console
@@ -400,9 +400,9 @@ void Play_Init(const game_t* game) {
 
 //Play game tick function
 bool Play_Tick(const game_t* game) {
-
     //Transition
     switch (currentPlayState) {
+        //Game is running
         case PLAY_GO:
             //Pause game on Home press (or ESCAPE)
             if (IsKeyPressed(KEY_ESCAPE) || HOME_PRESS) {
@@ -414,7 +414,9 @@ bool Play_Tick(const game_t* game) {
             }
             break;
 
+        //Game is paused
         case PLAY_PAUSE:
+            //Change state of game depending on the pause menu
             if (pauseState == PLAY_RESUME) {
                 resumeTimer = 0.0f;
                 currentPlayState = PLAY_RESUME;
@@ -427,6 +429,7 @@ bool Play_Tick(const game_t* game) {
             }
             break;
 
+        //Resuming game
         case PLAY_RESUME:
             //If it has been resuming long enough, stop resuming
             if (resumeTimer >= RESUME_TIME) {
@@ -434,6 +437,7 @@ bool Play_Tick(const game_t* game) {
             }
             break;
 
+        //Restarting game
         case PLAY_RESTART:
             ClearBackground(BLACK);
             Play_Stop(game);
@@ -441,12 +445,14 @@ bool Play_Tick(const game_t* game) {
             currentPlayState = PLAY_GO;
             break;
 
+        //Exiting game
         case PLAY_EXIT:
             break;
     }
 
     //Action
     switch (currentPlayState) {
+        //Game is running
         case PLAY_GO:
             //Advance the game
             Play_Advance();
@@ -455,7 +461,7 @@ bool Play_Tick(const game_t* game) {
             //See how long since game has last saved
             saveTimeElapsed += GetFrameTime();
             //If it has been a minute since last saved
-            if (saveTimeElapsed >= 60.0f) {
+            if (saveTimeElapsed >= SAVE_TIME) {
                 //If game saves by battery, save correctly
                 if (game->save == BATTERY) {
                     SaveBattery(game->romPath);
@@ -465,6 +471,7 @@ bool Play_Tick(const game_t* game) {
             }
             break;
 
+        //Game is paused
         case PLAY_PAUSE:
             //Draw the game
             Play_Draw(game);
@@ -472,6 +479,7 @@ bool Play_Tick(const game_t* game) {
             pauseState = PlayPause_Tick();
             break;
 
+        //Resuming game
         case PLAY_RESUME:
             //Draw the game
             Play_Draw(game);
@@ -485,9 +493,11 @@ bool Play_Tick(const game_t* game) {
             DrawTextEx(Var_GetFontRegular(), PLAY_RESUME_TXT, resume, PLAY_RESUME_SIZE, PLAY_RESUME_SPACE, WHITE);
             break;
         
+        //Restarting game
         case PLAY_RESTART:
             break;
 
+        //Exiting game
         case PLAY_EXIT:
             Play_Stop(game);
             return false;
@@ -495,8 +505,3 @@ bool Play_Tick(const game_t* game) {
 
     return true;
 }
-
-
-
-
-

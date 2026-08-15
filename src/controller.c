@@ -6,7 +6,7 @@
 static int slots[CONTROLLER_MAX];
 //How many entries of slots[] are valid
 static int count = 0;
-
+//Variables for tracking whether certain buttons were already pressed
 static bool wasPressed_A = false;
 static bool wasPressed_B = false;
 static bool wasPressed_Home = false;
@@ -26,17 +26,17 @@ bool Controller_GetWasPressed_Home() {
     return wasPressed_Home;
 }
 
-//Set whetehr A button was pressed
+//Set whether A button was pressed
 void Controller_SetWasPressed_A(bool value) {
     wasPressed_A = value;
 }
 
-//Set whetehr B button was pressed
+//Set whether B button was pressed
 void Controller_SetWasPressed_B(bool value) {
     wasPressed_B = value;
 }
 
-//Set whetehr home button was pressed
+//Set whether home button was pressed
 void Controller_SetWasPressed_Home(bool value) {
     wasPressed_Home = value;
 }

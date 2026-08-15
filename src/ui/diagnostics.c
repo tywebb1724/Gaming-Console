@@ -36,7 +36,6 @@ static void Diagnostics_Draw() {
     DrawTextEx(Var_GetFontRegular(), TextFormat("Monitor Refresh Rate:  %d Hz", GetMonitorRefreshRate(0)), refresh, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
     Vector2 control = {CONTROL_TXT_X, CONTROL_TXT_Y};
     DrawTextEx(Var_GetFontRegular(), TextFormat("Controllers connected:  %d", Controller_Count()), control, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
-    
     //Draw options button
     UI_DrawOptions();
 }

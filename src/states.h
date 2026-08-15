@@ -5,6 +5,10 @@
 #define BOOT_TIME 3.0f
 //Time on launch screen
 #define LAUNCH_TIME 3.0f
+//Length of string variables
+#define COLOR_LEN 10
+#define BRIGHT_LEN 32
+#define DIAG_LEN 5
 
 //Load all game images (if not loaded already)
 void States_LoadGameImages();

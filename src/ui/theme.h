@@ -1,6 +1,9 @@
 #ifndef THEME_H
 #define THEME_H
 
+#define MAX_TIME_ELAPSED_THEME 1000000
+#define THRESHOLD_TIME_ELAPSED_THEME 0.25f
+
 //Drawing the theme title
 #define THEME_TXT "Select theme"
 #define THEME_TXT_SIZE (Var_GetMonitorWidth() / 40.0f)

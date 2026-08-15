@@ -25,24 +25,17 @@
 //Macros for drawing the top section
 #pragma region UI_TOP
 //Radius of the options button
-#define OPTIONS_RADIUS (Var_GetMonitorWidth() / 90.0f)
+#define XBOX_RADIUS (Var_GetMonitorWidth() / 90.0f)
 //Macros for the button
-#define OPTIONS_BTN_X (Var_GetMonitorWidth() * 19.0f / 20)
-#define OPTIONS_BTN_Y (Var_GetMonitorHeight() / 18.0f)
-#define OPTIONS_LINE_START_X (OPTIONS_BTN_X - OPTIONS_RADIUS / 2 )
-#define OPTIONS_LINE_END_X (OPTIONS_BTN_X + OPTIONS_RADIUS / 2 )
-#define OPTIONS_LINE1_Y (OPTIONS_BTN_Y - OPTIONS_RADIUS * (2.0f / 5))
-#define OPTIONS_LINE2_Y (OPTIONS_BTN_Y)
-#define OPTIONS_LINE3_Y (OPTIONS_BTN_Y + OPTIONS_RADIUS * (2.0f / 5))
-#define OPTIONS_THICKNESS_LINE1 (Var_GetMonitorHeight() / 650.0f)
-#define OPTIONS_THICKNESS_LINE2 (Var_GetMonitorHeight() / 550.0f)
-#define OPTIONS_THICKNESS_LINE3 (Var_GetMonitorHeight() / 550.0f)
+#define XBOX_SIZE (XBOX_RADIUS * 3)
+#define XBOX_X (Var_GetMonitorWidth() * 19.0f / 20)
+#define XBOX_Y (Var_GetMonitorHeight() / 18.0f)
 //Macros for the text
 #define OPTIONS_TXT_SIZE (Var_GetMonitorWidth() / 90.0f)
 #define OPTIONS_TXT_SPACE (Var_GetMonitorWidth() / 700.0f)
 #define OPTIONS_TXT "[OPTIONS]"
-#define OPTIONS_TXT_X (OPTIONS_BTN_X - optionsSize.x / 2.0f)
-#define OPTIONS_TXT_Y (OPTIONS_BTN_Y + OPTIONS_RADIUS + Var_GetMonitorHeight() / 100.0f)
+#define OPTIONS_TXT_X (XBOX_X - optionsSize.x / 2.0f)
+#define OPTIONS_TXT_Y (XBOX_Y + XBOX_RADIUS + Var_GetMonitorHeight() / 100.0f)
 //Bumper coordinates and values
 #define BUMPER_L (Var_GetMonitorWidth() / 15.0f)
 #define BUMPER_R (Var_GetMonitorWidth() * 14.0f / 15)
@@ -114,6 +107,19 @@
 
 //Macros for game drawing and scrolling
 #pragma region UI_GAME
+
+#define GAME_LEFT1 2
+#define GAME_LEFT2 1
+#define GAME_LEFT3 0
+#define GAME_RIGHT1 4
+#define GAME_RIGHT2 5
+#define GAME_RIGHT3 6
+
+#define NEW_GAME_CENTER 2
+#define NEW_GAME_LEFT1 1
+#define NEW_GAME_RIGHT1 3
+#define NEW_GAME_LEFT2 0
+#define NEW_GAME_RIGHT2 4
 //Thickness for game outlines
 #define THICKNESS_GAME_SELECT (Var_GetMonitorWidth() / 200.0f)
 #define THICKNESS_GAME_OTHER (Var_GetMonitorWidth() / 400.0f)
@@ -503,9 +509,21 @@
 #define LAUNCH_KEY_ARROWS_TXT_Y (LAUNCH_KEY_ARROWS_LINE_Y - arrows_Size.y / 2.0f)
 
 #define LAUNCH_CONTROL_OUTLINE_THICKNESS (Var_GetMonitorHeight() / 200.0f)
+
+
+#define LAUNCH_STR_LEN 10
+#define LAUNCH_STR_LEN2 13
+#define LAUNCH_STR_LEN3 15
 #pragma endregion
 
-
+#define ALPHA_SELECT_BOX_INCREMENT 0.25f
+#define ALPHA_SELECT_INCREMENT_STATIC 0.04f
+#define ALPHA_SELECT_INCREMENT_SCROLL 0.25f
+#define ALPHA_GAMES_INCREMENT 0.25f
+#define ALPHA_CATEG_IN_INCREMENT 0.05f
+#define ALPHA_CATEG_OUT_INCREMENT 0.1f
+#define ALPHA_SELECT_MIN 0.1f
+#define SELECT_BLINK_TIME_LOW 0.1f
 
 //Y coordinate for bottom section
 //#define BOTTOM_Y (Var_GetMonitorHeight() * (7.0f / 8))
