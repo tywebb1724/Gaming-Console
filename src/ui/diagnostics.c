@@ -1,7 +1,7 @@
 #include "diagnostics.h"
 #include "var.h"
 #include "config.h"
-#include "controller_config.h"
+#include "controller.h"
 #include "uipause.h"
 #include "ui.h"
 
@@ -31,7 +31,7 @@ static void Diagnostics_Draw() {
     Vector2 temp = {TEMP_TXT_X, TEMP_TXT_Y};
     DrawTextEx(Var_GetFontRegular(), TextFormat("CPU Temperature:  %.1f C", Var_GetTemp()), temp, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
     Vector2 clock = {CLOCK_TXT_X, CLOCK_TXT_Y};
-    DrawTextEx(Var_GetFontRegular(), TextFormat("Clock Speed:  %.2f GHz", Var_GetClock() / 1000000.0f, Var_GetClock()), clock, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
+    DrawTextEx(Var_GetFontRegular(), TextFormat("Clock Speed:  %.2f GHz", Var_GetClock() / 1000000.0f), clock, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
     Vector2 refresh = {REFRESH_TXT_X, REFRESH_TXT_Y};
     DrawTextEx(Var_GetFontRegular(), TextFormat("Monitor Refresh Rate:  %d Hz", GetMonitorRefreshRate(0)), refresh, DIAGNOSTICS_SIZE, DIAGNOSTICS_SPACING, Var_GetColor3());
     Vector2 control = {CONTROL_TXT_X, CONTROL_TXT_Y};

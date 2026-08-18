@@ -16,7 +16,7 @@ STD  := -std=gnu11
 WARN := -Wall -Wextra -Wno-unused-parameter
 # Includes mix bare ("var.h") and prefixed ("ui/ui.h") forms,
 # so all four directories have to be searchable.
-INC  := -Isrc -Isrc/ui -Isrc/play -Isrc/emulators/libretro
+INC  := -Isrc -Isrc/ui -Isrc/play -Isrc/libretro
 
 RAYLIB_CFLAGS := $(shell pkg-config --cflags raylib 2>/dev/null)
 RAYLIB_LIBS := -L/usr/local/lib -lraylib -lGL -lX11
@@ -55,7 +55,7 @@ SRCS := \
   src/ui/erase.c \
   src/play/play.c \
   src/play/playpause.c \
-  src/emulators/libretro/retro_bridge.c
+  src/libretro/retro_bridge.c
 
 OBJS := $(SRCS:%.c=$(BUILD)/%.o)
 DEPS := $(OBJS:.o=.d)

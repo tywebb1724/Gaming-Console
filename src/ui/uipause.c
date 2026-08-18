@@ -1,8 +1,7 @@
 #include "uipause.h"
 #include "var.h"
 #include "raylib.h"
-#include "controller_config.h"
-#include "uipause_config.h"
+#include "controller.h"
 #include "config.h"
 #include "brightness.h"
 #include "theme.h"
@@ -145,6 +144,7 @@ void UIPause_Init() {
 void UIPause_Tick(ConsoleState* currentConsoleState) {
     //Transition
     switch (currentUIPauseState) {
+        //Brightness section selected
         case BRIGHTNESS:
             //Move selected option up or down depending on input
             if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBright() == false) {
@@ -157,6 +157,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             }
             break;
 
+        //Theme section selected
         case THEME:
             //Move selected option up or down depending on input
             if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayTheme() == false) {
@@ -169,6 +170,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             }
             break;
 
+        //Display diagnostics section selected
         case DISPLAY_DIAGNOSTICS:
             //Move selected option up or down depending on input
             if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
@@ -181,6 +183,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             }
             break;
 
+        //View diagnostics menu section selected
         case VIEW_DIAGNOSTICS:
             //Move selected option up or down depending on input
             if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
@@ -193,6 +196,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             }
             break;
 
+        //Power off section selected
         case POWER_OFF:
             //Move selected option up or down depending on input
             if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
@@ -207,6 +211,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
 
     //Action
     switch (currentUIPauseState) {
+        //Brightness section selected
         case BRIGHTNESS:
             //Display brightness options or normal options
             if (Var_GetDisplayBright() == true) {
@@ -224,10 +229,12 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 Controller_SetWasPressed_A(true);
             }
             else if (IsKeyPressed(KEY_ESCAPE) || B_PRESS) {
+                Controller_SetWasPressed_B(true);
                 Var_SetDisplayBright(false);
             }
             break;
 
+        //Theme section selected
         case THEME:
             //Display theme options or normal options
             if (Var_GetDisplayTheme() == true) {
@@ -246,9 +253,11 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             }
             else if (IsKeyPressed(KEY_ESCAPE) || B_PRESS) {
                 Var_SetDisplayTheme(false);
+                Controller_SetWasPressed_B(true);
             }
             break;
 
+        //Display diagnostics section selected
         case DISPLAY_DIAGNOSTICS:
             //Start or stop displaying diagnostics
             if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
@@ -263,6 +272,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             UIPause_UpdateTime();
             break;
 
+        //View diagnostics menu section selected
         case VIEW_DIAGNOSTICS:
             //If user selects this option
             if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
@@ -282,8 +292,11 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             UIPause_UpdateTime();
             break;
         
+        //Power off section selected
         case POWER_OFF:
+            //Power off
             if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
+                Controller_SetWasPressed_A(true);
                 Var_SetPowerOff(true); 
             }
             //Draw options menu

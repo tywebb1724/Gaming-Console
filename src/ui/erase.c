@@ -1,11 +1,14 @@
 #include "erase.h"
 #include "var.h"
 #include "config.h"
-#include "controller_config.h"
+#include "controller.h"
 
-EraseState currentEraseState;
-float eraseTimeElapsed;
-bool erased;
+//State of the erase game data menu
+static EraseState currentEraseState;
+//Time on selected section
+static float eraseTimeElapsed;
+//Whether game data successfully erased
+static bool erased;
 
 //Update the time elapsed on current option
 static void Erase_UpdateTime() {
@@ -18,7 +21,7 @@ static void Erase_UpdateTime() {
 }
 
 //Draw erase save data menu
-void Erase_DrawMenu(const game_t* game) {
+static void Erase_DrawMenu() {
     //Draw whole section
     Rectangle rectSec = {
         UI_ERASE_RECT_X,
@@ -51,7 +54,7 @@ void Erase_DrawMenu(const game_t* game) {
         UI_ERASE_SELECT_RECT_H};
     DrawRectangleRoundedLinesEx(rectCancel, UI_ERASE_ROUND, UI_ERASE_SEGMENTS, THICKNESS_UI_ERASE, Var_GetColor3());
     DrawTextEx(Var_GetFontRegular(), UI_ERASE_CANCEL, cancel, UI_ERASE_CANCEL_SIZE, UI_ERASE_TITLE_SPACE, Var_GetColor3());
-
+    //Draw outline on the selected section
     if (currentEraseState == ERASE) {
         DrawRectangleRoundedLinesEx(rectErase, UI_ERASE_ROUND, UI_ERASE_SEGMENTS, 2 * THICKNESS_UI_ERASE, Var_GetColor1());
     }
@@ -69,7 +72,7 @@ void Erase_DrawMenu(const game_t* game) {
 }
 
 //Draw done erased menu
-void Erase_DrawDone(const game_t* game) {
+static void Erase_DrawDone() {
     //Draw whole section
     Rectangle rectSec = {
         UI_ERASE_RECT_X,
@@ -78,7 +81,6 @@ void Erase_DrawDone(const game_t* game) {
         UI_ERASE_RECT_H};
     DrawRectangleRounded(rectSec, UI_ERASE_ROUND, UI_ERASE_SEGMENTS, Var_GetColor2());
     DrawRectangleRoundedLinesEx(rectSec, UI_ERASE_ROUND, UI_ERASE_SEGMENTS, THICKNESS_UI_ERASE, Var_GetColor3());
-    
     //Draw erased
     if (erased) {
         Vector2 erasedSize = MeasureTextEx(Var_GetFontRegular(), UI_ERASE_ERASED, UI_ERASE_ERASED_SIZE, UI_ERASE_TITLE_SPACE);
@@ -100,6 +102,7 @@ void Erase_DrawDone(const game_t* game) {
 void Erase_Init() {
     currentEraseState = ERASE;
     eraseTimeElapsed = 0.0f;
+    erased = false;
 }
 
 //Erase game data tick function
@@ -146,7 +149,7 @@ void Erase_Tick(const game_t* game, UIState* currentUIState) {
                 Controller_SetWasPressed_B(true);
                 *currentUIState = NORMAL;
             }
-            Erase_DrawMenu(game);
+            Erase_DrawMenu();
             Erase_UpdateTime();
             break;
 
@@ -161,7 +164,7 @@ void Erase_Tick(const game_t* game, UIState* currentUIState) {
                 Controller_SetWasPressed_A(true);
                 *currentUIState = NORMAL;
             }
-            Erase_DrawMenu(game);
+            Erase_DrawMenu();
             Erase_UpdateTime();
             break;
 
@@ -172,7 +175,7 @@ void Erase_Tick(const game_t* game, UIState* currentUIState) {
                 Controller_SetWasPressed_A(true);
                 *currentUIState = NORMAL;
             }
-            Erase_DrawDone(game);
+            Erase_DrawDone();
             break;
     }
 

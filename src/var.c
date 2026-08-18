@@ -51,6 +51,7 @@ static int emuFrameAccum = 0;
 //Power off variable
 static bool powerOff;
 
+//Path for the cpu temperature
 static char cpuThermalPath[THERM_PATH_LEN] = "";
 
 
@@ -290,29 +291,34 @@ void Var_SetDisplayTheme(bool value) {
     displayTheme = value;
 }
 
-
+//Find the path to the cpu temperature
 void Var_FindThermalZone() {
+    //Open the directory
     DIR* d = opendir("/sys/class/thermal");
+    //If doesn't open successfully, exit
     if (!d) return;
-
     struct dirent* entry;
+    //Read all the entries in the directory
     while ((entry = readdir(d)) != NULL) {
+        //If not the correct entry, go to next one
         if (strncmp(entry->d_name, "thermal_zone", 12) != 0) continue;
+        //Get the opath
         char typePath[300];
         snprintf(typePath, sizeof(typePath), "/sys/class/thermal/%s/type", entry->d_name);
-
+        //Open file
         FILE* tf = fopen(typePath, "r");
+        //If doesn't open successfully, exit
         if (!tf) continue;
-
         char type[128] = "";
+        //Look in file for the right information
         if (fgets(type, sizeof(type), tf)) {
-            // Common CPU-zone naming across vendors: "cpu", "soc", "cpu-thermal", "x86_pkg_temp"
+            //Common CPU-zone naming across vendors: "cpu", "soc", "cpu-thermal", "x86_pkg_temp"
             if (strstr(type, "cpu") || strstr(type, "soc") || strstr(type, "pkg")) {
                 snprintf(cpuThermalPath, sizeof(cpuThermalPath),
                          "/sys/class/thermal/%s/temp", entry->d_name);
                 fclose(tf);
                 closedir(d);
-                return;  // take the first plausible match
+                return;
             }
         }
         fclose(tf);
@@ -323,12 +329,16 @@ void Var_FindThermalZone() {
 //Update CPU temperature
 void Var_UpdateTemp(void) {
     diagTimer += GetFrameTime();
+    //If less than the update time, exit
     if (diagTimer < DIAG_TIME) return;
-    if (cpuThermalPath[0] == '\0') return;  // no CPU zone found on this device
-
+    //If no path, exit
+    if (cpuThermalPath[0] == '\0') return;
+    //Open file path
     FILE* f = fopen(cpuThermalPath, "r");
+    //If doesn't open successfully, exit
     if (f == NULL) return;
     float tempTemp = 0;
+    //Get the temperature
     if (fscanf(f, "%f", &tempTemp) == 1) {
         cpuTemp = tempTemp / DEGREE_CONVERSION;
     }
@@ -343,12 +353,15 @@ float Var_GetTemp() {
 //Update CPU clock speed
 void Var_UpdateClock() {
     int highest = 0;
-    for (int i = 0; i < 16; i++) {  // reasonable upper bound on core count
+    //Cycle through possible cores
+    for (int i = 0; i < 16; i++) { 
+        //Get paths for the cores
         char path[128];
         snprintf(path, sizeof(path),
                  "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_cur_freq", i);
         FILE* f = fopen(path, "r");
-        if (!f) break;  // no more cores past this index
+        if (!f) break;
+        //Get the frequency
         int freq = 0;
         if (fscanf(f, "%d", &freq) == 1 && freq > highest) {
             highest = freq;

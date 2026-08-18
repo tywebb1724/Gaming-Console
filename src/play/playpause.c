@@ -1,7 +1,6 @@
 #include "playpause.h"
-#include "controlsdisplay_config.h"
 #include "playpause_config.h"
-#include "controller_config.h"
+#include "controller.h"
 #include "raylib.h"
 #include "config.h"
 #include "games.h"
@@ -12,7 +11,7 @@
 
 //Current state of the pause screen
 static PlayPauseState currentPlayPauseState;
-//Controller image
+//Controller/keyboard and mouse images
 static Texture2D controlsImg;
 static Texture2D keyImg;
 static Texture2D mouseImg;
@@ -24,6 +23,7 @@ static float playPauseTimeElapsed;
 
 //Update the time elapsed on one section of the paused screen
 static void PlayPause_UpdateTime() {
+    //Increment counter
     playPauseTimeElapsed += GetFrameTime();
     //If the variable is getting too big, bring it back down
     if (playPauseTimeElapsed > MAX_TIME_ELAPSED_PLAYPAUSE) {
@@ -1084,6 +1084,7 @@ static void PlayPause_Draw() {
         PLAYPAUSE_SELECT_RECT_H};
     DrawRectangleRoundedLinesEx(rectDiag, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, PLAYPAUSE_LINE_THICK, Var_GetColor3());
     char *diagTxt;
+    //Set the text depending on if diagnostics are already being displayed
     if (Var_GetDiag()) {
         diagTxt = HIDE_DIAGNOSTICS_TXT;
     }
@@ -1138,6 +1139,20 @@ static void PlayPause_Draw() {
     }
 }
 
+//Exit the pause menu
+static PlayState PlayPause_Exit(PlayState returnState) {
+    //Unload controls image texture
+    UnloadTexture(controlsImg);
+    UnloadTexture(keyImg);
+    UnloadTexture(mouseImg);
+    UnloadTexture(arrowsImg);
+    //Set control variables
+    Controller_SetWasPressed_A(true);
+    Controller_SetWasPressed_B(true);
+    Controller_SetWasPressed_Home(true);
+    return returnState;
+}
+
 //PlayPause initialization
 void PlayPause_Init() {
     //Load images
@@ -1151,6 +1166,10 @@ void PlayPause_Init() {
     currentPlayPauseState = PLAYPAUSE_RESUME;
     //Don't display the controls
     displayControls = false;
+    //Set controls to pressed
+    Controller_SetWasPressed_A(true);
+    Controller_SetWasPressed_B(true);
+    Controller_SetWasPressed_Home(true);
 }
 
 //PlayPause tick
@@ -1160,11 +1179,11 @@ PlayState PlayPause_Tick() {
         //Resume game section
         case PLAYPAUSE_RESUME:
             //Move up or down a section
-            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && playPauseTimeElapsed >= 0.2f)) {
+            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && playPauseTimeElapsed >= 0.2f)) {
                 currentPlayPauseState = PLAYPAUSE_RESTART;
                 playPauseTimeElapsed = 0.0f;
             }
-            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) {
+            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) {
                 currentPlayPauseState = PLAYPAUSE_POWER_OFF;
                 playPauseTimeElapsed = 0.0f;
             }
@@ -1173,12 +1192,12 @@ PlayState PlayPause_Tick() {
         //Restart game section
         case PLAYPAUSE_RESTART:
             //Move up or down a section
-            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && playPauseTimeElapsed >= 0.2f)) {
+            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && playPauseTimeElapsed >= 0.2f)) {
                 currentPlayPauseState = PLAYPAUSE_CONTROLS;
                 displayControls = false;
                 playPauseTimeElapsed = 0.0f;
             }
-            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) {
+            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) {
                 currentPlayPauseState = PLAYPAUSE_RESUME;
                 playPauseTimeElapsed = 0.0f;
             }
@@ -1187,11 +1206,11 @@ PlayState PlayPause_Tick() {
         //View controls section
         case PLAYPAUSE_CONTROLS:
             //Move up or down a section
-            if ((IsKeyPressed(KEY_DOWN) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && playPauseTimeElapsed >= 0.2f)) && !displayControls) {
+            if ((IsKeyPressed(KEY_DOWN) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && playPauseTimeElapsed >= 0.2f)) && !displayControls) {
                 currentPlayPauseState = PLAYPAUSE_DIAGNOSTICS;
                 playPauseTimeElapsed = 0.0f;
             }
-            else if ((IsKeyPressed(KEY_UP) || ((IsKeyPressed(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) && !displayControls) {
+            else if ((IsKeyPressed(KEY_UP) || ((IsKeyDown(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) && !displayControls) {
                 currentPlayPauseState = PLAYPAUSE_RESTART;
                 playPauseTimeElapsed = 0.0f;
             }
@@ -1200,11 +1219,11 @@ PlayState PlayPause_Tick() {
         //Display/hide diagnostics section
         case PLAYPAUSE_DIAGNOSTICS:
             //Move up or down a section
-            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && playPauseTimeElapsed >= 0.2f)) {
+            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && playPauseTimeElapsed >= 0.2f)) {
                 currentPlayPauseState = PLAYPAUSE_EXIT;
                 playPauseTimeElapsed = 0.0f;
             }
-            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) {
+            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) {
                 currentPlayPauseState = PLAYPAUSE_CONTROLS;
                 displayControls = false;
                 playPauseTimeElapsed = 0.0f;
@@ -1214,11 +1233,11 @@ PlayState PlayPause_Tick() {
         //Exit game section
         case PLAYPAUSE_EXIT:
             //Move up or down a section
-            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && playPauseTimeElapsed >= 0.2f)) {
+            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && playPauseTimeElapsed >= 0.2f)) {
                 currentPlayPauseState = PLAYPAUSE_POWER_OFF;
                 playPauseTimeElapsed = 0.0f;
             }
-            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) {
+            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) {
                 currentPlayPauseState = PLAYPAUSE_DIAGNOSTICS;
                 playPauseTimeElapsed = 0.0f;
             }
@@ -1226,11 +1245,11 @@ PlayState PlayPause_Tick() {
         
         case PLAYPAUSE_POWER_OFF:
             //Move up or down a section
-            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && playPauseTimeElapsed >= 0.2f)) {
+            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && playPauseTimeElapsed >= 0.2f)) {
                 currentPlayPauseState = PLAYPAUSE_RESUME;
                 playPauseTimeElapsed = 0.0f;
             }
-            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) {
+            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && playPauseTimeElapsed >= 0.2f)) {
                 currentPlayPauseState = PLAYPAUSE_EXIT;
                 playPauseTimeElapsed = 0.0f;
             }
@@ -1242,22 +1261,10 @@ PlayState PlayPause_Tick() {
         case PLAYPAUSE_RESUME:
             //Resume game
             if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
-                Controller_SetWasPressed_A(true);
-                //Unload controls image texture
-                UnloadTexture(controlsImg);
-                UnloadTexture(keyImg);
-                UnloadTexture(mouseImg);
-                UnloadTexture(arrowsImg);
-                return PLAY_RESUME;
+                return PlayPause_Exit(PLAY_RESUME);
             }
             else if ((HOME_PRESS && !Controller_GetWasPressed_Home()) || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B())) {
-                //Unload controls image texture
-                UnloadTexture(controlsImg);
-                UnloadTexture(keyImg);
-                UnloadTexture(mouseImg);
-                UnloadTexture(arrowsImg);
-                Controller_SetWasPressed_B(true);
-                return PLAY_RESUME;
+                return PlayPause_Exit(PLAY_RESUME);
             }
             UI_ChangeAlpha_Static();
             //Draw menu and update time
@@ -1269,26 +1276,14 @@ PlayState PlayPause_Tick() {
         case PLAYPAUSE_RESTART:
             //Restart game
             if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
-                Controller_SetWasPressed_A(true);
                 currentPlayPauseState = PLAYPAUSE_RESUME;
-                //Unload controls image texture
-                UnloadTexture(controlsImg);
-                UnloadTexture(keyImg);
-                UnloadTexture(mouseImg);
-                UnloadTexture(arrowsImg);
-                return PLAY_RESTART;
+                return PlayPause_Exit(PLAY_RESTART);
             }
             //Resume game
             if ((HOME_PRESS && !Controller_GetWasPressed_Home()) || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B())) {
                 /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
-                //Unload controls image texture
-                UnloadTexture(controlsImg);
-                UnloadTexture(keyImg);
-                UnloadTexture(mouseImg);
-                UnloadTexture(arrowsImg);
-                Controller_SetWasPressed_B(true);
-                return PLAY_RESUME;
+                return PlayPause_Exit(PLAY_RESUME);
             }
             UI_ChangeAlpha_Static();
             //Draw menu and update time
@@ -1308,15 +1303,11 @@ PlayState PlayPause_Tick() {
                 //Resume game or stop displaying controls
                 if (displayControls == false || HOME_DOWN) {
                     currentPlayPauseState = PLAYPAUSE_RESUME;
-                    //Unload controls image texture
-                    UnloadTexture(controlsImg);
-                    UnloadTexture(keyImg);
-                    UnloadTexture(mouseImg);
-                    UnloadTexture(arrowsImg);
-                    Controller_SetWasPressed_B(true);
-                    return PLAY_RESUME;
+                    return PlayPause_Exit(PLAY_RESUME);
                 }
                 else {
+                    Controller_SetWasPressed_B(true);
+                    Controller_SetWasPressed_Home(true);
                     displayControls = false;
                 }
             }
@@ -1344,13 +1335,7 @@ PlayState PlayPause_Tick() {
             if ((HOME_PRESS && !Controller_GetWasPressed_Home()) || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B())) {
                 /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
-                //Unload controls image texture
-                UnloadTexture(controlsImg);
-                UnloadTexture(keyImg);
-                UnloadTexture(mouseImg);
-                UnloadTexture(arrowsImg);
-                Controller_SetWasPressed_B(true);
-                return PLAY_RESUME;
+                return PlayPause_Exit(PLAY_RESUME);
             }
             UI_ChangeAlpha_Static();
             //Draw menu and update time
@@ -1363,24 +1348,12 @@ PlayState PlayPause_Tick() {
             //Exit game
             if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
                 currentPlayPauseState = PLAYPAUSE_RESUME;
-                //Unload controls image texture
-                UnloadTexture(controlsImg);
-                UnloadTexture(keyImg);
-                UnloadTexture(mouseImg);
-                UnloadTexture(arrowsImg);
-                Controller_SetWasPressed_A(true);
-                return PLAY_EXIT;
+                return PlayPause_Exit(PLAY_EXIT);
             }
             //Resume game
             if ((HOME_PRESS && !Controller_GetWasPressed_Home()) || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B())) {
                 currentPlayPauseState = PLAYPAUSE_RESUME;
-                //Unload controls image texture
-                UnloadTexture(controlsImg);
-                UnloadTexture(keyImg);
-                UnloadTexture(mouseImg);
-                UnloadTexture(arrowsImg);
-                Controller_SetWasPressed_B(true);
-                return PLAY_RESUME;
+               return PlayPause_Exit(PLAY_RESUME);
             }
             UI_ChangeAlpha_Static();
             //Draw menu and update time
@@ -1392,24 +1365,13 @@ PlayState PlayPause_Tick() {
             //Power off
             if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
                 Var_SetPowerOff(true);
-                //Unload controls image texture
-                UnloadTexture(controlsImg);
-                UnloadTexture(keyImg);
-                UnloadTexture(mouseImg);
-                UnloadTexture(arrowsImg);
-                Controller_SetWasPressed_A(true);
+                return PlayPause_Exit(PLAY_EXIT);
             }
             //Resume game
             if ((HOME_PRESS && !Controller_GetWasPressed_Home()) || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B())) {
                 /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
-                //Unload controls image texture
-                UnloadTexture(controlsImg);
-                UnloadTexture(keyImg);
-                UnloadTexture(mouseImg);
-                UnloadTexture(arrowsImg);
-                Controller_SetWasPressed_B(true);
-                return PLAY_RESUME;
+                return PlayPause_Exit(PLAY_RESUME);
             }
             UI_ChangeAlpha_Static();
             //Draw menu and update time

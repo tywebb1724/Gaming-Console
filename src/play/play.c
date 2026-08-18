@@ -1,9 +1,8 @@
 #include "play.h"
-
 #include "config.h"
-#include "emulators/libretro/retro_bridge.h"
+#include "retro_bridge.h"
 #include "playpause.h"
-#include "controller_config.h"
+#include "controller.h"
 #include "raylib.h"
 #include "var.h"
 #include <stdio.h>
@@ -11,6 +10,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "ui/ui.h"
+#include <signal.h>
+#include <sys/wait.h>
+#include <errno.h>
+#include <dirent.h>
+#include <ctype.h>
 
 //Key and pad maps
 int your_key_map[RETRO_DEVICE_ID_JOYPAD_R3 + 1];
@@ -38,6 +42,64 @@ static RenderTexture2D hw_target = {0};
 static bool g_isDoomActive = false;
 static bool g_isN64Active  = false;
 
+static pid_t extAppId = -1;
+static float killRequestedTime;
+static bool killEscalated;
+
+#include <dirent.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <signal.h>
+#include <ctype.h>
+
+// Finds the PID of a running process by name (matches /proc/<pid>/comm).
+// Returns the PID if found, or -1 if not found / on error.
+static pid_t Play_FindProcess(const char* processName) {
+    DIR* procDir = opendir("/proc");
+    if (!procDir) {
+        fprintf(stderr, "FindProcessByName: couldn't open /proc: %s\n", strerror(errno));
+        return -1;
+    }
+
+    struct dirent* entry;
+    while ((entry = readdir(procDir)) != NULL) {
+        // /proc entries for processes are directories named after their PID (all digits)
+        bool isNumeric = true;
+        for (const char* c = entry->d_name; *c; c++) {
+            if (!isdigit((unsigned char)*c)) {
+                isNumeric = false;
+                break;
+            }
+        }
+        if (!isNumeric) continue;   // skip non-PID entries (self, net, cpuinfo, etc.)
+
+        char commPath[300];
+        snprintf(commPath, sizeof(commPath), "/proc/%s/comm", entry->d_name);
+
+        FILE* f = fopen(commPath, "r");
+        if (!f) continue;   // process may have exited between readdir and fopen — skip
+
+        char comm[256] = "";
+        if (fgets(comm, sizeof(comm), f)) {
+            // Strip the trailing newline /proc/*/comm always includes
+            size_t len = strlen(comm);
+            if (len > 0 && comm[len - 1] == '\n') {
+                comm[len - 1] = '\0';
+            }
+        }
+        fclose(f);
+
+        if (strcmp(comm, processName) == 0) {
+            closedir(procDir);
+            return (pid_t)atoi(entry->d_name);
+        }
+    }
+
+    closedir(procDir);
+    return -1;   // not found
+}
+
 //Set active core variables 
 static void Play_SetCurrentCore(const char* corePath) {
     g_isDoomActive = (strcmp(corePath, PATH_PRBOOM) == 0);
@@ -49,7 +111,7 @@ bool Play_IsDoomActive(void) {
     return g_isDoomActive;
 }
 
-//Get whether n64 core is active
+//Get whether N64 core is active
 bool Play_IsN64Active(void) {
     return g_isN64Active;
 }
@@ -66,114 +128,118 @@ static bool Play_IsLibRetro(const game_t* game) {
 }
 
 //Apply the key and pad maps
-static void Play_ApplyMaps(char* corePath) {
-    for (int i = 0; i < RETRO_DEVICE_ID_JOYPAD_R3 + 1; i++) { your_key_map[i] = 0; your_pad_map[i] = 0; }
-        //Common controls
-        your_key_map[RETRO_DEVICE_ID_JOYPAD_UP]     = KEY_W;
-        your_key_map[RETRO_DEVICE_ID_JOYPAD_DOWN]   = KEY_S;
-        your_key_map[RETRO_DEVICE_ID_JOYPAD_LEFT]   = KEY_A;
-        your_key_map[RETRO_DEVICE_ID_JOYPAD_RIGHT]  = KEY_D;
-        your_key_map[RETRO_DEVICE_ID_JOYPAD_START]  = KEY_ENTER;
-        your_key_map[RETRO_DEVICE_ID_JOYPAD_SELECT] = KEY_RIGHT_SHIFT;
-        your_pad_map[RETRO_DEVICE_ID_JOYPAD_UP]     = GAMEPAD_BUTTON_LEFT_FACE_UP;
-        your_pad_map[RETRO_DEVICE_ID_JOYPAD_DOWN]   = GAMEPAD_BUTTON_LEFT_FACE_DOWN;
-        your_pad_map[RETRO_DEVICE_ID_JOYPAD_LEFT]   = GAMEPAD_BUTTON_LEFT_FACE_LEFT;
-        your_pad_map[RETRO_DEVICE_ID_JOYPAD_RIGHT]  = GAMEPAD_BUTTON_LEFT_FACE_RIGHT;
-        your_pad_map[RETRO_DEVICE_ID_JOYPAD_START]  = GAMEPAD_BUTTON_MIDDLE_RIGHT;
-        your_pad_map[RETRO_DEVICE_ID_JOYPAD_SELECT] = GAMEPAD_BUTTON_MIDDLE_LEFT;
-        //NES and Atari Lynx controls
-        if (strcmp(corePath, PATH_NES) == 0 || strcmp(corePath, PATH_LYNX) == 0) {
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_A] = KEY_K;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_B] = KEY_J;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_B] = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_A] = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
-        }
-        //Game Boy color controls
-        else if (strcmp(corePath, PATH_GAMEBOY) == 0) {
+static void Play_ApplyMaps(const char* corePath) {
+    //Reset key maps
+    for (int i = 0; i < RETRO_DEVICE_ID_JOYPAD_R3 + 1; i++) { 
+        your_key_map[i] = 0; 
+        your_pad_map[i] = 0; 
+    }
+    //Common controls
+    your_key_map[RETRO_DEVICE_ID_JOYPAD_UP]     = KEY_W;
+    your_key_map[RETRO_DEVICE_ID_JOYPAD_DOWN]   = KEY_S;
+    your_key_map[RETRO_DEVICE_ID_JOYPAD_LEFT]   = KEY_A;
+    your_key_map[RETRO_DEVICE_ID_JOYPAD_RIGHT]  = KEY_D;
+    your_key_map[RETRO_DEVICE_ID_JOYPAD_START]  = KEY_ENTER;
+    your_key_map[RETRO_DEVICE_ID_JOYPAD_SELECT] = KEY_RIGHT_SHIFT;
+    your_pad_map[RETRO_DEVICE_ID_JOYPAD_UP]     = GAMEPAD_BUTTON_LEFT_FACE_UP;
+    your_pad_map[RETRO_DEVICE_ID_JOYPAD_DOWN]   = GAMEPAD_BUTTON_LEFT_FACE_DOWN;
+    your_pad_map[RETRO_DEVICE_ID_JOYPAD_LEFT]   = GAMEPAD_BUTTON_LEFT_FACE_LEFT;
+    your_pad_map[RETRO_DEVICE_ID_JOYPAD_RIGHT]  = GAMEPAD_BUTTON_LEFT_FACE_RIGHT;
+    your_pad_map[RETRO_DEVICE_ID_JOYPAD_START]  = GAMEPAD_BUTTON_MIDDLE_RIGHT;
+    your_pad_map[RETRO_DEVICE_ID_JOYPAD_SELECT] = GAMEPAD_BUTTON_MIDDLE_LEFT;
+    //NES and Atari Lynx controls
+    if (strcmp(corePath, PATH_NES) == 0 || strcmp(corePath, PATH_LYNX) == 0) {
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_A] = KEY_K;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_B] = KEY_J;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_B] = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_A] = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
+    }
+    //Game Boy color controls
+    else if (strcmp(corePath, PATH_GAMEBOY) == 0) {
         your_key_map[RETRO_DEVICE_ID_JOYPAD_A] = KEY_K;
         your_key_map[RETRO_DEVICE_ID_JOYPAD_B] = KEY_J;
         your_pad_map[RETRO_DEVICE_ID_JOYPAD_B] = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
         your_pad_map[RETRO_DEVICE_ID_JOYPAD_A] = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
-        }
-        //SNES, TurboGrafx-16/TurboGrafx-CD, and Neo Geo Pocket Color controls
-        else if (strcmp(corePath, PATH_SNES) == 0 || strcmp(corePath, PATH_TG16) == 0 || strcmp(corePath, PATH_NGPC) == 0) {
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_B] = KEY_J;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_A] = KEY_K;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_Y] = KEY_I;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_X] = KEY_L;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_L] = KEY_U;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_R] = KEY_O;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_B] = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_A] = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_Y] = GAMEPAD_BUTTON_RIGHT_FACE_LEFT;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_X] = GAMEPAD_BUTTON_RIGHT_FACE_UP;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_L] = GAMEPAD_BUTTON_LEFT_TRIGGER_1;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_R] = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;
-        }
-        //Game Boy Advance controls
-        else if (strcmp(corePath, PATH_GBA) == 0) {
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_B] = KEY_J;   // primary
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_A] = KEY_K;   // secondary
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_L] = KEY_U;   // left shoulder
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_R] = KEY_O;   // right shoulder
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_B] = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_A] = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_L] = GAMEPAD_BUTTON_LEFT_TRIGGER_1;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_R] = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;
-        }
-        //Sega Genesis, Sega Master System, and Sega CD controls
-        else if (strcmp(corePath, PATH_GENESIS) == 0) {
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_B] = KEY_J;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_A] = KEY_K;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_Y] = KEY_I;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_X] = KEY_L;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_L] = KEY_U;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_R] = KEY_O;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_B] = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_A] = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_Y] = GAMEPAD_BUTTON_RIGHT_FACE_LEFT;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_X] = GAMEPAD_BUTTON_RIGHT_FACE_UP;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_L] = GAMEPAD_BUTTON_LEFT_TRIGGER_1;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_R] = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;
-        }
-        // PS1 and arcade controls
-        else if (strcmp(corePath, PATH_PS1) == 0 || strcmp(corePath, PATH_ARCADE) == 0) {
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_B]  = KEY_K;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_A]  = KEY_L;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_Y]  = KEY_J;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_X]  = KEY_I;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_L]  = KEY_U;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_R]  = KEY_O;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_L2] = KEY_Q;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_R2] = KEY_E;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_B]  = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_A]  = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_Y]  = GAMEPAD_BUTTON_RIGHT_FACE_LEFT;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_X]  = GAMEPAD_BUTTON_RIGHT_FACE_UP;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_L]  = GAMEPAD_BUTTON_LEFT_TRIGGER_1;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_R]  = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_L2] = GAMEPAD_BUTTON_LEFT_TRIGGER_2;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_R2] = GAMEPAD_BUTTON_RIGHT_TRIGGER_2;
-        }
-        //N64 controls
-        else if (strcmp(corePath, PATH_N64) == 0) {
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_UP]    = KEY_UP;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_DOWN]  = KEY_DOWN;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_LEFT]  = KEY_LEFT;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_RIGHT] = KEY_RIGHT;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_Y]  = KEY_U;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_B]  = KEY_O;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_L]  = KEY_Q;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_R]  = KEY_E;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_L2] = KEY_SPACE; 
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_Y]  = GAMEPAD_BUTTON_RIGHT_FACE_DOWN; 
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_B]  = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_L]  = GAMEPAD_BUTTON_LEFT_TRIGGER_1;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_R]  = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_L2] = GAMEPAD_BUTTON_LEFT_TRIGGER_2;
-        }
-        //Doom controls
-        else if (strcmp(corePath, PATH_PRBOOM) == 0) {
+    }
+    //SNES, TurboGrafx-16/TurboGrafx-CD, and Neo Geo Pocket Color controls
+    else if (strcmp(corePath, PATH_SNES) == 0 || strcmp(corePath, PATH_TG16) == 0 || strcmp(corePath, PATH_NGPC) == 0) {
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_B] = KEY_J;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_A] = KEY_K;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_Y] = KEY_I;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_X] = KEY_L;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L] = KEY_U;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_R] = KEY_O;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_B] = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_A] = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_Y] = GAMEPAD_BUTTON_RIGHT_FACE_LEFT;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_X] = GAMEPAD_BUTTON_RIGHT_FACE_UP;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_L] = GAMEPAD_BUTTON_LEFT_TRIGGER_1;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_R] = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;
+    }
+    //Game Boy Advance controls
+    else if (strcmp(corePath, PATH_GBA) == 0) {
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_B] = KEY_J;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_A] = KEY_K;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L] = KEY_U;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_R] = KEY_O;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_B] = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_A] = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_L] = GAMEPAD_BUTTON_LEFT_TRIGGER_1;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_R] = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;
+    }
+    //Sega Genesis, Sega Master System, and Sega CD controls
+    else if (strcmp(corePath, PATH_GENESIS) == 0) {
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_B] = KEY_J;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_A] = KEY_K;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_Y] = KEY_I;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_X] = KEY_L;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L] = KEY_U;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_R] = KEY_O;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_B] = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_A] = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_Y] = GAMEPAD_BUTTON_RIGHT_FACE_LEFT;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_X] = GAMEPAD_BUTTON_RIGHT_FACE_UP;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_L] = GAMEPAD_BUTTON_LEFT_TRIGGER_1;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_R] = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;
+    }
+    // PS1 and arcade controls
+    else if (strcmp(corePath, PATH_PS1) == 0 || strcmp(corePath, PATH_ARCADE) == 0) {
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_B]  = KEY_K;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_A]  = KEY_L;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_Y]  = KEY_J;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_X]  = KEY_I;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L]  = KEY_U;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_R]  = KEY_O;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L2] = KEY_Q;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_R2] = KEY_E;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_B]  = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_A]  = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_Y]  = GAMEPAD_BUTTON_RIGHT_FACE_LEFT;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_X]  = GAMEPAD_BUTTON_RIGHT_FACE_UP;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_L]  = GAMEPAD_BUTTON_LEFT_TRIGGER_1;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_R]  = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_L2] = GAMEPAD_BUTTON_LEFT_TRIGGER_2;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_R2] = GAMEPAD_BUTTON_RIGHT_TRIGGER_2;
+    }
+    //N64 controls
+    else if (strcmp(corePath, PATH_N64) == 0) {
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_UP]    = KEY_UP;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_DOWN]  = KEY_DOWN;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_LEFT]  = KEY_LEFT;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_RIGHT] = KEY_RIGHT;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_Y]  = KEY_U;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_B]  = KEY_O;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L]  = KEY_Q;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_R]  = KEY_E;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L2] = KEY_SPACE; 
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_Y]  = GAMEPAD_BUTTON_RIGHT_FACE_DOWN; 
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_B]  = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_L]  = GAMEPAD_BUTTON_LEFT_TRIGGER_1;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_R]  = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_L2] = GAMEPAD_BUTTON_LEFT_TRIGGER_2;
+    }
+    //Doom controls
+    else if (strcmp(corePath, PATH_PRBOOM) == 0) {
             your_key_map[RETRO_DEVICE_ID_JOYPAD_LEFT]  = 0; 
             your_key_map[RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
             your_key_map[RETRO_DEVICE_ID_JOYPAD_L]  = KEY_A;
@@ -184,12 +250,11 @@ static void Play_ApplyMaps(char* corePath) {
             your_key_map[RETRO_DEVICE_ID_JOYPAD_A]  = KEY_SPACE;
             your_key_map[RETRO_DEVICE_ID_JOYPAD_Y]  = KEY_LEFT_SHIFT;
             your_key_map[RETRO_DEVICE_ID_JOYPAD_SELECT] = KEY_TAB;
-
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_X] = GAMEPAD_BUTTON_RIGHT_TRIGGER_2;   // Fire = Xbox RT
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_A] = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;  // Use = Xbox A
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_L2] = GAMEPAD_BUTTON_LEFT_TRIGGER_1;   // prev weapon = LB
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_R2] = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;  // next weapon = RB
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_Y] = GAMEPAD_BUTTON_LEFT_THUMB;   // Run = Xbox LS click
+            your_pad_map[RETRO_DEVICE_ID_JOYPAD_X] = GAMEPAD_BUTTON_RIGHT_TRIGGER_2;
+            your_pad_map[RETRO_DEVICE_ID_JOYPAD_A] = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
+            your_pad_map[RETRO_DEVICE_ID_JOYPAD_L2] = GAMEPAD_BUTTON_LEFT_TRIGGER_1;
+            your_pad_map[RETRO_DEVICE_ID_JOYPAD_R2] = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;
+            your_pad_map[RETRO_DEVICE_ID_JOYPAD_Y] = GAMEPAD_BUTTON_LEFT_THUMB;
         }
 }
 
@@ -212,8 +277,8 @@ static float Play_GetConsoleAspect(const char* console) {
     return ASPECT_OTHER;
 }
 
-//Stop the game
-void Play_Stop(const game_t* game) {
+//Stop the libretro game
+void Play_StopLib(const game_t* game) {
     //If a game is currently running
     if (is_game_running) {
         //If the game saves by battery, save before closing game
@@ -228,15 +293,26 @@ void Play_Stop(const game_t* game) {
         }
         //Release/destroy GPU resources
         TriggerContextDestroy();
+        //Unload hardware render drawing texture
+        if (hw_target.id != 0) {
+            UnloadRenderTexture(hw_target);
+            hw_target.id = 0;
+        }
+        //Unload main emulator drawing texture
+        if (emulator_texture.id != 0) {
+            UnloadTexture(emulator_texture);
+            emulator_texture.id = 0;
+        }
         //Close the core
         CloseRetroCore();
         //Mark that the game is no longer running
         is_game_running = false;
+        //Make cursore visible
         EnableCursor();
     }
 }
 
-//Advance the game
+//Advance libretro game
 static void Play_Advance() {
     //How long one frame should take
     double step = 1.0f / core_fps;
@@ -248,7 +324,11 @@ static void Play_Advance() {
     }
     //Keep track how long this frame has been up
     accumulator += frameTime;
-    //Wait for the time on the frame to be greater than or equal to the frame target time
+    //Cap the accumulator
+    if (accumulator > step * 2.0) {
+        accumulator = step;
+    }
+        //Wait for the time on the frame to be greater than or equal to the frame target time
     while (accumulator >= step) {
         //Run the core
         if (is_game_running && core_run) {
@@ -275,10 +355,21 @@ static void Play_Draw(const game_t* game) {
     float targetAspect;
     //Get target aspect ratio depending on the console
     if (strcmp(game->console, "Arcade") == 0) {
-        targetAspect = texW / texH;
+        //Check if width and height are correct values
+        if ((texW > 0.0f) && (texH > 0.0f)) {
+            targetAspect = texW / texH;
+        }
+        //Fallback case
+        else {
+            targetAspect = ASPECT_OTHER;
+        }
     }
     else {
         targetAspect = Play_GetConsoleAspect(game->console);
+    }
+    //Guard against bad aspects
+    if (targetAspect <= 0.0f) {
+        targetAspect = ASPECT_OTHER;
     }
     //If game is rotated sideways, flip the aspect ratio
     if (swapped) {
@@ -331,7 +422,7 @@ void Play_Init(const game_t* game) {
         UnloadImage(blank);
         //Keep pixels sharp
         SetTextureFilter(emulator_texture, TEXTURE_FILTER_POINT);
-
+        //Set current core variables
         Play_SetCurrentCore(game->corePath);
         //Apply controls depending on the game
         Play_ApplyMaps(game->corePath);
@@ -361,9 +452,7 @@ void Play_Init(const game_t* game) {
                 DisableCursor();
             }
             else {
-                //printf("CRITICAL: LoadGame() returned false. Aborting launch.\n");
-                is_game_running = false; // Prevent the run loop
-                // Optionally: unload core here
+                is_game_running = false;
             }
         }
         //Reset time since last saved game
@@ -373,33 +462,83 @@ void Play_Init(const game_t* game) {
     }
     //If the game is through an external application
     else {
-        //If it is a DS or Saturn game, start the script for exiting the applcication when the right button is pressed
-        if (strcmp(game->corePath, PATH_DS) == 0) {
-            system("flatpak run io.github.antimicrox.antimicrox --profile assets/antimicro/micro_ds.gamecontroller.amgp --hidden &");
-            sleep(4);
+        pid_t pid = fork();
+        //Child process
+        if (pid == 0) {
+            //Correct command based on emulator
+            if (strcmp(game->corePath, PATH_GAMECUBE) == 0 || strcmp(game->corePath, PATH_DREAMCAST) == 0) {
+                execlp("flatpak", "flatpak", "run", game->corePath, game->romPath, (char*)NULL);
+            }
+            else if (strcmp(game->corePath, PATH_DS) == 0 || strcmp(game->corePath, PATH_SATURN) == 0){
+                execlp("flatpak", "flatpak", "run", game->corePath, "-f", game->romPath, (char*)NULL);
+            }
+            else {
+                execlp("flatpak", "flatpak", "run", game->corePath, "--fullscreen", game->romPath, (char*)NULL);
+            }
+            fprintf(stderr, "Failed to launch: %s\n", strerror(errno));
+            _exit(1);
         }
-        else if (strcmp(game->corePath, PATH_SATURN) == 0) {
-            system("flatpak run io.github.antimicrox.antimicrox --profile assets/antimicro/micro_saturn.gamecontroller.amgp --hidden &");
-            sleep(4);
+        //Parent
+        else if (pid > 0) {
+            extAppId = pid;
         }
-        //Run the correct command depending on the console
-        char command[1024];
-        snprintf(command, sizeof(command), "flatpak run %s \"%s\"", game->corePath, game->romPath);
-        system(command);
-        //If it is a DS or Saturn game, kill the script
-        if (strcmp(game->corePath, PATH_DS) == 0) {
-            system("flatpak kill io.github.antimicrox.antimicrox");
+        //Failed
+        else {
+            fprintf(stderr, "Fork failed: %s\n", strerror(errno));
         }
-        else if (strcmp(game->corePath, PATH_SATURN) == 0) {
-            system("flatpak kill io.github.antimicrox.antimicrox");
-        }
-        //Focus the menu window again
-        SetWindowFocused();
+        killEscalated = false;
+        killRequestedTime = 0;
     }
 }
 
-//Play game tick function
-bool Play_Tick(const game_t* game) {
+//Play external game tick function
+bool Play_TickExt(const game_t* game) {
+    //Nothing is running
+    if (extAppId < 0) return false;
+    //If home button pressed, close the app
+    if (IsKeyPressed(KEY_ESCAPE) || HOME_PRESS) {
+        pid_t realPid = Play_FindProcess(game->processName);   // see note below
+        if (realPid > 0) {
+            kill(realPid, SIGTERM);
+        } else {
+            // Fall back to the fork()'d PID in case it IS the real process
+            // (e.g. an emulator launched without Flatpak wrapping it)
+            kill(extAppId, SIGTERM);
+        }
+        killRequestedTime = GetTime();
+    }
+
+    //Check status of the result (still watches the ORIGINAL fork()'d child,
+    //since that's the one this process actually owns and can wait() on)
+    int status;
+    pid_t result = waitpid(extAppId, &status, WNOHANG);
+    //If no longer running
+    if (result == extAppId) {
+        extAppId = -1;
+        //Focus the menu window again
+        SetWindowFocused();
+        Controller_SetWasPressed_Home(true);
+        return false;
+    }
+
+    //If kill has been requested but not escalated yet
+    if (killRequestedTime > 0 && !killEscalated) {
+        //If kill was requested long enough ago, escalate the kill
+        if (GetTime() - killRequestedTime >= KILL_TIME) {
+            pid_t realPid = Play_FindProcess(game->processName);
+            if (realPid > 0) {
+                kill(realPid, SIGKILL);
+            } else {
+                kill(extAppId, SIGKILL);
+            }
+            killEscalated = true;
+        }
+    }
+    return true;
+}
+
+//Play libretro game tick function
+bool Play_TickLib(const game_t* game) {
     //Transition
     switch (currentPlayState) {
         //Game is running
@@ -440,7 +579,7 @@ bool Play_Tick(const game_t* game) {
         //Restarting game
         case PLAY_RESTART:
             ClearBackground(BLACK);
-            Play_Stop(game);
+            Play_StopLib(game);
             Play_Init(game);
             currentPlayState = PLAY_GO;
             break;
@@ -499,7 +638,7 @@ bool Play_Tick(const game_t* game) {
 
         //Exiting game
         case PLAY_EXIT:
-            Play_Stop(game);
+            Play_StopLib(game);
             return false;
     }
 

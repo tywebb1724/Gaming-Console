@@ -1,7 +1,7 @@
 #include "brightness.h"
 #include "raylib.h"
-#include "controller_config.h"
-#include "uipause_config.h"
+#include "controller.h"
+#include "uipause.h"
 #include "config.h"
 #include <stdio.h>
 

@@ -127,7 +127,7 @@ void States_Init() {
     char color1[COLOR_LEN] = "", color2[COLOR_LEN] = "", color3[COLOR_LEN] = "", bright[BRIGHT_LEN] = "", diag[DIAG_LEN] = "";
     //Open the file
     FILE* f = fopen("assets/txt/ui.txt", "r");
-    //Chech if the file opened successfully
+    //Check if the file opened successfully
     if (f) {
         //Get theme color 1 and set the variables for the color and the background
         if (fgets(color1, sizeof(color1), f)) {
@@ -249,19 +249,8 @@ void States_UpdateAndDraw() {
 
         //Running app
         case STATE_APP_LAUNCHER:
-            //If game is libretro
-            if (Games_GetDisplayed(CURRENT_GAME)->libRetro == true) {
-                //If game is no longer running, transition back to main menu
-                if (!is_game_running) {
-                    currentConsoleState = STATE_MAIN_MENU;
-                    newConsoleState = STATE_MAIN_MENU;
-                    //Set target FPS again
-                    SetTargetFPS(FPS);
-                    UI_Init();
-                }
-            }   
-            //If game is not libretro, immediately transition back to main menu 
-            else {
+            //If game is no longer running, transition back to main menu
+            if (!is_game_running) {
                 currentConsoleState = STATE_MAIN_MENU;
                 newConsoleState = STATE_MAIN_MENU;
                 //Set target FPS again
@@ -315,10 +304,13 @@ void States_UpdateAndDraw() {
             //If the game is libretro
             if (Games_GetDisplayed(CURRENT_GAME)->libRetro == true) {
                 //Call play tick function and check if game is still running
-                is_game_running = Play_Tick(Games_GetDisplayed(CURRENT_GAME));
+                is_game_running = Play_TickLib(Games_GetDisplayed(CURRENT_GAME));
                 //Draw brightness
                 DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
-            }    
+            }
+            else {
+                is_game_running = Play_TickExt(Games_GetDisplayed(CURRENT_GAME));
+            }
             break;
 
         //View diagnostics menu

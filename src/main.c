@@ -3,21 +3,20 @@
 #include "ui/ui.h"
 #include "games.h"
 #include "categories.h"
-#include "controller_config.h"
 #include "config.h"
 #include "play/play.h"
 #include "controller.h"
 #include "play/playpause.h"
 #include "var.h"
 
+//Length and width of the resolution
 #define RESOLUTION_LEN 1920
 #define RESOLUTION_WIDTH 1080
 
 //Main function
 int main(void) {
     //Synch refresh rates
-    SetConfigFlags(FLAG_VSYNC_HINT);
-    SetConfigFlags(FLAG_WINDOW_UNDECORATED);
+    SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_UNDECORATED);
     //Initialize a window 
     InitWindow(RESOLUTION_LEN, RESOLUTION_WIDTH, "Custom Console OS");
     //Go fullscreen
@@ -57,7 +56,7 @@ int main(void) {
         States_LoadGameImages();
     }
     //Stop any possibly running game
-    Play_Stop(Games_GetDisplayed(CURRENT_GAME));
+    Play_StopLib(Games_GetDisplayed(CURRENT_GAME));
     //Unload game textures and close window
     Games_UnloadTextures();
     //Close window

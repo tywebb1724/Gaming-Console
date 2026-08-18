@@ -44,13 +44,16 @@ void Controller_SetWasPressed_Home(bool value) {
 //Rescan which gamepad slots are connected
 void Controller_Refresh(void) {
     count = 0;
+    //Go through all gamepads
     for (int i = 0; i < CONTROLLER_MAX; i++) {
+        //If gamepad is connected in that slot
         if (IsGamepadAvailable(i)) {
+            //Get gamepad name
             const char *name = GetGamepadName(i);
             //Only count real controllers — skip the mouse/other devices raylib exposes as gamepads
             if (name && (strstr(name, "GameSir") || strstr(name, "Xbox") ||
                          strstr(name, "X-Box")   || strstr(name, "Microsoft") ||
-                         strstr(name, "Controller"))) {
+                         strstr(name, "XInput"))) {
                 slots[count] = i;
                 count++;
             }
@@ -74,7 +77,9 @@ int Controller_Slot(int player) {
 
 //Was a button just pressed on any controller
 bool Controller_AnyPressed(int button) {
+    //Go through all controllers
     for (int i = 0; i < count; i++) {
+        //Check if any of them pressed that button
         if (IsGamepadButtonPressed(slots[i], button)) {
             return true;
         }
@@ -84,7 +89,9 @@ bool Controller_AnyPressed(int button) {
 
 //Is a button held on any controller
 bool Controller_AnyDown(int button) {
+    //Go through all controllers
     for (int i = 0; i < count; i++) {
+        //Check if any is holding down that button
         if (IsGamepadButtonDown(slots[i], button)) {
             return true;
         }
@@ -92,15 +99,17 @@ bool Controller_AnyDown(int button) {
     return false;
 }
 
-//Find the controller whose left stick is pushed the furthest from centre
+//Find the controller whose left stick is pushed the furthest from center
 static int Controller_StickSlot(void) {
     int best = -1;
     float bestMag = 0.0f;
+    //Go through all controllers
     for (int i = 0; i < count; i++) {
+        //Get axis movement of left stick in y and x directions
         float x = GetGamepadAxisMovement(slots[i], GAMEPAD_AXIS_LEFT_X);
         float y = GetGamepadAxisMovement(slots[i], GAMEPAD_AXIS_LEFT_Y);
-        //Squared magnitude, so no square root is needed
         float mag = x * x + y * y;
+        //If the magnitude is better than the current best, replace the best
         if (mag > bestMag) {
             bestMag = mag;
             best = slots[i];
@@ -112,6 +121,7 @@ static int Controller_StickSlot(void) {
 //Left stick X of the most-deflected controller
 float Controller_LeftStickX(void) {
     int slot = Controller_StickSlot();
+    //If invalid result, return 0
     if (slot < 0) {
         return 0.0f;
     }
@@ -121,6 +131,7 @@ float Controller_LeftStickX(void) {
 //Left stick Y of the most-deflected controller
 float Controller_LeftStickY(void) {
     int slot = Controller_StickSlot();
+    //If invalid result, return 0
     if (slot < 0) {
         return 0.0f;
     }

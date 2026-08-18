@@ -10,10 +10,9 @@
 #include <unistd.h>
 #include <string.h>
 #include "var.h"
-#include "controller_config.h"
+#include "controller.h"
 #include "uipause.h"
 #include "brightness.h"
-#include "uipause_config.h"
 #include "ui_config.h"
 #include "games.h"
 #include "config.h"
@@ -272,7 +271,7 @@ void UI_DrawBootScreen() {
     DrawTexturePro(spiderLogo, sourceRect, destRect, origin, 0.0f, WHITE);
 }
 
-//Load image of controller
+//Load images of controller/keybaord and mouse
 void UI_LoadControlsImgs() {
     controlsImg = LoadTexture("assets/images/other/controller.png");
     keyImg = LoadTexture("assets/images/other/keyboard.png");
@@ -1786,8 +1785,7 @@ void UI_ChangeAlpha_Static() {
             }
         }
     }
-    else
-    {
+    else {
         // If less than 1, increment
         if (Var_GetAlphaSelect() > ALPHA_SELECT_MIN) {
             Var_AddAlphaSelect(- ALPHA_SELECT_INCREMENT_STATIC * GetFrameTime() * FPS);
@@ -1969,13 +1967,13 @@ static void UI_DrawCateg_Scroll() {
             UI_ResetCoords_Games();
             return;
         }
-        // Update x coordinates for new games
+        //Update x coordinates for new games
         Games_GetNew(NEW_GAME_LEFT2)->x = Lerp(Games_GetNew(NEW_GAME_LEFT2)->x, LEFT2_GAME_X, SCROLL_CATEG_IN_SPEED);
         Games_GetNew(NEW_GAME_LEFT1)->x = Lerp(Games_GetNew(NEW_GAME_LEFT1)->x, LEFT1_GAME_X, SCROLL_CATEG_IN_SPEED);
         Games_GetNew(NEW_GAME_CENTER)->x = Lerp(Games_GetNew(NEW_GAME_CENTER)->x, CENTER_GAME_X, SCROLL_CATEG_IN_SPEED);
         Games_GetNew(NEW_GAME_RIGHT1)->x = Lerp(Games_GetNew(NEW_GAME_RIGHT1)->x, RIGHT1_GAME_X, SCROLL_CATEG_IN_SPEED);
         Games_GetNew(NEW_GAME_RIGHT2)->x = Lerp(Games_GetNew(NEW_GAME_RIGHT2)->x, RIGHT2_GAME_X, SCROLL_CATEG_IN_SPEED);
-        // Update x coordinates for old games
+        //Update x coordinates for old games
         Games_GetDisplayed(GAME_LEFT2)->x = Lerp(Games_GetDisplayed(GAME_LEFT2)->x, LEFT2_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
         Games_GetDisplayed(GAME_LEFT1)->x = Lerp(Games_GetDisplayed(GAME_LEFT1)->x, LEFT1_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
         Games_GetDisplayed(CURRENT_GAME)->x = Lerp(Games_GetDisplayed(CURRENT_GAME)->x, CENTER_SCROLLL_X, SCROLL_CATEG_OUT_SPEED);
@@ -2063,7 +2061,6 @@ static void UI_DrawGames_Normal() {
     UI_DrawGame(GAME_LEFT1, alphaCategories_Out, false);
     UI_DrawGame(GAME_RIGHT1, alphaCategories_Out, false);
     UI_DrawGame(CURRENT_GAME, alphaCategories_Out, false);
-
     // Draw outline for selected game
     DrawRectangleLinesEx(
         (Rectangle){
@@ -2169,173 +2166,155 @@ static void UI_DrawGames_Scroll() {
 
 //Tick function for the main UI
 void UI_Tick(ConsoleState* currentConsoleState) {
-    // Transition
+    //Transition
     switch (currentUIState) {
-    case NORMAL:
-        //If not scrolling games to left, not scrolling categories, and the right input is pressed
-        if (Var_GetScrollGames() != SCROLL_LEFT && Var_GetScrollCateg() == SCROLL_NO && (IsKeyDown(KEY_RIGHT) || LS_RIGHT)) {
-            //Scroll games to the right
-            Var_SetScrollGames(SCROLL_RIGHT);
-            currentUIState = SCROLL_GAMES;
-        }
-        //If not scrolling games to right, not scrolling categories, and the right input is pressed
-        else if (Var_GetScrollGames() != SCROLL_RIGHT && Var_GetScrollCateg() == SCROLL_NO && (IsKeyDown(KEY_LEFT) || LS_LEFT)) {
-            //Scroll games to the left
-            Var_SetScrollGames(SCROLL_LEFT);
-            currentUIState = SCROLL_GAMES;
-        }
-        //If not scrolling categories to left and right input is pressed
-        if (Var_GetScrollCateg() != SCROLL_LEFT && (IsKeyDown(KEY_D) || RB_DOWN)) {
-            //If not already scrolling cateogries
-            if (Var_GetScrollCateg() == SCROLL_NO) {
-                //Scroll cateogries to right and don't scroll games
-                Var_SetScrollCateg(SCROLL_RIGHT);
-                Var_SetScrollGames(SCROLL_NO);
-                currentUIState = SCROLL_CATEGORIES;
-                //Get new games ready and reset the coordinates
-                Games_UpdateNewIndexes(RIGHT);
-                Games_NewRefresh();
-                UI_ResetCoords_Categ();
+        //Normal, static menu
+        case NORMAL:
+            //If not scrolling games to left, not scrolling categories, and the right input is pressed
+            if (Var_GetScrollGames() != SCROLL_LEFT && Var_GetScrollCateg() == SCROLL_NO && (IsKeyDown(KEY_RIGHT) || LS_RIGHT)) {
+                //Scroll games to the right
+                Var_SetScrollGames(SCROLL_RIGHT);
+                currentUIState = SCROLL_GAMES;
             }
-        }
-        //If not scrolling categories to right and right input is pressed
-        else if (Var_GetScrollCateg() != SCROLL_RIGHT && (IsKeyDown(KEY_A) || LB_DOWN)) {
-            //If not already scrolling cateogries
-            if (Var_GetScrollCateg() == SCROLL_NO) {
-                //Scroll cateogries to right and don't scroll games
-                Var_SetScrollCateg(SCROLL_LEFT);
+            //If not scrolling games to right, not scrolling categories, and the right input is pressed
+            else if (Var_GetScrollGames() != SCROLL_RIGHT && Var_GetScrollCateg() == SCROLL_NO && (IsKeyDown(KEY_LEFT) || LS_LEFT)) {
+                //Scroll games to the left
+                Var_SetScrollGames(SCROLL_LEFT);
+                currentUIState = SCROLL_GAMES;
+            }
+            //If not scrolling categories to left and right input is pressed
+            if (Var_GetScrollCateg() != SCROLL_LEFT && (IsKeyDown(KEY_D) || RB_DOWN)) {
+                //If not already scrolling categories
+                if (Var_GetScrollCateg() == SCROLL_NO) {
+                    //Scroll cateogries to right and don't scroll games
+                    Var_SetScrollCateg(SCROLL_RIGHT);
+                    Var_SetScrollGames(SCROLL_NO);
+                    currentUIState = SCROLL_CATEGORIES;
+                    //Get new games ready and reset the coordinates
+                    Games_UpdateNewIndexes(RIGHT);
+                    Games_NewRefresh();
+                    UI_ResetCoords_Categ();
+                }
+            }
+            //If not scrolling categories to right and right input is pressed
+            else if (Var_GetScrollCateg() != SCROLL_RIGHT && (IsKeyDown(KEY_A) || LB_DOWN)) {
+                //If not already scrolling categories
+                if (Var_GetScrollCateg() == SCROLL_NO) {
+                    //Scroll cateogries to right and don't scroll games
+                    Var_SetScrollCateg(SCROLL_LEFT);
+                    Var_SetScrollGames(SCROLL_NO);
+                    currentUIState = SCROLL_CATEGORIES;
+                    //Get new games ready and reset the coordinates
+                    Games_UpdateNewIndexes(LEFT);
+                    Games_NewRefresh();
+                    UI_ResetCoords_Categ();
+                }
+            }
+            //Pause if the correct button is pressed
+            if (IsKeyPressed(KEY_ESCAPE) || (HOME_PRESS && !Controller_GetWasPressed_Home())) {
+                UIPause_Init();
+                currentUIState = OPTIONS;
+            }
+            //Go to erase data pop-up if correct button is pressed
+            else if (IsKeyPressed(KEY_P) || START_PRESS) {
+                Erase_Init();
+                currentUIState = ERASE_DATA;
+            }
+            break;
+
+        //Scrolling games
+        case SCROLL_GAMES:
+            //If not scrolling games anymore, transition
+            if (Var_GetScrollGames() == SCROLL_NO) {
+                currentUIState = NORMAL;
+                alphaSelectTxt_Blink = true;
+                alphaSelectTxt_TimeElapsed = 0.0f;
+            }
+            //Pause if the correct button is pressed
+            if (IsKeyPressed(KEY_ESCAPE) || HOME_PRESS) {
+                UIPause_Init();
+                currentUIState = OPTIONS;
+            }
+            //Start scrolling categories if right button is pressed
+            if (IsKeyPressed(KEY_A) || LB_PRESS) {
                 Var_SetScrollGames(SCROLL_NO);
+                //Update displayed games
+                Games_ScrollLeft();
+                //Reset game values
+                UI_ResetCoords_Games();
+                Var_SetScrollCateg(SCROLL_LEFT);
                 currentUIState = SCROLL_CATEGORIES;
-                //Get new games ready and reset the coordinates
                 Games_UpdateNewIndexes(LEFT);
                 Games_NewRefresh();
                 UI_ResetCoords_Categ();
             }
-        }
-        if (IsKeyPressed(KEY_ESCAPE) || HOME_PRESS) {
-            UIPause_Init();
-            currentUIState = OPTIONS;
-        }
-        else if (IsKeyPressed(KEY_P) || START_PRESS) {
-            Erase_Init();
-            currentUIState = ERASE_DATA;
-        }
-        break;
+            else if (IsKeyPressed(KEY_D) || RB_PRESS) {
+                Var_SetScrollGames(SCROLL_NO);
+                //Update displayed games
+                Games_ScrollRight();
+                //Reset game values
+                UI_ResetCoords_Games();
+                Var_SetScrollCateg(SCROLL_RIGHT);
+                currentUIState = SCROLL_CATEGORIES;
+                Games_UpdateNewIndexes(RIGHT);
+                Games_NewRefresh();
+                UI_ResetCoords_Categ();
+            }
+            break;
 
-    case SCROLL_GAMES:
-        if (Var_GetScrollGames() == SCROLL_NO) {
-            currentUIState = NORMAL;
-            alphaSelectTxt_Blink = true;
-            alphaSelectTxt_TimeElapsed = 0.0f;
-        }
-        if (IsKeyPressed(KEY_ESCAPE) || HOME_PRESS) {
-            UIPause_Init();
-            currentUIState = OPTIONS;
-        }
-        if (IsKeyPressed(KEY_A) || LB_PRESS) {
-            Var_SetScrollGames(SCROLL_NO);
-            //Update displayed games
-            Games_ScrollLeft();
-            //Reset game values
-            UI_ResetCoords_Games();
-            Var_SetScrollCateg(SCROLL_LEFT);
-            currentUIState = SCROLL_CATEGORIES;
-            Games_UpdateNewIndexes(LEFT);
-            Games_NewRefresh();
-            UI_ResetCoords_Categ();
-        }
-        else if (IsKeyPressed(KEY_D) || RB_PRESS) {
-            Var_SetScrollGames(SCROLL_NO);
-            //Update displayed games
-            Games_ScrollRight();
-            //Reset game values
-            UI_ResetCoords_Games();
-            Var_SetScrollCateg(SCROLL_RIGHT);
-            currentUIState = SCROLL_CATEGORIES;
-            Games_UpdateNewIndexes(RIGHT);
-            Games_NewRefresh();
-            UI_ResetCoords_Categ();
-        }
-        break;
+        //Scrolling categories
+        case SCROLL_CATEGORIES:
+        //If not scrolling anymore, stop
+            if (Var_GetScrollCateg() == SCROLL_NO) {
+                currentUIState = NORMAL;
+                alphaSelectTxt_Blink = true;
+                alphaSelectTxt_TimeElapsed = 0.0f;
+            }
+            //Pause if the correct button is pressed
+            if (IsKeyPressed(KEY_ESCAPE) || HOME_PRESS) {
+                UIPause_Init();
+                currentUIState = OPTIONS;
+            }
+            break;
 
-    case SCROLL_CATEGORIES:
-        if (Var_GetScrollCateg() == SCROLL_NO) {
-            currentUIState = NORMAL;
-            alphaSelectTxt_Blink = true;
-            alphaSelectTxt_TimeElapsed = 0.0f;
-        }
-        if (IsKeyPressed(KEY_ESCAPE) || HOME_PRESS) {
-            UIPause_Init();
-            currentUIState = OPTIONS;
-        }
-        break;
+        //Options menu 
+        case OPTIONS:
+            //Go back to normal UI screen if right button is pressed
+            if (HOME_PRESS || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Var_GetDisplayBright() && !Var_GetDisplayTheme())) {
+                currentUIState = NORMAL;
+                Controller_SetWasPressed_B(true);
+            }
+            break;
 
-    case OPTIONS:
-        if (HOME_PRESS || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Var_GetDisplayBright() && !Var_GetDisplayTheme())) {
-            currentUIState = NORMAL;
-            Controller_SetWasPressed_B(true);
-        }
-        break;
-
-    case ERASE_DATA:
-        break;
+        //Erase data pop-up
+        case ERASE_DATA:
+            break;
     }
 
     //Action
     switch (currentUIState) {
-    case NORMAL:
-        UI_ChangeAlpha_Static();
-        UI_DrawBase();
-        UI_DrawCateg_Static();
-        UI_DrawGames_Normal();
-        //Draw bumpers
-        UI_DrawTop();
-        //Draw bottom section of screen
-        UI_DrawBottom();
-        UI_DrawDispDiag(false);
-        if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
-            *currentConsoleState = STATE_APP_LAUNCHER;
-            Controller_SetWasPressed_A(true);
-        }
-        break;
-
-    case SCROLL_GAMES:
-        UI_ChangeAlpha_ScrollGames();
-        UI_DrawBase();
-        UI_DrawCateg_Static();
-        UI_DrawGames_Scroll();
-        //Draw outline for selected game
-        DrawRectangleLinesEx(
-            (Rectangle){
-                img_X - THICKNESS_GAME_SELECT,
-                img_Y - THICKNESS_GAME_SELECT,
-                img_W + (2 * THICKNESS_GAME_SELECT),
-                img_H + (2 * THICKNESS_GAME_SELECT)},
-            THICKNESS_GAME_SELECT,
-            Fade(Var_GetColor1(), alphaGames));
-        //Draw bumpers
-        UI_DrawTop();
-        //Draw bottom section of screen
-        UI_DrawBottom();
-        UI_DrawDispDiag(false);
-        break;
-
-    case SCROLL_CATEGORIES:
-        UI_ChangeAlpha_ScrollCateg();
-        UI_DrawBase();
-        UI_DrawCateg_Scroll();
-        UI_DrawGames_Normal();
-        //Draw bumpers
-        UI_DrawTop();
-        //Draw bottom section of screen
-        UI_DrawBottom();
-        UI_DrawDispDiag(false);
-        break;
-
-    case OPTIONS:
-        UI_DrawBase();
-        if (Var_GetScrollGames() != SCROLL_NO) {
+        //Normal, static menu
+        case NORMAL:
+            UI_ChangeAlpha_Static();
+            UI_DrawBase();
+            UI_DrawCateg_Static();
+            UI_DrawGames_Normal();
+            //Draw bumpers
+            UI_DrawTop();
+            //Draw bottom section of screen
+            UI_DrawBottom();
+            UI_DrawDispDiag(false);
+            //If game is pressed, launch the game
+            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
+                *currentConsoleState = STATE_APP_LAUNCHER;
+                Controller_SetWasPressed_A(true);
+            }
+            break;
+        
+        //Scrolling games
+        case SCROLL_GAMES:
             UI_ChangeAlpha_ScrollGames();
+            UI_DrawBase();
             UI_DrawCateg_Static();
             UI_DrawGames_Scroll();
             //Draw outline for selected game
@@ -2347,37 +2326,77 @@ void UI_Tick(ConsoleState* currentConsoleState) {
                     img_H + (2 * THICKNESS_GAME_SELECT)},
                 THICKNESS_GAME_SELECT,
                 Fade(Var_GetColor1(), alphaGames));
-        }
-        else if (Var_GetScrollCateg() != SCROLL_NO) {
+            //Draw bumpers
+            UI_DrawTop();
+            //Draw bottom section of screen
+            UI_DrawBottom();
+            UI_DrawDispDiag(false);
+            break;
+
+        //Scrolling categories
+        case SCROLL_CATEGORIES:
             UI_ChangeAlpha_ScrollCateg();
+            UI_DrawBase();
             UI_DrawCateg_Scroll();
             UI_DrawGames_Normal();
-        }
-        else {
+            //Draw bumpers
+            UI_DrawTop();
+            //Draw bottom section of screen
+            UI_DrawBottom();
+            UI_DrawDispDiag(false);
+            break;
+
+        //Options menu
+        case OPTIONS:
+            UI_DrawBase();
+            //If scrolling games
+            if (Var_GetScrollGames() != SCROLL_NO) {
+                UI_ChangeAlpha_ScrollGames();
+                UI_DrawCateg_Static();
+                UI_DrawGames_Scroll();
+                //Draw outline for selected game
+                DrawRectangleLinesEx(
+                    (Rectangle){
+                        img_X - THICKNESS_GAME_SELECT,
+                        img_Y - THICKNESS_GAME_SELECT,
+                        img_W + (2 * THICKNESS_GAME_SELECT),
+                        img_H + (2 * THICKNESS_GAME_SELECT)},
+                    THICKNESS_GAME_SELECT,
+                    Fade(Var_GetColor1(), alphaGames));
+            }
+            //If scrolling categories
+            else if (Var_GetScrollCateg() != SCROLL_NO) {
+                UI_ChangeAlpha_ScrollCateg();
+                UI_DrawCateg_Scroll();
+                UI_DrawGames_Normal();
+            }
+            //If static
+            else {
+                UI_ChangeAlpha_Static();
+                UI_DrawCateg_Static();
+                UI_DrawGames_Normal();
+            }
+            //Draw bumpers
+            UI_DrawTop();
+            //Draw bottom section of screen
+            UI_DrawBottom();
+            UI_DrawDispDiag(false);
+            UIPause_Tick(currentConsoleState);
+            break;
+        
+        //Erase data pop-up
+        case ERASE_DATA:
+            UI_DrawBase();
             UI_ChangeAlpha_Static();
             UI_DrawCateg_Static();
             UI_DrawGames_Normal();
-        }
-        //Draw bumpers
-        UI_DrawTop();
-        //Draw bottom section of screen
-        UI_DrawBottom();
-        UI_DrawDispDiag(false);
-        UIPause_Tick(currentConsoleState);
-        break;
-
-    case ERASE_DATA:
-        UI_DrawBase();
-        UI_ChangeAlpha_Static();
-        UI_DrawCateg_Static();
-        UI_DrawGames_Normal();
-        //Draw bumpers
-        UI_DrawTop();
-        //Draw bottom section of screen
-        UI_DrawBottom();
-        UI_DrawDispDiag(false);
-        Erase_Tick(Games_GetDisplayed(CURRENT_GAME), &currentUIState);
-        break;
+            //Draw bumpers
+            UI_DrawTop();
+            //Draw bottom section of screen
+            UI_DrawBottom();
+            UI_DrawDispDiag(false);
+            Erase_Tick(Games_GetDisplayed(CURRENT_GAME), &currentUIState);
+            break;
     }
 }
 

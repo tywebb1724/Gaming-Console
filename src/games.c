@@ -13,9 +13,6 @@ static game_t* gamesDisplayed[GAMES_ON_SCREEN + 2];
 static game_t* newGamesDisplayed[GAMES_ON_SCREEN];
 //Array to hold loaded images during boot up
 static Image LoadedImages[GAMES_LEN];
-
-static int games_init_index = 0;
-static int temp_start_section = 0;
 //Indexes and range to keep track of current and new games
 static int games_index;
 static int start_index;
@@ -25,6 +22,9 @@ static int start_index_new;
 
 //Variables to keep track of which images and textures are loaded
 static atomic_bool isLoaded[GAMES_LEN] = { false };
+//Indexes for initializing the games
+static int games_init_index = 0;
+static int temp_start_section = 0;
 
 
 //Get a game from the main array
@@ -167,6 +167,7 @@ bool Games_ClearData(const game_t* game) {
             const char* filename = strrchr(path, '/');
             filename = filename ? filename + 1 : path; 
             char* dot = strrchr(filename, '.');
+            //Cut it off at the dot
             if (dot) {
                 *dot = '\0';
             }
@@ -221,6 +222,7 @@ bool Games_ClearData(const game_t* game) {
             const char* filename = strrchr(path, '/');
             filename = filename ? filename + 1 : path; 
             char* dot = strrchr(filename, '.');
+            //Cut it off at the dot
             if (dot) {
                 *dot = '\0';
             }
@@ -281,7 +283,7 @@ static void Games_Arcade_Init() {
     games_init_index += 1;
     gamesLibrary[games_init_index].title = "Simpsons Arcade Game";
     gamesLibrary[games_init_index].coverPath = "assets/images/arcade/simpsons_arcade.png";
-    gamesLibrary[games_init_index].romPath = "assets/roms/arcade/simpson2p.zip";
+    gamesLibrary[games_init_index].romPath = "assets/roms/arcade/simpsons2p.zip";
     games_init_index += 1;
     gamesLibrary[games_init_index].title = "Street Fighter Alpha 3";
     gamesLibrary[games_init_index].coverPath = "assets/images/arcade/sf_alpha_3.png";
@@ -398,11 +400,13 @@ static void Games_Handheld_Init() {
             gamesLibrary[i].corePath = PATH_PSP;
             gamesLibrary[i].libRetro = false;
             gamesLibrary[i].save = EXTERNAL;
+            gamesLibrary[i].processName = "PPSSPPSDL";
         }
         else if (strcmp(gamesLibrary[i].console, "Nintendo DS") == 0) {
             gamesLibrary[i].corePath = PATH_DS;
             gamesLibrary[i].libRetro = false;
             gamesLibrary[i].save = EXTERNAL;
+            gamesLibrary[i].processName = "melonDS";
         }
         else if (strcmp(gamesLibrary[i].console, "Game Boy Advance") == 0) {
             gamesLibrary[i].corePath = PATH_GBA;
@@ -463,6 +467,7 @@ static void Games_Nint3D_Init() {
             gamesLibrary[i].corePath = PATH_GAMECUBE;
             gamesLibrary[i].libRetro = false;
             gamesLibrary[i].save = EXTERNAL;
+            gamesLibrary[i].processName = "dolphin-emu";
         }
         else if (strcmp(gamesLibrary[i].console, "Nintendo 64") == 0) {
             gamesLibrary[i].corePath = PATH_N64;
@@ -656,6 +661,7 @@ static void Games_Sega_Init() {
             gamesLibrary[i].libRetro = false;
             gamesLibrary[i].save = EXTERNAL;
             gamesLibrary[i].corePath = PATH_SATURN;
+            gamesLibrary[i].processName = "ymir-sdl3";
         }
         else if (strcmp(gamesLibrary[i].console, "Sega CD") == 0) {
             gamesLibrary[i].libRetro = true;
@@ -666,6 +672,7 @@ static void Games_Sega_Init() {
             gamesLibrary[i].libRetro = false;
             gamesLibrary[i].save = EXTERNAL;
             gamesLibrary[i].corePath = PATH_DREAMCAST;
+            gamesLibrary[i].processName = "Flycast-rend";
         }
     }
 }
@@ -766,8 +773,8 @@ bool Games_GetIsLoaded(int i) {
 void* Games_LoadImages(void *args) {
     //Detach the thread
     pthread_detach(pthread_self());
-    //Load the images of the current category first
     int s = start_index, e = end_index;
+    //Load the images of the current category first
     for (int i = s; i <= e; i++) {
         LoadedImages[i] = LoadImage(gamesLibrary[i].coverPath);
         atomic_store_explicit(&isLoaded[i], true, memory_order_release);

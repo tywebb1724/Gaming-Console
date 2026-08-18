@@ -89,6 +89,7 @@ void Var_SetDisplayBright(bool value);
 bool Var_GetDisplayTheme();
 //Set whether theme options are being displayed
 void Var_SetDisplayTheme(bool value);
+//Find the path to the cpu temperature
 void Var_FindThermalZone();
 //Update CPU temperature
 void Var_UpdateTemp();

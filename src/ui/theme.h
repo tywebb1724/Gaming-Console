@@ -1,16 +1,15 @@
 #ifndef THEME_H
 #define THEME_H
 
+//Macros for navigating the menu
 #define MAX_TIME_ELAPSED_THEME 1000000
 #define THRESHOLD_TIME_ELAPSED_THEME 0.25f
-
-//Drawing the theme title
+//Macros for drawing the menu
 #define THEME_TXT "Select theme"
 #define THEME_TXT_SIZE (Var_GetMonitorWidth() / 40.0f)
 #define THEME_TXT_SPACE (Var_GetMonitorWidth() / 400.0f)
 #define THEME_TXT_X (CENTER_X - themeSize.x / 2)
 #define THEME_TXT_Y (UIPAUSE_RECT_Y + UIPAUSE_TXT_SPACING_Y - themeSize.y / 2)
-//Drawing the theme colors
 #define THEME_RECT_X (UIPAUSE_RECT_X + 2 * UIPAUSE_TXT_SPACING_Y)
 #define THEME_RECT_W (UIPAUSE_RECT_W  - 4 * UIPAUSE_TXT_SPACING_Y)
 #define THEME_RECT_H (themeSize.y)

@@ -1,7 +1,7 @@
 #include "theme.h"
-#include "controller_config.h"
+#include "controller.h"
 #include "var.h"
-#include "uipause_config.h"
+#include "uipause.h"
 #include "config.h"
 
 //Current State of the theme options

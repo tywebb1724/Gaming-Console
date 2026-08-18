@@ -9,12 +9,12 @@
 #define GAMES_LEN 56
 //Number of games displayed on the screen at once
 #define GAMES_ON_SCREEN 5
-
+//String lengths
 #define CATEG_STR_LEN 30
 #define SAVE_PATH_LEN 512
 #define TEMP_PATH_LEN 256
 #define COMMAND_STR_LEN 1024
-
+//Index for the current game
 #define CURRENT_GAME 3
 //Paths for libretro consoles console
 #define PATH_GBA "assets/cores/mgba_libretro.so"
@@ -31,10 +31,10 @@
 #define PATH_PRBOOM "assets/cores/prboom_libretro.so"
 //Commands for external consoles
 #define PATH_GAMECUBE "org.DolphinEmu.dolphin-emu"
-#define PATH_PSP "org.ppsspp.PPSSPP --fullscreen"
-#define PATH_DS "net.kuribo64.melonDS -f"
+#define PATH_PSP "org.ppsspp.PPSSPP"
+#define PATH_DS "net.kuribo64.melonDS"
 #define PATH_DREAMCAST "org.flycast.Flycast"
-#define PATH_SATURN "io.github.strikerx3.ymir -f"
+#define PATH_SATURN "io.github.strikerx3.ymir"
 
 
 //Types of game saves
@@ -60,6 +60,7 @@ typedef struct {
     bool libRetro;
     save_t save;
     char *serial;
+    char *processName;
 } game_t;
 
 //Get a game from the main array

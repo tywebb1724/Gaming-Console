@@ -1,19 +1,28 @@
 #include "categories.h"
+#include <stddef.h>
 
 //Arrays to hold all categories and those displayed on the screen
-static char *categories[CATEGORIES_LEN];
-static char *categoriesDisplayed[CATEGORIES_DISPLAYED];
+static const char *categories[CATEGORIES_LEN];
+static const char *categoriesDisplayed[CATEGORIES_DISPLAYED];
 //Index for the current category
 static int categoriesIndex;
 
 
 //Get a single category from the main array
 const char* Categories_Get(int i) {
+    //Check the index
+    if (i < 0 || i >= CATEGORIES_LEN) {
+        return NULL;
+    }
     return categories[i];
 }
 
 //Get a single category from the displayed array
 const char* Categories_GetDisplayed(int i) {
+    //Check the index
+    if (i < 0 || i >= CATEGORIES_DISPLAYED) {
+        return NULL;
+    }
     return categoriesDisplayed[i];
 }
 
