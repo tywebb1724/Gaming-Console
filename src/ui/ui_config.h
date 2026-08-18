@@ -211,7 +211,7 @@
 #define LAUNCH_GAME_X (CENTER_X - gameTxt_Size.x / 2)
 #define LAUNCH_GAME_Y (LAUNCH_TITLE_Y + launchTxt_Size.y + LAUNCH_SPACE * 5)
 #define LAUNCH_HOME_LIB "Press [HOME/ESC] to pause emulator"
-#define LAUNCH_HOME_EXT "Press [HOME] to close game (may need multiple presses)"
+#define LAUNCH_HOME_EXT "Press [HOME] to close game (may take a few seconds)"
 #define LAUNCH_SMALL_SIZE (Var_GetMonitorWidth() / 35.0f)
 #define LAUNCH_HOME_X (CENTER_X - homeTxt_Size.x / 2)
 #define LAUNCH_HOME_Y (LAUNCH_GAME_Y + gameTxt_Size.y + LAUNCH_SPACE * 5)

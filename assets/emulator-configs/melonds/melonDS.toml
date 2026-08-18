@@ -1,0 +1,157 @@
+ecentROM = []
+UITheme = ""
+FastForwardFPS = 1000.0
+AudioSync = false
+TargetFPS = 60.0
+PauseLostFocus = false
+LimitFPS = true
+SlowmoFPS = 30.0
+
+[DSi]
+NANDPath = ""
+
+[DSi.Camera1]
+DeviceName = ""
+ImagePath = ""
+InputType = 0
+XFlip = false
+
+[DSi.Camera0]
+DeviceName = ""
+ImagePath = ""
+InputType = 0
+XFlip = false
+
+[Mouse]
+HideSeconds = 5
+Hide = false
+
+[3D]
+Renderer = 0
+
+[Savestate]
+RelocSRAM = false
+
+[MP]
+AudioMode = 1
+RecvTimeout = 25
+
+[LAN]
+DirectMode = false
+
+[Emu]
+ConsoleType = 0
+
+[Screen]
+UseGL = false
+
+[Mic]
+WavPath = ""
+Device = ""
+InputType = 1
+
+[Instance0]
+JoystickID = 0
+EnableCheats = false
+
+[Instance0.Window1]
+Enabled = false
+
+[Instance0.Window3]
+Enabled = false
+
+[Instance0.Joystick]
+HK_Reset = -1
+HK_PowerButton = -1
+HK_SwapScreenEmphasis = -1
+HK_SwapScreens = -1
+Left = 1179647
+Y =  4
+HK_FrameStep = -1
+HK_SolarSensorIncrease = -1
+A =  0
+L =  6
+R =  7
+HK_GuitarGripRed = -1
+HK_VolumeDown = -1
+HK_GuitarGripBlue = -1
+HK_Lid = -1
+HK_SolarSensorDecrease = -1
+HK_VolumeUp = -1
+HK_GuitarGripGreen = -1
+HK_SlowMoToggle = -1
+HK_FastForwardToggle = -1
+HK_GuitarGripYellow = -1
+HK_FrameLimitToggle = -1
+Up = 17956863
+HK_FullscreenToggle = -1
+HK_SlowMo = -1
+HK_Pause = -1
+Right = 131071
+Start = 11
+Select = 10
+X =  3
+B =  1
+Down = 16908287
+HK_Mic = -1
+HK_FastForward = -1
+
+[Instance0.Audio]
+DSiVolumeSync = false
+Volume = 256
+
+[Instance0.Window2]
+Enabled = false
+
+[Instance0.Keyboard]
+HK_Reset = -1
+HK_PowerButton = -1
+HK_SwapScreenEmphasis = -1
+HK_SwapScreens = -1
+Left = 65
+Y = 74
+HK_FrameStep = -1
+HK_SolarSensorIncrease = -1
+A = 76
+L = 81
+R = 69
+HK_GuitarGripRed = -1
+HK_VolumeDown = -1
+HK_GuitarGripBlue = -1
+HK_Lid = 32
+HK_SolarSensorDecrease = -1
+HK_VolumeUp = -1
+HK_GuitarGripGreen = -1
+HK_SlowMoToggle = -1
+HK_FastForwardToggle = -1
+HK_GuitarGripYellow = -1
+HK_FrameLimitToggle = -1
+Up = 87
+HK_FullscreenToggle = -1
+HK_SlowMo = -1
+HK_Pause = -1
+Right = 68
+Start = 16777220
+Select = -2130706400
+X = 73
+B = 75
+Down = 83
+HK_Mic = 16777217
+HK_FastForward = -1
+
+[Instance0.Firmware]
+Username = "melonDS"
+
+[Instance0.Window0]
+Enabled = true
+ScreenFilter = false
+ScreenAspectTop = 0
+IntegerScaling = false
+ScreenSizing = 0
+ScreenSwap = false
+ScreenGap = 0
+ScreenAspectBot = 0
+ScreenRotation = 0
+ScreenLayout = 0
+Geometry = "AdnQywADAAAAAAAAAAAAJAAAAP8AAAHaAAAAAAAAAEAAAAD/AAAB2gAAAAAAAAAAB4AAAAAAAAAAQAAAAP8AAAHa"
+ShowOSD = true

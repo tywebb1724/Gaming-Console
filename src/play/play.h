@@ -34,6 +34,21 @@
 #define PLAY_RESUME_RECT_W (resumeSize.x + Var_GetMonitorWidth() / 40.0f)
 #define PLAY_RESUME_RECT_H (resumeSize.y + Var_GetMonitorHeight() / 40.0f)
 
+
+#define PATH_DOLPHIN_INI_SRC "assets/emulator-configs/dolphin/Dolphin.ini"
+#define PATH_DOLPHIN_INI_DEST ".var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/Dolphin.ini"
+#define PATH_MELON_SRC "assets/emulator-configs/melonds/melonDS.toml"
+#define PATH_MELON_DEST ".var/app/net.kuribo64.melonDS/config/melonDS/melonDS.toml"
+#define PATH_PPSSPP_CONTROLS_SRC "assets/emulator-configs/ppsspp/controls.ini"
+#define PATH_PPSSPP_CONTROLS_DEST ".var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SYSTEM/controls.ini"
+#define PATH_PPSSPP_INI_SRC "assets/emulator-configs/ppsspp/ppsspp.ini"
+#define PATH_PPSSPP_INI_DEST ".var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SYSTEM/ppsspp.ini"
+#define PATH_SATURN_SRC "assets/emulator-configs/saturn/Ymir.toml"
+#define PATH_SATURN_DEST ".var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/Ymir.toml"
+#define PATH_FLYCAST_EMU_SRC "assets/emulator-configs/flycast/emu.cfg"
+#define PATH_FLYCAST_EMU_DEST ".var/app/org.flycast.Flycast/config/flycast/emu.cfg"
+#define PATH_FLYCAST_CONTROLS ".var/app/org.flycast.Flycast/config/flycast/mappings/"
+
 //Get whether doom core is active
 bool Play_IsDoomActive(void);
 //Get whether N64 core is active

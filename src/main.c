@@ -8,6 +8,7 @@
 #include "controller.h"
 #include "play/playpause.h"
 #include "var.h"
+#include <stdio.h>
 
 //Length and width of the resolution
 #define RESOLUTION_LEN 1920
@@ -30,6 +31,9 @@ int main(void) {
     SetTargetFPS(FPS);
     //Find any controllers that are already plugged in
     Controller_Refresh();
+    printf("%s\n", GetGamepadName(0));
+    printf("%s\n", GetGamepadName(1));
+    printf("%s\n", GetGamepadName(2));
     //Not powering off
     Var_SetPowerOff(false);
     //Main game loop

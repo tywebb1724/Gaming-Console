@@ -45,13 +45,54 @@ static bool g_isN64Active  = false;
 static pid_t extAppId = -1;
 static float killRequestedTime;
 static bool killEscalated;
+static char dolphinIniPath[512];
+static char dolphinPadPath[512];
+static char melonDSPath[512];
+static char ppssppControlsPath[512];
+static char ppssppIniPath[512];
+static char flycastEmuPath[512];
+static char saturnPath[512];
 
-#include <dirent.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <ctype.h>
+
+static bool Play_BuildConfigPath(char* outPath, size_t outSize, const char* relativePath) {
+    const char* home = getenv("HOME");
+    if (!home) {
+        fprintf(stderr, "BuildConfigPath: HOME environment variable not set\n");
+        return false;
+    }
+
+    int written = snprintf(outPath, outSize, "%s/%s", home, relativePath);
+    if (written < 0 || (size_t)written >= outSize) {
+        fprintf(stderr, "BuildConfigPath: path too long, truncated\n");
+        return false;
+    }
+    return true;
+}
+
+//Copy config file from source to the destination
+static bool Play_CopyConfig(const char* srcPath, const char* destPath) {
+    FILE* src = fopen(srcPath, "rb");
+    if (!src) {
+        fprintf(stderr, "CopyConfigFile: couldn't open template %s\n", srcPath);
+        return false;
+    }
+    FILE* dest = fopen(destPath, "wb");
+    if (!dest) {
+        fprintf(stderr, "CopyConfigFile: couldn't open destination %s\n", destPath);
+        fclose(src);
+        return false;
+    }
+
+    char buffer[4096];
+    size_t bytesRead;
+    while ((bytesRead = fread(buffer, 1, sizeof(buffer), src)) > 0) {
+        fwrite(buffer, 1, bytesRead, dest);
+    }
+
+    fclose(src);
+    fclose(dest);
+    return true;
+}
 
 // Finds the PID of a running process by name (matches /proc/<pid>/comm).
 // Returns the PID if found, or -1 if not found / on error.
@@ -462,6 +503,35 @@ void Play_Init(const game_t* game) {
     }
     //If the game is through an external application
     else {
+        if (strcmp(game->corePath, PATH_GAMECUBE) == 0) {
+            if (Play_BuildConfigPath(dolphinIniPath, sizeof(dolphinIniPath), PATH_DOLPHIN_INI_DEST)) {
+                Play_CopyConfig(PATH_DOLPHIN_INI_SRC, dolphinIniPath);
+            }
+        }
+        else if (strcmp(game->corePath, PATH_DS) == 0) {
+            if (Play_BuildConfigPath(melonDSPath, sizeof(melonDSPath), PATH_MELON_DEST)) {
+                Play_CopyConfig(PATH_MELON_SRC, melonDSPath);
+            }
+        }
+        else if (strcmp(game->corePath, PATH_SATURN) == 0) {
+            if (Play_BuildConfigPath(saturnPath, sizeof(saturnPath), PATH_SATURN_DEST)) {
+                Play_CopyConfig(PATH_SATURN_SRC, saturnPath);
+            }
+        }
+        else if (strcmp(game->corePath, PATH_DREAMCAST) == 0) {
+            if (Play_BuildConfigPath(flycastEmuPath, sizeof(flycastEmuPath), PATH_FLYCAST_EMU_DEST)) {
+                Play_CopyConfig(PATH_FLYCAST_EMU_SRC, flycastEmuPath);
+            }
+        }
+        else if (strcmp(game->corePath, PATH_PSP) == 0) {
+            if (Play_BuildConfigPath(ppssppIniPath, sizeof(ppssppIniPath), PATH_PPSSPP_INI_DEST)) {
+                Play_CopyConfig(PATH_PPSSPP_INI_SRC, ppssppIniPath);
+            }
+            if (Play_BuildConfigPath(ppssppControlsPath, sizeof(ppssppControlsPath), PATH_PPSSPP_CONTROLS_DEST)) {
+                Play_CopyConfig(PATH_PPSSPP_CONTROLS_SRC, ppssppControlsPath);
+            }
+        }
+
         pid_t pid = fork();
         //Child process
         if (pid == 0) {
