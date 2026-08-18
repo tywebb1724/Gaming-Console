@@ -185,7 +185,7 @@ bool Games_ClearData(const game_t* game) {
         else if (strcmp(game->console, "Sony PlayStation Portable") == 0) {
             //Create command for removing file
             char command[COMMAND_STR_LEN] = "";
-            snprintf(command, sizeof(command), "rm -rf \"/home/tywebb1724/.var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SAVEDATA/%s\"", game->serial);
+            snprintf(command, sizeof(command), "rm -rf \".var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SAVEDATA/%s\"", game->serial);
             //Run command
             int result = system(command);
             //Check if command worked
@@ -201,7 +201,7 @@ bool Games_ClearData(const game_t* game) {
         else if (strcmp(game->console, "Sega Saturn") == 0) {
             //Create command for removing file
             char command[COMMAND_STR_LEN] = "";
-            snprintf(command, sizeof(command), "rm -rf \"/home/tywebb1724/.var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates/%s\"", game->serial);
+            snprintf(command, sizeof(command), "rm -rf \".var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates/%s\"", game->serial);
             //Run command
             int result = system(command);
             //Check if command worked
@@ -240,7 +240,7 @@ bool Games_ClearData(const game_t* game) {
         else if (strcmp(game->console, "Nintendo GameCube") == 0) {
             //Get file path
             char save_path[SAVE_PATH_LEN];
-            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/USA/Card A/%s.gci", game->serial);
+            snprintf(save_path, sizeof(save_path), ".var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/USA/Card A/%s.gci", game->serial);
             //Remove save file
             if (remove(save_path) == 0) {
                 printf("Cleared save data: %s\n", save_path);
@@ -254,7 +254,7 @@ bool Games_ClearData(const game_t* game) {
         else if (strcmp(game->console, "Sega Dreamcast") == 0) {
             //Get file path
             char save_path[SAVE_PATH_LEN];
-            snprintf(save_path, sizeof(save_path), "/home/tywebb1724/.var/app/org.flycast.Flycast/data/flycast/%s_vmu_save_A1.bin", game->serial);
+            snprintf(save_path, sizeof(save_path), ".var/app/org.flycast.Flycast/data/flycast/%s_vmu_save_A1.bin", game->serial);
             //Remove save file
             if (remove(save_path) == 0) {
                 printf("Cleared save data: %s\n", save_path);

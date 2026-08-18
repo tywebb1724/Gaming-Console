@@ -1,10 +1,8 @@
-# Ignore the ROMs directory so they aren't uploaded to GitHub
 roms/
-# Ignore build artifacts
 build/
 system/
-cores/
 saves/
+cores/
 *.o
-game_launcher
-game_launcher.exe
+
+bad_shader_1.txt

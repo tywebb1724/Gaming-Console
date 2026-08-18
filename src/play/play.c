@@ -35,33 +35,37 @@ static bool resuming;
 static float resumeTimer;
 //Whether the game is running or not
 static bool is_game_running;
-
-//Used for hardware rendering
-static RenderTexture2D hw_target = {0}; 
-//Whether these cores are active
-static bool g_isDoomActive = false;
-static bool g_isN64Active  = false;
-
-static pid_t extAppId = -1;
+//Variables for killing external application
 static float killRequestedTime;
 static bool killEscalated;
+//Paths for config files
 static char dolphinIniPath[512];
-static char dolphinPadPath[512];
 static char melonDSPath[512];
 static char ppssppControlsPath[512];
 static char ppssppIniPath[512];
 static char flycastEmuPath[512];
 static char saturnPath[512];
 
+//Used for hardware rendering
+static RenderTexture2D hw_target = {0}; 
+//Whether these cores are active
+static bool g_isDoomActive = false;
+static bool g_isN64Active  = false;
+//ID for external application
+static pid_t extAppId = -1;
 
+
+//Build path for the config files
 static bool Play_BuildConfigPath(char* outPath, size_t outSize, const char* relativePath) {
     const char* home = getenv("HOME");
+    //Error getting home
     if (!home) {
         fprintf(stderr, "BuildConfigPath: HOME environment variable not set\n");
         return false;
     }
-
+    //Create path
     int written = snprintf(outPath, outSize, "%s/%s", home, relativePath);
+    //If invalid path, error
     if (written < 0 || (size_t)written >= outSize) {
         fprintf(stderr, "BuildConfigPath: path too long, truncated\n");
         return false;
@@ -72,30 +76,30 @@ static bool Play_BuildConfigPath(char* outPath, size_t outSize, const char* rela
 //Copy config file from source to the destination
 static bool Play_CopyConfig(const char* srcPath, const char* destPath) {
     FILE* src = fopen(srcPath, "rb");
+    //Error opening file
     if (!src) {
         fprintf(stderr, "CopyConfigFile: couldn't open template %s\n", srcPath);
         return false;
     }
     FILE* dest = fopen(destPath, "wb");
+    //Error opening file
     if (!dest) {
         fprintf(stderr, "CopyConfigFile: couldn't open destination %s\n", destPath);
         fclose(src);
         return false;
     }
-
     char buffer[4096];
     size_t bytesRead;
+    //Copy all the contents of the source file to the destination file
     while ((bytesRead = fread(buffer, 1, sizeof(buffer), src)) > 0) {
         fwrite(buffer, 1, bytesRead, dest);
     }
-
     fclose(src);
     fclose(dest);
     return true;
 }
 
-// Finds the PID of a running process by name (matches /proc/<pid>/comm).
-// Returns the PID if found, or -1 if not found / on error.
+//Finds the PID of a running process by name (matches /proc/<pid>/comm)
 static pid_t Play_FindProcess(const char* processName) {
     DIR* procDir = opendir("/proc");
     if (!procDir) {
@@ -503,30 +507,37 @@ void Play_Init(const game_t* game) {
     }
     //If the game is through an external application
     else {
+        //Use correct config files depending on the application
         if (strcmp(game->corePath, PATH_GAMECUBE) == 0) {
+            //Update config file
             if (Play_BuildConfigPath(dolphinIniPath, sizeof(dolphinIniPath), PATH_DOLPHIN_INI_DEST)) {
                 Play_CopyConfig(PATH_DOLPHIN_INI_SRC, dolphinIniPath);
             }
         }
         else if (strcmp(game->corePath, PATH_DS) == 0) {
+            //Update config file
             if (Play_BuildConfigPath(melonDSPath, sizeof(melonDSPath), PATH_MELON_DEST)) {
                 Play_CopyConfig(PATH_MELON_SRC, melonDSPath);
             }
         }
         else if (strcmp(game->corePath, PATH_SATURN) == 0) {
+            //Update config file
             if (Play_BuildConfigPath(saturnPath, sizeof(saturnPath), PATH_SATURN_DEST)) {
                 Play_CopyConfig(PATH_SATURN_SRC, saturnPath);
             }
         }
         else if (strcmp(game->corePath, PATH_DREAMCAST) == 0) {
+            //Update config file
             if (Play_BuildConfigPath(flycastEmuPath, sizeof(flycastEmuPath), PATH_FLYCAST_EMU_DEST)) {
                 Play_CopyConfig(PATH_FLYCAST_EMU_SRC, flycastEmuPath);
             }
         }
         else if (strcmp(game->corePath, PATH_PSP) == 0) {
+            //Update ini file
             if (Play_BuildConfigPath(ppssppIniPath, sizeof(ppssppIniPath), PATH_PPSSPP_INI_DEST)) {
                 Play_CopyConfig(PATH_PPSSPP_INI_SRC, ppssppIniPath);
             }
+            //Update controls file
             if (Play_BuildConfigPath(ppssppControlsPath, sizeof(ppssppControlsPath), PATH_PPSSPP_CONTROLS_DEST)) {
                 Play_CopyConfig(PATH_PPSSPP_CONTROLS_SRC, ppssppControlsPath);
             }
