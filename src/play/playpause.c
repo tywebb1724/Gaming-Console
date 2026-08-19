@@ -480,7 +480,7 @@ static void PlayPause_Draw(void) {
     else if (currentPlayPauseState == PLAYPAUSE_EXIT){
         DrawRectangleRoundedLinesEx(rectExit, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, Var_GetColor1());
     }
-    else {
+    else if (currentPlayPauseState == PLAYPAUSE_POWER_OFF){
        DrawRectangleRoundedLinesEx(rectPowerOff, PLAYPAUSE_ROUND, PLAYPAUSE_SEGMENTS, 2 * PLAYPAUSE_LINE_THICK, Var_GetColor1()); 
     }
 }

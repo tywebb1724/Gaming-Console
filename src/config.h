@@ -17,4 +17,6 @@
 //Time on a selected section before moving to the next one
 #define SELECT_TIME 0.2f
 
+#define DISPLAY_CENTER_OFFSET 2
+
 #endif

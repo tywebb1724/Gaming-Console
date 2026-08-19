@@ -1,5 +1,6 @@
 #include "categories.h"
 #include <stddef.h>
+#include "config.h"
 
 //Arrays to hold all categories and those displayed on the screen
 static const char *categories[CATEGORIES_LEN];
@@ -32,7 +33,7 @@ static void Categories_Refresh(void) {
     int targetIndex;
     //Cycle through the categories
     for (int i = 0; i < CATEGORIES_DISPLAYED; i++) {
-        offset = i - 2;
+        offset = i - DISPLAY_CENTER_OFFSET;
         targetIndex = (categoriesIndex + offset) % CATEGORIES_LEN;
         //If the offset causes the index to be negative, add the category length
         if (targetIndex < 0) {

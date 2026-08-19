@@ -9,7 +9,7 @@
 
 //Arrays to hold all games, the games displayed, and the new games displayed
 static game_t gamesLibrary[MAX_GAMES];
-static game_t* gamesDisplayed[GAMES_ON_SCREEN + 2];
+static game_t* gamesDisplayed[GAMES_ON_SCREEN + DISPLAY_CENTER_OFFSET];
 static game_t* newGamesDisplayed[GAMES_ON_SCREEN];
 //Array to hold loaded images during boot up
 static Image LoadedImages[GAMES_LEN];
@@ -60,11 +60,11 @@ void Games_UpdateNewIndexes(int direction) {
     else {
         //If the first category in the array, new category is the last one
         if (start_index == 0) {
-            sprintf(categ, "%s", gamesLibrary[GAMES_LEN - 1].category);
+            snprintf(categ, "%s", gamesLibrary[GAMES_LEN - 1].category);
         }
         //If not, it's the previous category
         else {
-            sprintf(categ, "%s", gamesLibrary[start_index - 1].category);
+            snprintf(categ, "%s", gamesLibrary[start_index - 1].category);
         }
         //Search the games for the start of the new category
         for (int i = 0; i < GAMES_LEN; i++) {
@@ -101,7 +101,7 @@ void Games_UpdateIndexes(const char *categ) {
         }
     }
     games_range = end_index - start_index + 1;
-    games_index = start_index + 2;
+    games_index = start_index + DISPLAY_CENTER_OFFSET;
 }
 
 //Update the array of the new games displayed
@@ -117,11 +117,28 @@ void Games_Refresh() {
     int offset;
     int targetIndex;
     //Update all games displayed
-    for (int i = 0; i < GAMES_ON_SCREEN + 2; i++) {
-        offset = i - 2;
+    for (int i = 0; i < GAMES_ON_SCREEN + DISPLAY_CENTER_OFFSET; i++) {
+        offset = i - DISPLAY_CENTER_OFFSET;
         targetIndex = start_index + (games_index - start_index + offset + games_range) % (games_range);
         gamesDisplayed[i] = &gamesLibrary[targetIndex];
     }
+}
+
+//Get the home path
+static bool Games_BuildHomePath(char* outPath, size_t outSize, const char* relativePath) {
+    const char* home = getenv("HOME");
+    //If error getting home path, exit with error
+    if (!home) {
+        fprintf(stderr, "Games_BuildHomePath: HOME environment variable not set\n");
+        return false;
+    }
+    int written = snprintf(outPath, outSize, "%s/%s", home, relativePath);
+    //If path invalid, exit with error
+    if (written < 0 || (size_t)written >= outSize) {
+        fprintf(stderr, "Games_BuildHomePath: path too long, truncated\n");
+        return false;
+    }
+    return true;
 }
 
 //Clear game data
@@ -180,30 +197,46 @@ bool Games_ClearData(const game_t* game) {
         }
         else if (strcmp(game->console, "Sony PlayStation Portable") == 0) {
             char command[COMMAND_STR_LEN] = "";
-            snprintf(command, sizeof(command), "rm -rf \".var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SAVEDATA/%s\"", game->serial);
-            int result = system(command);
-            //Check if command worked
-            if (result == 0) {
-                printf("Cleared PSP save data for %s\n", game->serial);
-                return true;
-            } 
+            char rel_path[SAVE_PATH_LEN];
+            snprintf(rel_path, sizeof(rel_path), ".var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SAVEDATA/%s", game->serial);
+            char save_path[SAVE_PATH_LEN];
+            //Get home path
+            if (Games_BuildHomePath(save_path, sizeof(save_path), rel_path)) {
+                snprintf(command, sizeof(command), "rm -rf \"%s\"", save_path);
+                int result = system(command);
+                //Check if command worked
+                if (result == 0) {
+                    printf("Cleared PSP save data for %s\n", game->serial);
+                    return true;
+                } 
+                else {
+                    printf("Failed to clear PSP save (or none existed)\n");
+                    return false;
+                }
+            }
             else {
-                printf("Failed to clear PSP save (or none existed)\n");
+                printf("Could not resolve save path (HOME not set)\n");
                 return false;
             }
         }
         else if (strcmp(game->console, "Sega Saturn") == 0) {
             char command[COMMAND_STR_LEN] = "";
-            snprintf(command, sizeof(command), "rm -rf \".var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates/%s\"", game->serial);
-            int result = system(command);
-            //Check if command worked
-            if (result == 0) {
-                printf("Cleared Saturn save data for %s\n", game->serial);
-                return true;
-            } 
-            else {
-                printf("Failed to clear Saturn save (or none existed)\n");
-                return false;
+            char rel_path[SAVE_PATH_LEN];
+            snprintf(rel_path, sizeof(rel_path), ".var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates/%s", game->serial);
+            char save_path[SAVE_PATH_LEN];
+            //Get home path
+            if (Games_BuildHomePath(save_path, sizeof(save_path), rel_path)) {
+                snprintf(command, sizeof(command), "rm -rf \"%s\"", save_path);
+                int result = system(command);
+                //Check if command worked
+                if (result == 0) {
+                    printf("Cleared Saturn save data for %s\n", game->serial);
+                    return true;
+                } 
+                else {
+                    printf("Failed to clear Saturn save (or none existed)\n");
+                    return false;
+                }
             }
         }
         else if (strcmp(game->console, "Nintendo DS") == 0) {
@@ -229,29 +262,37 @@ bool Games_ClearData(const game_t* game) {
             }
         }
         else if (strcmp(game->console, "Nintendo GameCube") == 0) {
+            char rel_path[SAVE_PATH_LEN];
+            snprintf(rel_path, sizeof(rel_path), ".var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/USA/Card A/%s.gci", game->serial);
             char save_path[SAVE_PATH_LEN];
-            snprintf(save_path, sizeof(save_path), ".var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/USA/Card A/%s.gci", game->serial);
-            //Remove save file
-            if (remove(save_path) == 0) {
-                printf("Cleared save data: %s\n", save_path);
-                return true;
-            } 
-            else {
-                printf("No save data to clear (or delete failed): %s\n", save_path);
-                return false;
+            //Get home path
+            if (Games_BuildHomePath(save_path, sizeof(save_path), rel_path)) {
+                //Remove save file
+                if (remove(save_path) == 0) {
+                    printf("Cleared save data: %s\n", save_path);
+                    return true;
+                } 
+                else {
+                    printf("No save data to clear (or delete failed): %s\n", save_path);
+                    return false;
+                }
             }
         }
         else if (strcmp(game->console, "Sega Dreamcast") == 0) {
+            char rel_path[SAVE_PATH_LEN];
+            snprintf(rel_path, sizeof(rel_path), ".var/app/org.flycast.Flycast/data/flycast/%s_vmu_save_A1.bin", game->serial);
             char save_path[SAVE_PATH_LEN];
-            snprintf(save_path, sizeof(save_path), ".var/app/org.flycast.Flycast/data/flycast/%s_vmu_save_A1.bin", game->serial);
-            //Remove save file
-            if (remove(save_path) == 0) {
-                printf("Cleared save data: %s\n", save_path);
-                return true;
-            } 
-            else {
-                printf("No save data to clear (or delete failed): %s\n", save_path);
-                return false;
+            //Get home path
+            if (Games_BuildHomePath(save_path, sizeof(save_path), rel_path)) {
+                //Remove save file
+                if (remove(save_path) == 0) {
+                    printf("Cleared save data: %s\n", save_path);
+                    return true;
+                } 
+                else {
+                    printf("No save data to clear (or delete failed): %s\n", save_path);
+                    return false;
+                }
             }
         }
     }
@@ -532,12 +573,12 @@ static void Games_PCIndie_Init() {
     gamesLibrary[games_init_index].title = "Doom 2";
     gamesLibrary[games_init_index].coverPath = "assets/images/pc_ind/doom_2.png";
     gamesLibrary[games_init_index].console = "PC";
-    gamesLibrary[games_init_index].romPath = "assets/roms/pc/DOOM.WAD";
+    gamesLibrary[games_init_index].romPath = "assets/roms/pc/DOOM2.WAD";
     games_init_index += 1;
     gamesLibrary[games_init_index].title = "Doom";
     gamesLibrary[games_init_index].coverPath = "assets/images/pc_ind/doom.png";
     gamesLibrary[games_init_index].console = "PC";
-    gamesLibrary[games_init_index].romPath = "assets/roms/pc/DOOM2.WAD";
+    gamesLibrary[games_init_index].romPath = "assets/roms/pc/DOOM.WAD";
     games_init_index += 1;
     gamesLibrary[games_init_index].title = "Ys Book I & II";
     gamesLibrary[games_init_index].coverPath = "assets/images/pc_ind/ys.png";
