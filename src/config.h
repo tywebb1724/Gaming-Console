@@ -14,5 +14,7 @@
 //Max and min brightness values
 #define MAX_BRIGHTNESS 0
 #define MIN_BRIGHTNESS 200
+//Time on a selected section before moving to the next one
+#define SELECT_TIME 0.2f
 
 #endif
