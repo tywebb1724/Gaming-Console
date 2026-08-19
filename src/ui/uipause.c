@@ -14,8 +14,7 @@ static float uipauseTimeElapsed;
 
 
 //Update the time elapsed on current option
-static void UIPause_UpdateTime() {
-    //Increment the time elapsed
+static void UIPause_UpdateTime(void) {
     uipauseTimeElapsed += GetFrameTime();
     //If time getting too big, bring back to the threshold
     if (uipauseTimeElapsed > MAX_TIME_ELAPSED_UIPAUSE) {
@@ -129,13 +128,25 @@ static void UIPause_Draw(UIPauseState currentUIPauseState, ConsoleState currentC
     }
 }
 
+//Inputs to go down a section
+static bool UIPause_Down(void) {
+    return ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= SELECT_TIME));
+}
+
+//Inputs to go up a section
+static bool UIPause_Up(void) {
+    return ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= SELECT_TIME));
+}
+
+//Inputs to select a section
+static bool UIPause_Select(void) {
+    return (IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A();
+}
+
 //Init function for pause menu
-void UIPause_Init() {
-    //Start with the list option selected
+void UIPause_Init(void) {
     currentUIPauseState = BRIGHTNESS;
-    //Start with no time on the selected option
     uipauseTimeElapsed = 0.0f;
-    //Not display brightness or theme options
     Var_SetDisplayBright(false);
     Var_SetDisplayTheme(false);
 }
@@ -147,11 +158,11 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
         //Brightness section selected
         case BRIGHTNESS:
             //Move selected option up or down depending on input
-            if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBright() == false) {
+            if (UIPause_Down() && Var_GetDisplayBright() == false) {
                 currentUIPauseState = THEME;
                 uipauseTimeElapsed = 0.0f;
             }
-            else if (((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayBright() == false) {
+            else if (UIPause_Up() && Var_GetDisplayBright() == false) {
                 currentUIPauseState = POWER_OFF;
                 uipauseTimeElapsed = 0.0f;
             }
@@ -160,11 +171,11 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
         //Theme section selected
         case THEME:
             //Move selected option up or down depending on input
-            if (((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayTheme() == false) {
+            if (UIPause_Down() && Var_GetDisplayTheme() == false) {
                 currentUIPauseState = DISPLAY_DIAGNOSTICS;
                 uipauseTimeElapsed = 0.0f;
             }
-            else if (((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) && Var_GetDisplayTheme() == false) {
+            else if (UIPause_Up() && Var_GetDisplayTheme() == false) {
                 currentUIPauseState = BRIGHTNESS;
                 uipauseTimeElapsed = 0.0f;
             }
@@ -173,11 +184,11 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
         //Display diagnostics section selected
         case DISPLAY_DIAGNOSTICS:
             //Move selected option up or down depending on input
-            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
+            if (UIPause_Down()) {
                 currentUIPauseState = VIEW_DIAGNOSTICS;
                 uipauseTimeElapsed = 0.0f;
             }
-            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f))  {
+            else if (UIPause_Up())  {
                 currentUIPauseState = THEME;
                 uipauseTimeElapsed = 0.0f;
             }
@@ -186,11 +197,11 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
         //View diagnostics menu section selected
         case VIEW_DIAGNOSTICS:
             //Move selected option up or down depending on input
-            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
+            if (UIPause_Down()) {
                 currentUIPauseState = POWER_OFF;
                 uipauseTimeElapsed = 0.0f;
             }
-            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) {
+            else if (UIPause_Up()) {
                 currentUIPauseState = DISPLAY_DIAGNOSTICS;
                 uipauseTimeElapsed = 0.0f;
             }
@@ -199,11 +210,11 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
         //Power off section selected
         case POWER_OFF:
             //Move selected option up or down depending on input
-            if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && uipauseTimeElapsed >= 0.2f)) {
+            if (UIPause_Down()) {
                 currentUIPauseState = BRIGHTNESS;
                 uipauseTimeElapsed = 0.0f;
             }
-            else if ((IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && uipauseTimeElapsed >= 0.2f)) {
+            else if (UIPause_Up()) {
                 currentUIPauseState = VIEW_DIAGNOSTICS;
                 uipauseTimeElapsed = 0.0f;
             }
@@ -223,7 +234,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 UIPause_UpdateTime();
             }
             //Display or stop displaying brightness options
-            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A() && Var_GetDisplayBright() == false) {
+            if (UIPause_Select() && Var_GetDisplayBright() == false) {
                 Brightness_Init();
                 Var_SetDisplayBright(true);
                 Controller_SetWasPressed_A(true);
@@ -246,7 +257,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 UIPause_UpdateTime();
             }
             //Display or stop displaying theme options
-            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A() && Var_GetDisplayTheme() == false) {
+            if (UIPause_Select() && Var_GetDisplayTheme() == false) {
                 Theme_Init();
                 Var_SetDisplayTheme(true);
                 Controller_SetWasPressed_A(true);
@@ -260,22 +271,20 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
         //Display diagnostics section selected
         case DISPLAY_DIAGNOSTICS:
             //Start or stop displaying diagnostics
-            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
+            if (UIPause_Select()) {
                 bool diag = Var_GetDiag();
                 Var_SetDiag(!diag);
                 Var_UpdateUIFile();
                 Controller_SetWasPressed_A(true);
             }
-            //Draw options menu
             UIPause_Draw(currentUIPauseState, *currentConsoleState);
-            //Update elapsed time
             UIPause_UpdateTime();
             break;
 
         //View diagnostics menu section selected
         case VIEW_DIAGNOSTICS:
             //If user selects this option
-            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
+            if (UIPause_Select()) {
                 //Change to the main menu or view diagnostics menu depending on which screen is being displayed
                 if (*currentConsoleState == STATE_VIEW_DIAG) {
                     *currentConsoleState = STATE_MAIN_MENU;
@@ -286,22 +295,18 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 }
                 Controller_SetWasPressed_A(true);
             }
-            //Draw options menu
             UIPause_Draw(currentUIPauseState, *currentConsoleState);
-            //Update elapsed time
             UIPause_UpdateTime();
             break;
         
         //Power off section selected
         case POWER_OFF:
             //Power off
-            if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
+            if (UIPause_Select()) {
                 Controller_SetWasPressed_A(true);
                 Var_SetPowerOff(true); 
             }
-            //Draw options menu
             UIPause_Draw(currentUIPauseState, *currentConsoleState);
-            //Update elapsed time
             UIPause_UpdateTime();
             
     }

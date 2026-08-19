@@ -4,6 +4,7 @@
 
 //Gamepad slots that are currently connected, packed low to high
 static int slots[CONTROLLER_MAX];
+
 //How many entries of slots[] are valid
 static int count = 0;
 //Variables for tracking whether certain buttons were already pressed
@@ -12,17 +13,17 @@ static bool wasPressed_B = false;
 static bool wasPressed_Home = false;
 
 //Get whether A button was pressed
-bool Controller_GetWasPressed_A() {
+bool Controller_GetWasPressed_A(void) {
     return wasPressed_A;
 }
 
 //Get whether B button was pressed
-bool Controller_GetWasPressed_B() {
+bool Controller_GetWasPressed_B(void) {
     return wasPressed_B;
 }
 
 //Get whether home button was pressed
-bool Controller_GetWasPressed_Home() {
+bool Controller_GetWasPressed_Home(void) {
     return wasPressed_Home;
 }
 
@@ -48,9 +49,8 @@ void Controller_Refresh(void) {
     for (int i = 0; i < CONTROLLER_MAX; i++) {
         //If gamepad is connected in that slot
         if (IsGamepadAvailable(i)) {
-            //Get gamepad name
             const char *name = GetGamepadName(i);
-            //Only count real controllers — skip the mouse/other devices raylib exposes as gamepads
+            //Only count Xbox controllers
             if (name && (strstr(name, "GameSir") || strstr(name, "Xbox") ||
                          strstr(name, "X-Box")   || strstr(name, "Microsoft") ||
                          strstr(name, "XInput"))) {

@@ -34,7 +34,7 @@ typedef enum {
 } DiagState;
 
 //Diagnostics screen init function
-void Diagnostics_Init();
+void Diagnostics_Init(void);
 //Diagnostics screen tick function
 void Diagnostics_Tick(ConsoleState* currentConsoleState);
 

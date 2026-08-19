@@ -70,7 +70,7 @@ typedef enum {
 } UIPauseState;
 
 //Init function for pause menu
-void UIPause_Init();
+void UIPause_Init(void);
 //Tick function for pause menu
 void UIPause_Tick(ConsoleState* currentConsoleState);
 

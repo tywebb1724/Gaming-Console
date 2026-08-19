@@ -29,8 +29,8 @@ typedef enum {
 } ThemeState;
 
 //Theme options init function
-void Theme_Init();
+void Theme_Init(void);
 //Theme options tick function
-void Theme_Tick();
+void Theme_Tick(void);
 
 #endif

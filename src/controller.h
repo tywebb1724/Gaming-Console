@@ -37,11 +37,11 @@
 #define LS_DOWN (LS_DOWN_HELP && !LS_RIGHT_HELP && !LS_LEFT_HELP)
 
 //Get whether A button was pressed
-bool Controller_GetWasPressed_A();
+bool Controller_GetWasPressed_A(void);
 //Get whether B button was pressed
-bool Controller_GetWasPressed_B();
+bool Controller_GetWasPressed_B(void);
 //Get whether home button was pressed
-bool Controller_GetWasPressed_Home();
+bool Controller_GetWasPressed_Home(void);
 //Set whetehr A button was pressed
 void Controller_SetWasPressed_A(bool value);
 //Set whetehr B button was pressed
@@ -54,11 +54,13 @@ void Controller_Refresh(void);
 int Controller_Count(void);
 //Raylib gamepad slot belonging to a given player
 int Controller_Slot(int player);
-//Button state across every connected controller
+//Was a button just pressed on any controller
 bool Controller_AnyPressed(int button);
+//Is a button held on any controller
 bool Controller_AnyDown(int button);
-//Sticks of whichever controller is pushed the furthest
+//Left stick X of the most-deflected controller
 float Controller_LeftStickX(void);
+//Left stick Y of the most-deflected controller
 float Controller_LeftStickY(void);
 
 

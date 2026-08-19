@@ -10,7 +10,7 @@ static DiagState currentDiagState;
 
 
 //Draw diagnostics screen
-static void Diagnostics_Draw() {
+static void Diagnostics_Draw(void) {
     //Update the diagnostics
     Var_UpdateTemp();
     Var_UpdateClock();
@@ -41,8 +41,7 @@ static void Diagnostics_Draw() {
 }
 
 //Diagnostics screen init function
-void Diagnostics_Init() {
-    //Start showing only the diagnostics screen
+void Diagnostics_Init(void) {
     currentDiagState = DIAG_NORMAL;
 }
 
@@ -73,20 +72,15 @@ void Diagnostics_Tick(ConsoleState* currentConsoleState) {
     switch (currentDiagState) {
         //Displaying diagnostics screen
         case DIAG_NORMAL:
-            //Draw diagnostics screen
             Diagnostics_Draw();
-            //Draw display diagnostics
             UI_DrawDispDiag(false);
             break;
 
         //Displaying options menu
         case DIAG_OPTIONS:
             UI_ChangeAlpha_Static();
-            //Draw diagnostics screen
             Diagnostics_Draw();
-            //Options tick
             UIPause_Tick(currentConsoleState);
-            //Draw display diagnostics
             UI_DrawDispDiag(false);
             break;
     }

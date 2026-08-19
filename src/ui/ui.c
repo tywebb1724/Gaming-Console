@@ -36,14 +36,15 @@ static float alphaCategories_Out;
 static float alphaCategories_In;
 static float alphaSelectBox;
 static float alphaSelectTxt_TimeElapsed;
-//Whether the text is blinking on or not
-static bool alphaSelectTxt_Blink = true;
 //Image of controller
 static Texture2D controlsImg;
 static Texture2D keyImg;
 static Texture2D mouseImg;
 static Texture2D arrowsImg;
 static Texture2D xbox;
+
+//Whether the text is blinking on or not
+static bool alphaSelectTxt_Blink = true;
 
 
 //Set the max length variable
@@ -62,7 +63,7 @@ static float UI_CenterImg_Y(float height, float position) {
 }
 
 //Reset the coordinates for the displayed games after games scroll
-static void UI_ResetCoords_Games() {
+static void UI_ResetCoords_Games(void) {
     // Reset x coordinates
     Games_GetDisplayed(GAME_LEFT3)->x = LEFT3_GAME_X;
     Games_GetDisplayed(GAME_LEFT2)->x = LEFT2_GAME_X;
@@ -98,7 +99,7 @@ static void UI_ResetCoords_Games() {
 }
 
 //Reset the coordinates for the displayed games after category scroll
-static void UI_ResetCoords_Categ() {
+static void UI_ResetCoords_Categ(void) {
     //If scrolling to the right
     if (Var_GetScrollCateg() == SCROLL_RIGHT) {
         //Reset x coordinates
@@ -154,7 +155,7 @@ static void UI_DrawImage(float alpha) {
 }
 
 //Draw options button at top right of screen
-void UI_DrawOptions() {
+void UI_DrawOptions(void) {
     // Draw options button
     DrawCircle(XBOX_X, XBOX_Y, XBOX_RADIUS, WHITE);
     Rectangle sourceRect = {0.0f, 0.0f, (float)xbox.width, (float)xbox.height};
@@ -168,7 +169,7 @@ void UI_DrawOptions() {
 }
 
 //Function to draw the bumpers
-static void UI_DrawBumpers() {
+static void UI_DrawBumpers(void) {
     //Values for left bumper
     Rectangle bumperLRec = {
         BUMPER_L_X,
@@ -209,7 +210,7 @@ static void UI_DrawBumpers() {
 }
 
 //Draw bumpers, option button, and small spider logo
-static void UI_DrawTop() {
+static void UI_DrawTop(void) {
     UI_DrawBumpers();
     UI_DrawOptions();
     //Draw small spider logo
@@ -220,7 +221,7 @@ static void UI_DrawTop() {
 }
 
 //Draw the select controls at the bottom
-static void UI_DrawBottom() {
+static void UI_DrawBottom(void) {
     //Draw left arrow (LS)
     DrawCircle(LS_LEFT_X + LS_OFFSET, LS_Y, LS_RADIUS, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
     Vector2 point1 = {LS_LEFT_X - (LS_TRIANGLE_SIZE / 2), LS_Y};
@@ -253,16 +254,14 @@ static void UI_DrawBottom() {
     DrawTextEx(Var_GetFontBold(), BOTTOM_TXT, bottom, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE, Fade(Var_GetColor3(), Var_GetAlphaSelect()));
 }
 
-//Load spider logo
-void UI_LoadLogo() {
-    //Load the logo textures
+//Load logos
+void UI_LoadLogos(void) {
     spiderLogo = LoadTexture("assets/images/other/logo.png");
     xbox = LoadTexture("assets/images/other/xbox.png");
 }
 
 //Draw the boot screen
-void UI_DrawBootScreen() {
-    //Clear background
+void UI_DrawBootScreen(void) {
     ClearBackground(BACKGROUND_CLR);
     //Draw logo
     Rectangle sourceRect = {0.0f, 0.0f, (float)spiderLogo.width, (float)spiderLogo.height};
@@ -272,14 +271,33 @@ void UI_DrawBootScreen() {
 }
 
 //Load images of controller/keybaord and mouse
-void UI_LoadControlsImgs() {
+void UI_LoadControlsImgs(void) {
     controlsImg = LoadTexture("assets/images/other/controller.png");
     keyImg = LoadTexture("assets/images/other/keyboard.png");
     mouseImg = LoadTexture("assets/images/other/mouse.png");
     arrowsImg = LoadTexture("assets/images/other/arrow_keys.png");
 }
 
-//Draw controls for libretro game
+//Draw specific control with normal size
+static void UI_DrawControlTxt(const char* control, float x, float y, float font_size) {
+    char txt[LAUNCH_STR_LEN];
+    snprintf(txt, sizeof(txt), "%s", control);
+    Vector2 size = MeasureTextEx(Var_GetFontBold(), txt, font_size, LAUNCH_CONTROL_SPACE);
+    Vector2 position = {x - size.x / 2.0f, y - size.y / 2.0f};
+    DrawTextEx(Var_GetFontBold(), txt, position, font_size, LAUNCH_CONTROL_SPACE, BLACK);
+}
+
+//Draw box and line for the keyboard and mouse controls
+static void UI_DrawKeyBox(float lineStartX, float lineEndX, float lineStartY, float lineEndY, float boxX, float boxY) {
+    Vector2 origin = {0.0f, 0.0f};
+    Vector2 start = {lineStartX, lineStartY};
+    Vector2 end = {lineEndX, lineEndY};
+    DrawLineEx(start, end,LAUNCH_KEY_THICKNESS, GRAY);
+    Rectangle rect = {boxX, boxY, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
+    DrawRectanglePro(rect, origin, 0.0f, GRAY);
+}
+
+//Draw the controls for the game
 static void UI_DrawControls_Lib(const game_t* game) {
     //Draw controller image
     Rectangle sourceRect_Controller = {0.0f, 0.0f, (float)controlsImg.width, (float)controlsImg.height};
@@ -292,14 +310,6 @@ static void UI_DrawControls_Lib(const game_t* game) {
     Vector2 middleLineStart = {LAUNCH_KEYBOARD_X, LAUNCH_CONTROLLER_Y};
     Vector2 middleLineEnd = {LAUNCH_KEYBOARD_X, LAUNCH_CONTROLLER_Y + LAUNCH_CONTROLLER_H};
     DrawLineEx(middleLineStart, middleLineEnd, LAUNCH_CONTROL_OUTLINE_THICKNESS, GRAY);
-    //Initialize the text variables for all the controls
-    char rDown_Txt[LAUNCH_STR_LEN] = "", rUp_Txt[LAUNCH_STR_LEN] = "", rLeft_Txt[LAUNCH_STR_LEN] = "", rRight_Txt[LAUNCH_STR_LEN] = "";
-    char dPad_Txt[LAUNCH_STR_LEN] = "", rs_Txt[LAUNCH_STR_LEN] = "", back_Txt[LAUNCH_STR_LEN] = "", start_Txt[LAUNCH_STR_LEN] = "";
-    char lt_Txt[LAUNCH_STR_LEN] = "", rt_Txt[LAUNCH_STR_LEN] = "", lb_Txt[LAUNCH_STR_LEN3] = "", rb_Txt[LAUNCH_STR_LEN3] = "", ls_Txt[LAUNCH_STR_LEN] = "";
-    char home_Txt[LAUNCH_STR_LEN] = "PAUSE";
-    char tab_Txt[LAUNCH_STR_LEN] = "", q_Txt[LAUNCH_STR_LEN2] = "", w_Txt[LAUNCH_STR_LEN] = "", e_Txt[LAUNCH_STR_LEN2] = "", u_Txt[LAUNCH_STR_LEN] = "", i_Txt[LAUNCH_STR_LEN] = "", o_Txt[LAUNCH_STR_LEN] = "";
-    char a_Txt[LAUNCH_STR_LEN] = "", s_Txt[LAUNCH_STR_LEN] = "", d_Txt[LAUNCH_STR_LEN] = "", f_Txt[LAUNCH_STR_LEN] = "", j_Txt[LAUNCH_STR_LEN] = "", k_Txt[LAUNCH_STR_LEN] = "", l_Txt[LAUNCH_STR_LEN] = "";
-    char enter_Txt[LAUNCH_STR_LEN] = "", lShift_Txt[LAUNCH_STR_LEN] = "", rShift_Txt[LAUNCH_STR_LEN] = "", space_Txt[LAUNCH_STR_LEN] = "", mouse_Txt[LAUNCH_STR_LEN] = "", lClick_Txt[LAUNCH_STR_LEN] = "", arrows_Txt[LAUNCH_STR_LEN] = "";
     //Draw circles and rectangles for backgrounds of each xbox control
     DrawCircle(LAUNCH_RIGHT_FACE_DOWN_X, LAUNCH_RIGHT_FACE_DOWN_Y, LAUNCH_CONTROL_RADIUS, GRAY);
     DrawCircle(LAUNCH_RIGHT_FACE_UP_X, LAUNCH_RIGHT_FACE_UP_Y, LAUNCH_CONTROL_RADIUS, GRAY);
@@ -326,952 +336,287 @@ static void UI_DrawControls_Lib(const game_t* game) {
     Rectangle destRect_Arrow = {LAUNCH_ARROWS_X, LAUNCH_ARROWS_Y, LAUNCH_ARROWS_W, LAUNCH_ARROWS_H};
     DrawTexturePro(arrowsImg, sourceRect_Arrow, destRect_Arrow, origin, 0.0f, WHITE);
     //1st keyboard row
-    Vector2 startTab = {LAUNCH_KEY_TAB_LINE_X, LAUNCH_KEY_TAB_LINE_Y_START};
-    Vector2 endTab = {LAUNCH_KEY_TAB_LINE_X, LAUNCH_KEY_LINE_END_TOP1};
-    DrawLineEx(startTab, endTab, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectTab = {LAUNCH_KEY_TAB_X, LAUNCH_KEY_TAB_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectTab, origin, 0.0f, GRAY);
-    Vector2 startQ = {LAUNCH_KEY_Q_LINE_X, LAUNCH_KEY_Q_LINE_Y_START};
-    Vector2 endQ = {LAUNCH_KEY_Q_LINE_X, LAUNCH_KEY_LINE_END_TOP2};
-    DrawLineEx(startQ, endQ, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectQ = {LAUNCH_KEY_Q_X, LAUNCH_KEY_Q_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectQ, origin, 0.0f, GRAY);
-    Vector2 startW = {LAUNCH_KEY_W_LINE_X, LAUNCH_KEY_W_LINE_Y_START};
-    Vector2 endW = {LAUNCH_KEY_W_LINE_X, LAUNCH_KEY_LINE_END_TOP1};
-    DrawLineEx(startW, endW, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectW = {LAUNCH_KEY_W_X, LAUNCH_KEY_W_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectW, origin, 0.0f, GRAY);
-    Vector2 startE = {LAUNCH_KEY_E_LINE_X, LAUNCH_KEY_E_LINE_Y_START};
-    Vector2 endE = {LAUNCH_KEY_E_LINE_X, LAUNCH_KEY_LINE_END_TOP2};
-    DrawLineEx(startE, endE, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectE = {LAUNCH_KEY_E_X, LAUNCH_KEY_E_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectE, origin, 0.0f, GRAY);
-    Vector2 startU = {LAUNCH_KEY_U_LINE_X, LAUNCH_KEY_U_LINE_Y_START};
-    Vector2 endU = {LAUNCH_KEY_U_LINE_X, LAUNCH_KEY_LINE_END_TOP1};
-    DrawLineEx(startU, endU, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectU = {LAUNCH_KEY_U_X, LAUNCH_KEY_U_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectU, origin, 0.0f, GRAY);
-    Vector2 startI = {LAUNCH_KEY_I_LINE_X, LAUNCH_KEY_I_LINE_Y_START};
-    Vector2 endI = {LAUNCH_KEY_I_LINE_X, LAUNCH_KEY_LINE_END_TOP2};
-    DrawLineEx(startI, endI, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectI = {LAUNCH_KEY_I_X, LAUNCH_KEY_I_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectI, origin, 0.0f, GRAY);
-    Vector2 startO = {LAUNCH_KEY_O_LINE_X, LAUNCH_KEY_O_LINE_Y_START};
-    Vector2 endO = {LAUNCH_KEY_O_LINE_X, LAUNCH_KEY_LINE_END_TOP1};
-    DrawLineEx(startO, endO, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectO = {LAUNCH_KEY_O_X, LAUNCH_KEY_O_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectO, origin, 0.0f, GRAY);
+    UI_DrawKeyBox(LAUNCH_KEY_TAB_LINE_X, LAUNCH_KEY_TAB_LINE_X, LAUNCH_KEY_TAB_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP1,
+                        LAUNCH_KEY_TAB_X, LAUNCH_KEY_TAB_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_Q_LINE_X, LAUNCH_KEY_Q_LINE_X, LAUNCH_KEY_Q_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP2,
+                        LAUNCH_KEY_Q_X, LAUNCH_KEY_Q_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_W_LINE_X, LAUNCH_KEY_W_LINE_X, LAUNCH_KEY_W_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP1,
+                        LAUNCH_KEY_W_X, LAUNCH_KEY_W_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_E_LINE_X, LAUNCH_KEY_E_LINE_X, LAUNCH_KEY_E_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP2,
+                        LAUNCH_KEY_E_X, LAUNCH_KEY_E_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_U_LINE_X, LAUNCH_KEY_U_LINE_X, LAUNCH_KEY_U_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP1,
+                        LAUNCH_KEY_U_X, LAUNCH_KEY_U_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_I_LINE_X, LAUNCH_KEY_I_LINE_X, LAUNCH_KEY_I_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP2,
+                        LAUNCH_KEY_I_X, LAUNCH_KEY_I_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_O_LINE_X, LAUNCH_KEY_O_LINE_X, LAUNCH_KEY_O_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP1,
+                        LAUNCH_KEY_O_X, LAUNCH_KEY_O_Y);
     //2nd keyboard row
-    Vector2 startA = {LAUNCH_KEY_A_LINE_X, LAUNCH_KEY_A_LINE_Y_START};
-    Vector2 endA = {LAUNCH_KEY_A_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM2};
-    DrawLineEx(startA, endA, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectA = {LAUNCH_KEY_A_X, LAUNCH_KEY_A_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectA, origin, 0.0f, GRAY);
-    Vector2 startS = {LAUNCH_KEY_S_LINE_X, LAUNCH_KEY_S_LINE_Y_START};
-    Vector2 endS = {LAUNCH_KEY_S_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM1};
-    DrawLineEx(startS, endS, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectS = {LAUNCH_KEY_S_X, LAUNCH_KEY_S_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectS, origin, 0.0f, GRAY);
-    Vector2 startD = {LAUNCH_KEY_D_LINE_X, LAUNCH_KEY_D_LINE_Y_START};
-    Vector2 endD = {LAUNCH_KEY_D_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM2};
-    DrawLineEx(startD, endD, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectD = {LAUNCH_KEY_D_X, LAUNCH_KEY_D_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectD, origin, 0.0f, GRAY);
-    Vector2 startF = {LAUNCH_KEY_F_LINE_X, LAUNCH_KEY_F_LINE_Y_START};
-    Vector2 endF = {LAUNCH_KEY_F_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM1};
-    DrawLineEx(startF, endF, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectF = {LAUNCH_KEY_F_X, LAUNCH_KEY_F_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectF, origin, 0.0f, GRAY);
-    Vector2 startJ = {LAUNCH_KEY_J_LINE_X, LAUNCH_KEY_J_LINE_Y_START};
-    Vector2 endJ = {LAUNCH_KEY_J_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM2};
-    DrawLineEx(startJ, endJ, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectJ = {LAUNCH_KEY_J_X, LAUNCH_KEY_J_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectJ, origin, 0.0f, GRAY);
-    Vector2 startK = {LAUNCH_KEY_K_LINE_X, LAUNCH_KEY_K_LINE_Y_START};
-    Vector2 endK = {LAUNCH_KEY_K_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM1};
-    DrawLineEx(startK, endK, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectK = {LAUNCH_KEY_K_X, LAUNCH_KEY_K_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectK, origin, 0.0f, GRAY);
-    Vector2 startL = {LAUNCH_KEY_L_LINE_X, LAUNCH_KEY_L_LINE_Y_START};
-    Vector2 endL = {LAUNCH_KEY_L_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM2};
-    DrawLineEx(startL, endL, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectL = {LAUNCH_KEY_L_X, LAUNCH_KEY_L_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectL, origin, 0.0f, GRAY);
+    UI_DrawKeyBox(LAUNCH_KEY_A_LINE_X, LAUNCH_KEY_A_LINE_X, LAUNCH_KEY_A_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM2,
+                        LAUNCH_KEY_A_X, LAUNCH_KEY_A_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_S_LINE_X, LAUNCH_KEY_S_LINE_X, LAUNCH_KEY_S_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM1,
+                        LAUNCH_KEY_S_X, LAUNCH_KEY_S_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_D_LINE_X, LAUNCH_KEY_D_LINE_X, LAUNCH_KEY_D_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM2,
+                        LAUNCH_KEY_D_X, LAUNCH_KEY_D_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_F_LINE_X, LAUNCH_KEY_F_LINE_X, LAUNCH_KEY_F_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM1,
+                        LAUNCH_KEY_F_X, LAUNCH_KEY_F_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_J_LINE_X, LAUNCH_KEY_J_LINE_X, LAUNCH_KEY_J_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM2,
+                        LAUNCH_KEY_J_X, LAUNCH_KEY_J_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_K_LINE_X, LAUNCH_KEY_K_LINE_X, LAUNCH_KEY_K_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM1,
+                        LAUNCH_KEY_K_X, LAUNCH_KEY_K_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_L_LINE_X, LAUNCH_KEY_L_LINE_X, LAUNCH_KEY_L_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM2,
+                        LAUNCH_KEY_L_X, LAUNCH_KEY_L_Y);
     //Other keys
-    Vector2 startEnter = {LAUNCH_KEY_ENTER_LINE_X, LAUNCH_KEY_ENTER_LINE_Y_START};
-    Vector2 endEnter = {LAUNCH_KEY_ENTER_LINE_X, LAUNCH_KEY_LINE_END_TOP1};
-    DrawLineEx(startEnter, endEnter, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectEnter = {LAUNCH_KEY_ENTER_X, LAUNCH_KEY_ENTER_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectEnter, origin, 0.0f, GRAY);
-    Vector2 startRShift = {LAUNCH_KEY_RSHIFT_LINE_X, LAUNCH_KEY_RSHIFT_LINE_Y_START};
-    Vector2 endRShift = {LAUNCH_KEY_RSHIFT_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM1};
-    DrawLineEx(startRShift, endRShift, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectRShift = {LAUNCH_KEY_RSHIFT_X, LAUNCH_KEY_RSHIFT_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectRShift, origin, 0.0f, GRAY);
-    Vector2 startLShift = {LAUNCH_KEY_LSHIFT_LINE_X, LAUNCH_KEY_LSHIFT_LINE_Y_START};
-    Vector2 endLShift = {LAUNCH_KEY_LSHIFT_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM1};
-    DrawLineEx(startLShift, endLShift, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectLShift = {LAUNCH_KEY_LSHIFT_X, LAUNCH_KEY_LSHIFT_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectLShift, origin, 0.0f, GRAY);
-    Vector2 startSpace = {LAUNCH_KEY_SPACE_LINE_X, LAUNCH_KEY_SPACE_LINE_Y_START};
-    Vector2 endSpace = {LAUNCH_KEY_SPACE_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM2};
-    DrawLineEx(startSpace, endSpace, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectSpace = {LAUNCH_KEY_SPACE_X, LAUNCH_KEY_SPACE_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectSpace, origin, 0.0f, GRAY);
+    UI_DrawKeyBox(LAUNCH_KEY_ENTER_LINE_X, LAUNCH_KEY_ENTER_LINE_X, LAUNCH_KEY_ENTER_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP1,
+                        LAUNCH_KEY_ENTER_X, LAUNCH_KEY_ENTER_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_RSHIFT_LINE_X, LAUNCH_KEY_RSHIFT_LINE_X, LAUNCH_KEY_RSHIFT_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM1,
+                        LAUNCH_KEY_RSHIFT_X, LAUNCH_KEY_RSHIFT_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_LSHIFT_LINE_X, LAUNCH_KEY_LSHIFT_LINE_X, LAUNCH_KEY_LSHIFT_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM1,
+                        LAUNCH_KEY_LSHIFT_X, LAUNCH_KEY_LSHIFT_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_SPACE_LINE_X, LAUNCH_KEY_SPACE_LINE_X, LAUNCH_KEY_SPACE_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM2,
+                        LAUNCH_KEY_SPACE_X, LAUNCH_KEY_SPACE_Y);
     //Mouse
-    Vector2 startMouse = {LAUNCH_KEY_MOUSE_LINE_X, LAUNCH_KEY_MOUSE_LINE_Y_START};
-    Vector2 endMouse = {LAUNCH_KEY_MOUSE_LINE_X, LAUNCH_KEY_LINE_END_TOP1};
-    DrawLineEx(startMouse, endMouse, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectMouse = {LAUNCH_KEY_MOUSE_X, LAUNCH_KEY_MOUSE_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectMouse, origin, 0.0f, GRAY);
-    Vector2 startLClick = {LAUNCH_KEY_LCLICK_LINE_X, LAUNCH_KEY_LCLICK_LINE_Y_START};
-    Vector2 endLClick = {LAUNCH_KEY_LCLICK_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM1};
-    DrawLineEx(startLClick, endLClick, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectLClick = {LAUNCH_KEY_LCLICK_X, LAUNCH_KEY_LCLICK_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectLClick, origin, 0.0f, GRAY);
+    UI_DrawKeyBox(LAUNCH_KEY_MOUSE_LINE_X, LAUNCH_KEY_MOUSE_LINE_X, LAUNCH_KEY_MOUSE_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP1,
+                        LAUNCH_KEY_MOUSE_X, LAUNCH_KEY_MOUSE_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_LCLICK_LINE_X, LAUNCH_KEY_LCLICK_LINE_X, LAUNCH_KEY_LCLICK_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM1,
+                        LAUNCH_KEY_LCLICK_X, LAUNCH_KEY_LCLICK_Y);
     //Arrows
-    Vector2 startArrows = {LAUNCH_KEY_ARROWS_LINE_X1, LAUNCH_KEY_ARROWS_LINE_Y};
-    Vector2 endArrows = {LAUNCH_KEY_ARROWS_LINE_X2, LAUNCH_KEY_ARROWS_LINE_Y};
-    DrawLineEx(startArrows, endArrows, LAUNCH_ARROW_THICKNESS, GRAY);
-    Rectangle rectArrows = {LAUNCH_KEY_ARROWS_REC_X, LAUNCH_KEY_ARROWS_REC_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectArrows, origin, 0.0f, GRAY);
-    //Set the text variables for the console and draw the non-shared ones
+    UI_DrawKeyBox(LAUNCH_KEY_ARROWS_LINE_X1, LAUNCH_KEY_ARROWS_LINE_X2, LAUNCH_KEY_ARROWS_LINE_Y, LAUNCH_KEY_ARROWS_LINE_Y,
+                        LAUNCH_KEY_ARROWS_REC_X, LAUNCH_KEY_ARROWS_REC_Y);
+    //Common home control for all consoles
+    UI_DrawControlTxt("PAUSE", LAUNCH_HOME_TXT_X, LAUNCH_HOME_TXT_Y, LAUNCH_CONTROL_SIZE);
+    //Draw the controls depending on the console
     if (strcmp(game->console, "Sega Genesis") == 0 || strcmp(game->console, "Sega CD") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "START");
-        snprintf(enter_Txt,    sizeof(enter_Txt),    "START");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"B");
-        snprintf(j_Txt,    sizeof(j_Txt),    "B");
-        Vector2 j_Size = MeasureTextEx(Var_GetFontBold(), j_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 j = {LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), j_Txt, j, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "A");
-        snprintf(k_Txt,    sizeof(k_Txt),    "A");
-        Vector2 k_Size = MeasureTextEx(Var_GetFontBold(), k_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 k = {LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), k_Txt, k, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(a_Txt,    sizeof(a_Txt),    "D-PAD");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "D-PAD");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "D-PAD");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "D-PAD");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(back_Txt,  sizeof(back_Txt),  "MODE");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rShift_Txt,    sizeof(rShift_Txt),    "MODE");
-        Vector2 rShift_Size = MeasureTextEx(Var_GetFontBold(), rShift_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rShift = {LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rShift_Txt, rShift, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rLeft_Txt, sizeof(rLeft_Txt), "C");
-        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rLeft = {LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(i_Txt,    sizeof(i_Txt),    "C");
-        Vector2 i_Size = MeasureTextEx(Var_GetFontBold(), i_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 i = {LAUNCH_KEY_I_TXT_X, LAUNCH_KEY_I_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), i_Txt, i, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "X");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(u_Txt,    sizeof(u_Txt),    "X");
-        Vector2 u_Size = MeasureTextEx(Var_GetFontBold(), u_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 u = {LAUNCH_KEY_U_TXT_X, LAUNCH_KEY_U_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), u_Txt, u, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rUp_Txt,   sizeof(rUp_Txt),   "Y");
-        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rUp = {LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(l_Txt,    sizeof(l_Txt),    "Y");
-        Vector2 l_Size = MeasureTextEx(Var_GetFontBold(), l_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 l = {LAUNCH_KEY_L_TXT_X, LAUNCH_KEY_L_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), l_Txt, l, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "Z");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(o_Txt,    sizeof(o_Txt),    "Z");
-        Vector2 o_Size = MeasureTextEx(Var_GetFontBold(), o_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 o = {LAUNCH_KEY_O_TXT_X, LAUNCH_KEY_O_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), o_Txt, o, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+        UI_DrawControlTxt("START", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("START", LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("MODE", LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("MODE", LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("C", LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("C", LAUNCH_KEY_I_TXT_X, LAUNCH_KEY_I_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("X", LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("X", LAUNCH_KEY_U_TXT_X, LAUNCH_KEY_U_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Y", LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Y", LAUNCH_KEY_L_TXT_X, LAUNCH_KEY_L_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Z", LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Z", LAUNCH_KEY_O_TXT_X, LAUNCH_KEY_O_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
     else if (strcmp(game->console, "Sega Game Gear") == 0 || strcmp(game->console, "Sega Master System") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(enter_Txt,    sizeof(enter_Txt),    "START");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "1");
-        snprintf(j_Txt,    sizeof(j_Txt),    "1");
-        Vector2 j_Size = MeasureTextEx(Var_GetFontBold(), j_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 j = {LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), j_Txt, j, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "2");
-        snprintf(k_Txt,    sizeof(k_Txt),    "2");
-        Vector2 k_Size = MeasureTextEx(Var_GetFontBold(), k_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 k = {LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), k_Txt, k, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(a_Txt,    sizeof(a_Txt),    "D-PAD");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "D-PAD");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "D-PAD");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "D-PAD");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
+        UI_DrawControlTxt("START", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("START", LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("1", LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("1", LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("2", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("2", LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
     else if (strcmp(game->console, "TurboGrafx-16") == 0 || strcmp(game->console, "TurboGrafx-CD") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "RUN");
-        snprintf(enter_Txt,    sizeof(enter_Txt),    "RUN");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "I");
-        snprintf(k_Txt,    sizeof(k_Txt),    "I");
-        Vector2 k_Size = MeasureTextEx(Var_GetFontBold(), k_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 k = {LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), k_Txt, k, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "II");
-        snprintf(j_Txt,    sizeof(j_Txt),    "II");
-        Vector2 j_Size = MeasureTextEx(Var_GetFontBold(), j_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 j = {LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), j_Txt, j, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(a_Txt,    sizeof(a_Txt),    "D-PAD");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "D-PAD");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "D-PAD");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "D-PAD");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rShift_Txt,    sizeof(rShift_Txt),    "SELECT");
-        Vector2 rShift_Size = MeasureTextEx(Var_GetFontBold(), rShift_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rShift = {LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rShift_Txt, rShift, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+        UI_DrawControlTxt("RUN", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("RUN", LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("I", LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("I", LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("II", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("II", LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SELECT", LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SELECT", LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
     else if (strcmp(game->console, "Neo Geo Pocket Color") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "OPTION");
-        snprintf(enter_Txt,    sizeof(enter_Txt),    "OPTION");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "B");
-        snprintf(k_Txt,    sizeof(k_Txt),    "B");
-        Vector2 k_Size = MeasureTextEx(Var_GetFontBold(), k_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 k = {LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), k_Txt, k, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "A");
-        snprintf(j_Txt,    sizeof(j_Txt),    "A");
-        Vector2 j_Size = MeasureTextEx(Var_GetFontBold(), j_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 j = {LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), j_Txt, j, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "STICK");
-        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(a_Txt,    sizeof(a_Txt),    "STICK");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "STICK");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "STICK");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "STICK");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
+        UI_DrawControlTxt("OPTION", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("OPTION", LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
-    else if (strcmp(game->console, "Nintendo Entertainment System") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(enter_Txt,    sizeof(enter_Txt),    "START");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
-        snprintf(k_Txt,    sizeof(k_Txt),    "A");
-        Vector2 k_Size = MeasureTextEx(Var_GetFontBold(), k_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 k = {LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), k_Txt, k, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
-        snprintf(j_Txt,    sizeof(j_Txt),    "B");
-        Vector2 j_Size = MeasureTextEx(Var_GetFontBold(), j_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 j = {LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), j_Txt, j, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(a_Txt,    sizeof(a_Txt),    "D-PAD");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "D-PAD");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "D-PAD");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "D-PAD");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rShift_Txt,    sizeof(rShift_Txt),    "SELECT");
-        Vector2 rShift_Size = MeasureTextEx(Var_GetFontBold(), rShift_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rShift = {LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rShift_Txt, rShift, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    }
-    else if (strcmp(game->console, "Game Boy Color") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(enter_Txt,    sizeof(enter_Txt),    "START");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
-        snprintf(k_Txt,    sizeof(k_Txt),    "A");
-        Vector2 k_Size = MeasureTextEx(Var_GetFontBold(), k_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 k = {LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), k_Txt, k, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
-        snprintf(j_Txt,    sizeof(j_Txt),    "B");
-        Vector2 j_Size = MeasureTextEx(Var_GetFontBold(), j_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 j = {LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), j_Txt, j, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(a_Txt,    sizeof(a_Txt),    "D-PAD");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "D-PAD");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "D-PAD");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "D-PAD");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rShift_Txt,    sizeof(rShift_Txt),    "SELECT");
-        Vector2 rShift_Size = MeasureTextEx(Var_GetFontBold(), rShift_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rShift = {LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rShift_Txt, rShift, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    }
-    else if (strcmp(game->console, "Atari Lynx") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(enter_Txt,    sizeof(enter_Txt),    "START");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
-        snprintf(k_Txt,    sizeof(k_Txt),    "A");
-        Vector2 k_Size = MeasureTextEx(Var_GetFontBold(), k_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 k = {LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), k_Txt, k, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
-        snprintf(j_Txt,    sizeof(j_Txt),    "B");
-        Vector2 j_Size = MeasureTextEx(Var_GetFontBold(), j_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 j = {LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), j_Txt, j, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(a_Txt,    sizeof(a_Txt),    "D-PAD");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "D-PAD");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "D-PAD");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "D-PAD");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rShift_Txt,    sizeof(rShift_Txt),    "SELECT");
-        Vector2 rShift_Size = MeasureTextEx(Var_GetFontBold(), rShift_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rShift = {LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rShift_Txt, rShift, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+    else if (strcmp(game->console, "Nintendo Entertainment System") == 0
+             || strcmp(game->console, "Game Boy Color") == 0
+             || strcmp(game->console, "Atari Lynx") == 0) {
+        UI_DrawControlTxt("START", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("START", LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SELECT", LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SELECT", LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
     else if (strcmp(game->console, "Super Nintendo Entertainment System") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(enter_Txt,    sizeof(enter_Txt),    "START");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
-        snprintf(j_Txt,    sizeof(j_Txt),    "B");
-        Vector2 j_Size = MeasureTextEx(Var_GetFontBold(), j_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 j = {LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), j_Txt, j, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
-        snprintf(k_Txt,    sizeof(k_Txt),    "A");
-        Vector2 k_Size = MeasureTextEx(Var_GetFontBold(), k_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 k = {LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), k_Txt, k, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(a_Txt,    sizeof(a_Txt),    "D-PAD");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "D-PAD");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "D-PAD");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "D-PAD");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rShift_Txt,    sizeof(rShift_Txt),    "SELECT");
-        Vector2 rShift_Size = MeasureTextEx(Var_GetFontBold(), rShift_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rShift = {LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rShift_Txt, rShift, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rLeft_Txt, sizeof(rLeft_Txt), "%s", "Y");
-        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rLeft = {LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(i_Txt,    sizeof(i_Txt),    "Y");
-        Vector2 i_Size = MeasureTextEx(Var_GetFontBold(), i_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 i = {LAUNCH_KEY_I_TXT_X, LAUNCH_KEY_I_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), i_Txt, i, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rUp_Txt,   sizeof(rUp_Txt),   "%s", "X");
-        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rUp = {LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(l_Txt,    sizeof(l_Txt),    "X");
-        Vector2 l_Size = MeasureTextEx(Var_GetFontBold(), l_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 l = {LAUNCH_KEY_L_TXT_X, LAUNCH_KEY_L_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), l_Txt, l, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "L");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(u_Txt,    sizeof(u_Txt),    "L");
-        Vector2 u_Size = MeasureTextEx(Var_GetFontBold(), u_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 u = {LAUNCH_KEY_U_TXT_X, LAUNCH_KEY_U_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), u_Txt, u, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "R");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(o_Txt,    sizeof(o_Txt),    "R");
-        Vector2 o_Size = MeasureTextEx(Var_GetFontBold(), o_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 o = {LAUNCH_KEY_O_TXT_X, LAUNCH_KEY_O_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), o_Txt, o, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+        UI_DrawControlTxt("START", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("START", LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SELECT", LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SELECT", LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Y", LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Y", LAUNCH_KEY_I_TXT_X, LAUNCH_KEY_I_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("X", LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("X", LAUNCH_KEY_L_TXT_X, LAUNCH_KEY_L_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L", LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L", LAUNCH_KEY_U_TXT_X, LAUNCH_KEY_U_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R", LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R", LAUNCH_KEY_O_TXT_X, LAUNCH_KEY_O_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
     else if (strcmp(game->console, "Game Boy Advance") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(enter_Txt,    sizeof(enter_Txt),    "START");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
-        snprintf(j_Txt,    sizeof(j_Txt),    "B");
-        Vector2 j_Size = MeasureTextEx(Var_GetFontBold(), j_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 j = {LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), j_Txt, j, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
-        snprintf(k_Txt,    sizeof(k_Txt),    "A");
-        Vector2 k_Size = MeasureTextEx(Var_GetFontBold(), k_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 k = {LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), k_Txt, k, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(a_Txt,    sizeof(a_Txt),    "D-PAD");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "D-PAD");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "D-PAD");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "D-PAD");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rShift_Txt,    sizeof(rShift_Txt),    "SELECT");
-        Vector2 rShift_Size = MeasureTextEx(Var_GetFontBold(), rShift_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rShift = {LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rShift_Txt, rShift, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "L");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(u_Txt,    sizeof(u_Txt),    "L");
-        Vector2 u_Size = MeasureTextEx(Var_GetFontBold(), u_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 u = {LAUNCH_KEY_U_TXT_X, LAUNCH_KEY_U_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), u_Txt, u, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "R");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(o_Txt,    sizeof(o_Txt),    "R");
-        Vector2 o_Size = MeasureTextEx(Var_GetFontBold(), o_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 o = {LAUNCH_KEY_O_TXT_X, LAUNCH_KEY_O_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), o_Txt, o, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+        UI_DrawControlTxt("START", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("START", LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SELECT", LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SELECT", LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L", LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L", LAUNCH_KEY_U_TXT_X, LAUNCH_KEY_U_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R", LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R", LAUNCH_KEY_O_TXT_X, LAUNCH_KEY_O_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
     else if (strcmp(game->console, "Sony PlayStation") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(enter_Txt,    sizeof(enter_Txt),    "START");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "X");
-        snprintf(k_Txt,    sizeof(k_Txt),    "X");
-        Vector2 k_Size = MeasureTextEx(Var_GetFontBold(), k_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 k = {LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), k_Txt, k, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "O");
-        snprintf(l_Txt,    sizeof(l_Txt),    "O");
-        Vector2 l_Size = MeasureTextEx(Var_GetFontBold(), l_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 l = {LAUNCH_KEY_L_TXT_X, LAUNCH_KEY_L_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), l_Txt, l, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(a_Txt,    sizeof(a_Txt),    "D-PAD");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "D-PAD");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "D-PAD");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "D-PAD");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rShift_Txt,    sizeof(rShift_Txt),    "SELECT");
-        Vector2 rShift_Size = MeasureTextEx(Var_GetFontBold(), rShift_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rShift = {LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rShift_Txt, rShift, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rLeft_Txt, sizeof(rLeft_Txt), "%s", "SQR");
-        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rLeft = {LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(j_Txt,    sizeof(j_Txt),    "SQR");
-        Vector2 j_Size = MeasureTextEx(Var_GetFontBold(), j_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 j = {LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), j_Txt, j, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rUp_Txt,   sizeof(rUp_Txt),   "%s", "TRI");
-        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rUp = {LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(i_Txt,    sizeof(i_Txt),    "TRI");
-        Vector2 i_Size = MeasureTextEx(Var_GetFontBold(), i_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 i = {LAUNCH_KEY_I_TXT_X, LAUNCH_KEY_I_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), i_Txt, i, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "L1");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(u_Txt,    sizeof(u_Txt),    "L1");
-        Vector2 u_Size = MeasureTextEx(Var_GetFontBold(), u_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 u = {LAUNCH_KEY_U_TXT_X, LAUNCH_KEY_U_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), u_Txt, u, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "R1");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(o_Txt,    sizeof(o_Txt),    "R1");
-        Vector2 o_Size = MeasureTextEx(Var_GetFontBold(), o_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 o = {LAUNCH_KEY_O_TXT_X, LAUNCH_KEY_O_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), o_Txt, o, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lt_Txt,    sizeof(lt_Txt),    "%s", "L2");
-        Vector2 lt_Size = MeasureTextEx(Var_GetFontBold(), lt_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lt = {LAUNCH_LT_TXT_X, LAUNCH_LT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lt_Txt, lt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(q_Txt,    sizeof(q_Txt),    "L2");
-        Vector2 q_Size = MeasureTextEx(Var_GetFontBold(), q_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 q = {LAUNCH_KEY_Q_TXT_X, LAUNCH_KEY_Q_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), q_Txt, q, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rt_Txt,    sizeof(rt_Txt),    "%s", "R2");
-        Vector2 rt_Size = MeasureTextEx(Var_GetFontBold(), rt_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rt = {LAUNCH_RT_TXT_X, LAUNCH_RT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rt_Txt, rt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(e_Txt,    sizeof(e_Txt),    "R2");
-        Vector2 e_Size = MeasureTextEx(Var_GetFontBold(), e_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 e = {LAUNCH_KEY_E_TXT_X, LAUNCH_KEY_E_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), e_Txt, e, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+        UI_DrawControlTxt("START", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("START", LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("X", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("X", LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("O", LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("O", LAUNCH_KEY_L_TXT_X, LAUNCH_KEY_L_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SELECT", LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SELECT", LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SQR", LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SQR", LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("TRI", LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("TRI", LAUNCH_KEY_I_TXT_X, LAUNCH_KEY_I_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L1", LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L1", LAUNCH_KEY_U_TXT_X, LAUNCH_KEY_U_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R1", LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R1", LAUNCH_KEY_O_TXT_X, LAUNCH_KEY_O_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L2", LAUNCH_LT_TXT_X, LAUNCH_LT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L2", LAUNCH_KEY_Q_TXT_X, LAUNCH_KEY_Q_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R2", LAUNCH_RT_TXT_X, LAUNCH_RT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R2", LAUNCH_KEY_E_TXT_X, LAUNCH_KEY_E_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
     else if (strcmp(game->console, "Nintendo 64") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(enter_Txt,    sizeof(enter_Txt),    "START");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
-        snprintf(u_Txt,    sizeof(u_Txt),    "B");
-        Vector2 u_Size = MeasureTextEx(Var_GetFontBold(), u_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 u = {LAUNCH_KEY_U_TXT_X, LAUNCH_KEY_U_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), u_Txt, u, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "A");
-        snprintf(o_Txt,    sizeof(o_Txt),    "A");
-        Vector2 o_Size = MeasureTextEx(Var_GetFontBold(), o_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 o = {LAUNCH_KEY_O_TXT_X, LAUNCH_KEY_O_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), o_Txt, o, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "STICK");
-        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(a_Txt,    sizeof(a_Txt),    "STICK");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "STICK");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "STICK");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "STICK");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(arrows_Txt,    sizeof(arrows_Txt),    "D-PAD");
-        Vector2 arrows_Size = MeasureTextEx(Var_GetFontBold(), arrows_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 arrows = {LAUNCH_KEY_ARROWS_TXT_X, LAUNCH_KEY_ARROWS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), arrows_Txt, arrows, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "L");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(q_Txt,    sizeof(q_Txt),    "L");
-        Vector2 q_Size = MeasureTextEx(Var_GetFontBold(), q_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 q = {LAUNCH_KEY_Q_TXT_X, LAUNCH_KEY_Q_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), q_Txt, q, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "R");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(e_Txt,    sizeof(e_Txt),    "R");
-        Vector2 e_Size = MeasureTextEx(Var_GetFontBold(), e_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 e = {LAUNCH_KEY_E_TXT_X, LAUNCH_KEY_E_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), e_Txt, e, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lt_Txt,    sizeof(lt_Txt),    "%s", "Z");
-        Vector2 lt_Size = MeasureTextEx(Var_GetFontBold(), lt_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lt = {LAUNCH_LT_TXT_X, LAUNCH_LT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lt_Txt, lt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(space_Txt,    sizeof(space_Txt),    "Z");
-        Vector2 space_Size = MeasureTextEx(Var_GetFontBold(), space_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 space = {LAUNCH_KEY_SPACE_TXT_X, LAUNCH_KEY_SPACE_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), space_Txt, space, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rs_Txt,    sizeof(rs_Txt),    "%s", "C");
-        Vector2 rs_Size = MeasureTextEx(Var_GetFontBold(), rs_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rs = {LAUNCH_RS_TXT_X, LAUNCH_RS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rs_Txt, rs, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(j_Txt,    sizeof(j_Txt),    "C");
-        Vector2 j_Size = MeasureTextEx(Var_GetFontBold(), j_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 j = {LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), j_Txt, j, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(k_Txt,    sizeof(k_Txt),    "C");
-        Vector2 k_Size = MeasureTextEx(Var_GetFontBold(), k_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 k = {LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), k_Txt, k, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(i_Txt,    sizeof(i_Txt),    "C");
-        Vector2 i_Size = MeasureTextEx(Var_GetFontBold(), i_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 i = {LAUNCH_KEY_I_TXT_X, LAUNCH_KEY_I_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), i_Txt, i, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(l_Txt,    sizeof(l_Txt),    "C");
-        Vector2 l_Size = MeasureTextEx(Var_GetFontBold(), l_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 l = {LAUNCH_KEY_L_TXT_X, LAUNCH_KEY_L_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), l_Txt, l, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+        UI_DrawControlTxt("START", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("START", LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_KEY_U_TXT_X, LAUNCH_KEY_U_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_KEY_O_TXT_X, LAUNCH_KEY_O_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_ARROWS_TXT_X, LAUNCH_KEY_ARROWS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L", LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L", LAUNCH_KEY_Q_TXT_X, LAUNCH_KEY_Q_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R", LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R", LAUNCH_KEY_E_TXT_X, LAUNCH_KEY_E_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Z", LAUNCH_LT_TXT_X, LAUNCH_LT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Z", LAUNCH_KEY_SPACE_TXT_X, LAUNCH_KEY_SPACE_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("C", LAUNCH_RS_TXT_X, LAUNCH_RS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("C", LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("C", LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("C", LAUNCH_KEY_I_TXT_X, LAUNCH_KEY_I_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("C", LAUNCH_KEY_L_TXT_X, LAUNCH_KEY_L_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
     else if (strcmp(game->console, "Arcade") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(enter_Txt,    sizeof(enter_Txt),    "START");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "1");
-        snprintf(k_Txt,    sizeof(k_Txt),    "1");
-        Vector2 k_Size = MeasureTextEx(Var_GetFontBold(), k_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 k = {LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), k_Txt, k, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "2");
-        snprintf(l_Txt,    sizeof(l_Txt),    "2");
-        Vector2 l_Size = MeasureTextEx(Var_GetFontBold(), l_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 l = {LAUNCH_KEY_L_TXT_X, LAUNCH_KEY_L_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), l_Txt, l, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "STICK");
-        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "STICK");
-        snprintf(a_Txt,    sizeof(a_Txt),    "STICK");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "STICK");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "STICK");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "STICK");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "COIN");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rShift_Txt,    sizeof(rShift_Txt),    "COIN");
-        Vector2 rShift_Size = MeasureTextEx(Var_GetFontBold(), rShift_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rShift = {LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rShift_Txt, rShift, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rLeft_Txt, sizeof(rLeft_Txt), "%s", "3");
-        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rLeft = {LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(j_Txt,    sizeof(j_Txt),    "3");
-        Vector2 j_Size = MeasureTextEx(Var_GetFontBold(), j_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 j = {LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), j_Txt, j, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rUp_Txt,   sizeof(rUp_Txt),   "%s", "4");
-        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rUp = {LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(i_Txt,    sizeof(i_Txt),    "4");
-        Vector2 i_Size = MeasureTextEx(Var_GetFontBold(), i_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 i = {LAUNCH_KEY_I_TXT_X, LAUNCH_KEY_I_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), i_Txt, i, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "5");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(u_Txt,    sizeof(u_Txt),    "5");
-        Vector2 u_Size = MeasureTextEx(Var_GetFontBold(), u_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 u = {LAUNCH_KEY_U_TXT_X, LAUNCH_KEY_U_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), u_Txt, u, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "6");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(o_Txt,    sizeof(o_Txt),    "6");
-        Vector2 o_Size = MeasureTextEx(Var_GetFontBold(), o_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 o = {LAUNCH_KEY_O_TXT_X, LAUNCH_KEY_O_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), o_Txt, o, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+        UI_DrawControlTxt("START", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("START", LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("1", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("1", LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("2", LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("2", LAUNCH_KEY_L_TXT_X, LAUNCH_KEY_L_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("COIN", LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("COIN", LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("3", LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("3", LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("4", LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("4", LAUNCH_KEY_I_TXT_X, LAUNCH_KEY_I_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("5", LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("5", LAUNCH_KEY_U_TXT_X, LAUNCH_KEY_U_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("6", LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("6", LAUNCH_KEY_O_TXT_X, LAUNCH_KEY_O_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
     else if (strcmp(game->console, "PC") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "ENTER");
-        snprintf(enter_Txt,    sizeof(enter_Txt),    "ENTER");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rDown_Txt,sizeof(rDown_Txt),"%s", "USE");
-        snprintf(space_Txt,    sizeof(space_Txt),    "USE");
-        Vector2 space_Size = MeasureTextEx(Var_GetFontBold(), space_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 space = {LAUNCH_KEY_SPACE_TXT_X, LAUNCH_KEY_SPACE_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), space_Txt, space, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "MOVE/RUN");
-        Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE_DOOM1, LAUNCH_CONTROL_SPACE);
-        Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE_DOOM1, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(a_Txt,    sizeof(a_Txt),    "STRAFE");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE_DOOM1, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE_DOOM1, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "MOVE");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE_DOOM1, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE_DOOM1, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "STRAFE");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE_DOOM1, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE_DOOM1, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "MOVE");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE_DOOM1, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE_DOOM1, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(lShift_Txt,    sizeof(lShift_Txt),    "RUN");
-        Vector2 lShift_Size = MeasureTextEx(Var_GetFontBold(), lShift_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lShift = {LAUNCH_KEY_LSHIFT_TXT_X, LAUNCH_KEY_LSHIFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lShift_Txt, lShift, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "MAP");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(tab_Txt,    sizeof(tab_Txt),    "MAP");
-        Vector2 tab_Size = MeasureTextEx(Var_GetFontBold(), tab_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 tab = {LAUNCH_KEY_TAB_TXT_X, LAUNCH_KEY_TAB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), tab_Txt, tab, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rt_Txt, sizeof(rt_Txt), "%s", "FIRE");
-        Vector2 rt_Size = MeasureTextEx(Var_GetFontBold(), rt_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rt = {LAUNCH_RT_TXT_X, LAUNCH_RT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rt_Txt, rt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lClick_Txt,    sizeof(lClick_Txt),    "FIRE");
-        Vector2 lClick_Size = MeasureTextEx(Var_GetFontBold(), lClick_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lClick = {LAUNCH_KEY_LCLICK_TXT_X, LAUNCH_KEY_LCLICK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lClick_Txt, lClick, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(f_Txt,    sizeof(f_Txt),    "FIRE");
-        Vector2 f_Size = MeasureTextEx(Var_GetFontBold(), f_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 f = {LAUNCH_KEY_F_TXT_X, LAUNCH_KEY_F_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), f_Txt, f, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "SWITCH GUNS");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE_DOOM2, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE_DOOM2, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(q_Txt,    sizeof(q_Txt),    "SWITCH GUNS");
-        Vector2 q_Size = MeasureTextEx(Var_GetFontBold(), q_Txt, LAUNCH_CONTROL_SIZE_DOOM2, LAUNCH_CONTROL_SPACE);
-        Vector2 q = {LAUNCH_KEY_Q_TXT_X, LAUNCH_KEY_Q_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), q_Txt, q, LAUNCH_CONTROL_SIZE_DOOM2, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "SWITCH GUNS");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE_DOOM2, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE_DOOM2, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(e_Txt,    sizeof(e_Txt),    "SWITCH GUNS");
-        Vector2 e_Size = MeasureTextEx(Var_GetFontBold(), e_Txt, LAUNCH_CONTROL_SIZE_DOOM2, LAUNCH_CONTROL_SPACE);
-        Vector2 e = {LAUNCH_KEY_E_TXT_X, LAUNCH_KEY_E_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), e_Txt, e, LAUNCH_CONTROL_SIZE_DOOM2, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rs_Txt,    sizeof(rs_Txt),    "%s", "TURN");
-        Vector2 rs_Size = MeasureTextEx(Var_GetFontBold(), rs_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rs = {LAUNCH_RS_TXT_X, LAUNCH_RS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rs_Txt, rs, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(mouse_Txt,    sizeof(mouse_Txt),    "TURN");
-        Vector2 mouse_Size = MeasureTextEx(Var_GetFontBold(), mouse_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 mouse = {LAUNCH_KEY_MOUSE_TXT_X, LAUNCH_KEY_MOUSE_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), mouse_Txt, mouse, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+        UI_DrawControlTxt("ENTER", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("ENTER", LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("USE", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("USE", LAUNCH_KEY_SPACE_TXT_X, LAUNCH_KEY_SPACE_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("MOVE/RUN", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE_DOOM1);
+        UI_DrawControlTxt("STRAFE", LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y, LAUNCH_CONTROL_SIZE_DOOM1);
+        UI_DrawControlTxt("MOVE", LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y, LAUNCH_CONTROL_SIZE_DOOM1);
+        UI_DrawControlTxt("STRAFE", LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y, LAUNCH_CONTROL_SIZE_DOOM1);
+        UI_DrawControlTxt("MOVE", LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y, LAUNCH_CONTROL_SIZE_DOOM1);
+        UI_DrawControlTxt("D-PAD", LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("RUN", LAUNCH_KEY_LSHIFT_TXT_X, LAUNCH_KEY_LSHIFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("MAP", LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("MAP", LAUNCH_KEY_TAB_TXT_X, LAUNCH_KEY_TAB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("FIRE", LAUNCH_RT_TXT_X, LAUNCH_RT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("FIRE", LAUNCH_KEY_LCLICK_TXT_X, LAUNCH_KEY_LCLICK_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("FIRE", LAUNCH_KEY_F_TXT_X, LAUNCH_KEY_F_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SWITCH GUNS", LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y, LAUNCH_CONTROL_SIZE_DOOM2);
+        UI_DrawControlTxt("SWITCH GUNS", LAUNCH_KEY_Q_TXT_X, LAUNCH_KEY_Q_TXT_Y, LAUNCH_CONTROL_SIZE_DOOM2);
+        UI_DrawControlTxt("SWITCH GUNS", LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y, LAUNCH_CONTROL_SIZE_DOOM2);
+        UI_DrawControlTxt("SWITCH GUNS", LAUNCH_KEY_E_TXT_X, LAUNCH_KEY_E_TXT_Y, LAUNCH_CONTROL_SIZE_DOOM2);
+        UI_DrawControlTxt("TURN", LAUNCH_RS_TXT_X, LAUNCH_RS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("TURN", LAUNCH_KEY_MOUSE_TXT_X, LAUNCH_KEY_MOUSE_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
-    //Controls all games use
-    Vector2 rDown_Size = MeasureTextEx(Var_GetFontBold(), rDown_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-    Vector2 rDown = {LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y};
-    DrawTextEx(Var_GetFontBold(), rDown_Txt, rDown, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    Vector2 rRight_Size = MeasureTextEx(Var_GetFontBold(), rRight_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-    Vector2 rRight = {LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y};
-    DrawTextEx(Var_GetFontBold(), rRight_Txt, rRight, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    Vector2 home_Size = MeasureTextEx(Var_GetFontBold(), home_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-    Vector2 home = {LAUNCH_HOME_TXT_X, LAUNCH_HOME_TXT_Y};
-    DrawTextEx(Var_GetFontBold(), home_Txt, home, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    Vector2 dPad_Size = MeasureTextEx(Var_GetFontBold(), dPad_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-    Vector2 dPad = {LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y};
-    DrawTextEx(Var_GetFontBold(), dPad_Txt, dPad, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    Vector2 start_Size = MeasureTextEx(Var_GetFontBold(), start_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-    Vector2 start = {LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y};
-    DrawTextEx(Var_GetFontBold(), start_Txt, start, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
     //Draw outline
     Rectangle outline = {LAUNCH_CONTROLLER_X, LAUNCH_CONTROLLER_Y, LAUNCH_CONTROLLER_W * 2, LAUNCH_CONTROLLER_H};
     DrawRectangleLinesEx(outline, LAUNCH_CONTROL_OUTLINE_THICKNESS, GRAY);
@@ -1290,14 +635,6 @@ static void UI_DrawControls_Ext(const game_t* game) {
     Vector2 middleLineStart = {LAUNCH_KEYBOARD_X, LAUNCH_CONTROLLER_Y};
     Vector2 middleLineEnd = {LAUNCH_KEYBOARD_X, LAUNCH_CONTROLLER_Y + LAUNCH_CONTROLLER_H};
     DrawLineEx(middleLineStart, middleLineEnd, LAUNCH_CONTROL_OUTLINE_THICKNESS, GRAY);
-    //Initialize the text variables for all the controls
-    char rDown_Txt[LAUNCH_STR_LEN] = "", rUp_Txt[LAUNCH_STR_LEN] = "", rLeft_Txt[LAUNCH_STR_LEN] = "", rRight_Txt[LAUNCH_STR_LEN] = "";
-    char dPad_Txt[LAUNCH_STR_LEN] = "", rs_Txt[LAUNCH_STR_LEN] = "", back_Txt[LAUNCH_STR_LEN] = "", start_Txt[LAUNCH_STR_LEN] = "";
-    char lt_Txt[LAUNCH_STR_LEN] = "", rt_Txt[LAUNCH_STR_LEN] = "", lb_Txt[LAUNCH_STR_LEN3] = "", rb_Txt[LAUNCH_STR_LEN3] = "", ls_Txt[LAUNCH_STR_LEN] = "";
-    char home_Txt[LAUNCH_STR_LEN] = "EXIT";
-    char tab_Txt[LAUNCH_STR_LEN] = "",  q_Txt[LAUNCH_STR_LEN2] = "",  e_Txt[LAUNCH_STR_LEN2] = "", w_Txt[LAUNCH_STR_LEN] = "", u_Txt[LAUNCH_STR_LEN] = "", i_Txt[LAUNCH_STR_LEN] = "", o_Txt[LAUNCH_STR_LEN] = "";
-    char a_Txt[LAUNCH_STR_LEN] = "", s_Txt[LAUNCH_STR_LEN] = "", d_Txt[LAUNCH_STR_LEN] = "", j_Txt[LAUNCH_STR_LEN] = "", k_Txt[LAUNCH_STR_LEN] = "", l_Txt[LAUNCH_STR_LEN] = "";
-    char enter_Txt[LAUNCH_STR_LEN] = "", rShift_Txt[LAUNCH_STR_LEN] = "", space_Txt[LAUNCH_STR_LEN3] = "", mouse_Txt[LAUNCH_STR_LEN] = "", lClick_Txt[LAUNCH_STR_LEN] = "", arrows_Txt[LAUNCH_STR_LEN] = "";
     //Draw circles and rectangles for backgrounds of each xbox control
     DrawCircle(LAUNCH_RIGHT_FACE_DOWN_X, LAUNCH_RIGHT_FACE_DOWN_Y, LAUNCH_CONTROL_RADIUS, GRAY);
     DrawCircle(LAUNCH_RIGHT_FACE_UP_X, LAUNCH_RIGHT_FACE_UP_Y, LAUNCH_CONTROL_RADIUS, GRAY);
@@ -1323,373 +660,128 @@ static void UI_DrawControls_Ext(const game_t* game) {
     Rectangle sourceRect_Arrow = {0.0f, 0.0f, (float)arrowsImg.width, (float)arrowsImg.height};
     Rectangle destRect_Arrow = {LAUNCH_ARROWS_X, LAUNCH_ARROWS_Y, LAUNCH_ARROWS_W, LAUNCH_ARROWS_H};
     DrawTexturePro(arrowsImg, sourceRect_Arrow, destRect_Arrow, origin, 0.0f, WHITE);
-    //1st keyboard row
-    Vector2 startTab = {LAUNCH_KEY_TAB_LINE_X, LAUNCH_KEY_TAB_LINE_Y_START};
-    Vector2 endTab = {LAUNCH_KEY_TAB_LINE_X, LAUNCH_KEY_LINE_END_TOP1};
-    DrawLineEx(startTab, endTab, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectTab = {LAUNCH_KEY_TAB_X, LAUNCH_KEY_TAB_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectTab, origin, 0.0f, GRAY);
-    Vector2 startQ = {LAUNCH_KEY_Q_LINE_X, LAUNCH_KEY_Q_LINE_Y_START};
-    Vector2 endQ = {LAUNCH_KEY_Q_LINE_X, LAUNCH_KEY_LINE_END_TOP2};
-    DrawLineEx(startQ, endQ, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectQ = {LAUNCH_KEY_Q_X, LAUNCH_KEY_Q_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectQ, origin, 0.0f, GRAY);
-    Vector2 startW = {LAUNCH_KEY_W_LINE_X, LAUNCH_KEY_W_LINE_Y_START};
-    Vector2 endW = {LAUNCH_KEY_W_LINE_X, LAUNCH_KEY_LINE_END_TOP1};
-    DrawLineEx(startW, endW, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectW = {LAUNCH_KEY_W_X, LAUNCH_KEY_W_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectW, origin, 0.0f, GRAY);
-    Vector2 startE = {LAUNCH_KEY_E_LINE_X, LAUNCH_KEY_E_LINE_Y_START};
-    Vector2 endE = {LAUNCH_KEY_E_LINE_X, LAUNCH_KEY_LINE_END_TOP2};
-    DrawLineEx(startE, endE, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectE = {LAUNCH_KEY_E_X, LAUNCH_KEY_E_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectE, origin, 0.0f, GRAY);
-    Vector2 startU = {LAUNCH_KEY_U_LINE_X, LAUNCH_KEY_U_LINE_Y_START};
-    Vector2 endU = {LAUNCH_KEY_U_LINE_X, LAUNCH_KEY_LINE_END_TOP1};
-    DrawLineEx(startU, endU, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectU = {LAUNCH_KEY_U_X, LAUNCH_KEY_U_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectU, origin, 0.0f, GRAY);
-    Vector2 startI = {LAUNCH_KEY_I_LINE_X, LAUNCH_KEY_I_LINE_Y_START};
-    Vector2 endI = {LAUNCH_KEY_I_LINE_X, LAUNCH_KEY_LINE_END_TOP2};
-    DrawLineEx(startI, endI, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectI = {LAUNCH_KEY_I_X, LAUNCH_KEY_I_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectI, origin, 0.0f, GRAY);
-    Vector2 startO = {LAUNCH_KEY_O_LINE_X, LAUNCH_KEY_O_LINE_Y_START};
-    Vector2 endO = {LAUNCH_KEY_O_LINE_X, LAUNCH_KEY_LINE_END_TOP1};
-    DrawLineEx(startO, endO, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectO = {LAUNCH_KEY_O_X, LAUNCH_KEY_O_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectO, origin, 0.0f, GRAY);
+        //1st keyboard row
+    UI_DrawKeyBox(LAUNCH_KEY_TAB_LINE_X, LAUNCH_KEY_TAB_LINE_X, LAUNCH_KEY_TAB_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP1,
+                LAUNCH_KEY_TAB_X, LAUNCH_KEY_TAB_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_Q_LINE_X, LAUNCH_KEY_Q_LINE_X, LAUNCH_KEY_Q_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP2,
+                LAUNCH_KEY_Q_X, LAUNCH_KEY_Q_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_W_LINE_X, LAUNCH_KEY_W_LINE_X, LAUNCH_KEY_W_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP1,
+                LAUNCH_KEY_W_X, LAUNCH_KEY_W_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_E_LINE_X, LAUNCH_KEY_E_LINE_X, LAUNCH_KEY_E_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP2,
+                LAUNCH_KEY_E_X, LAUNCH_KEY_E_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_U_LINE_X, LAUNCH_KEY_U_LINE_X, LAUNCH_KEY_U_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP1,
+                LAUNCH_KEY_U_X, LAUNCH_KEY_U_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_I_LINE_X, LAUNCH_KEY_I_LINE_X, LAUNCH_KEY_I_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP2,
+                LAUNCH_KEY_I_X, LAUNCH_KEY_I_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_O_LINE_X, LAUNCH_KEY_O_LINE_X, LAUNCH_KEY_O_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP1,
+                LAUNCH_KEY_O_X, LAUNCH_KEY_O_Y);
+
     //2nd keyboard row
-    Vector2 startA = {LAUNCH_KEY_A_LINE_X, LAUNCH_KEY_A_LINE_Y_START};
-    Vector2 endA = {LAUNCH_KEY_A_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM2};
-    DrawLineEx(startA, endA, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectA = {LAUNCH_KEY_A_X, LAUNCH_KEY_A_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectA, origin, 0.0f, GRAY);
-    Vector2 startS = {LAUNCH_KEY_S_LINE_X, LAUNCH_KEY_S_LINE_Y_START};
-    Vector2 endS = {LAUNCH_KEY_S_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM1};
-    DrawLineEx(startS, endS, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectS = {LAUNCH_KEY_S_X, LAUNCH_KEY_S_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectS, origin, 0.0f, GRAY);
-    Vector2 startD = {LAUNCH_KEY_D_LINE_X, LAUNCH_KEY_D_LINE_Y_START};
-    Vector2 endD = {LAUNCH_KEY_D_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM2};
-    DrawLineEx(startD, endD, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectD = {LAUNCH_KEY_D_X, LAUNCH_KEY_D_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectD, origin, 0.0f, GRAY);
-    Vector2 startF = {LAUNCH_KEY_F_LINE_X, LAUNCH_KEY_F_LINE_Y_START};
-    Vector2 endF = {LAUNCH_KEY_F_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM1};
-    DrawLineEx(startF, endF, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectF = {LAUNCH_KEY_F_X, LAUNCH_KEY_F_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectF, origin, 0.0f, GRAY);
-    Vector2 startJ = {LAUNCH_KEY_J_LINE_X, LAUNCH_KEY_J_LINE_Y_START};
-    Vector2 endJ = {LAUNCH_KEY_J_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM2};
-    DrawLineEx(startJ, endJ, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectJ = {LAUNCH_KEY_J_X, LAUNCH_KEY_J_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectJ, origin, 0.0f, GRAY);
-    Vector2 startK = {LAUNCH_KEY_K_LINE_X, LAUNCH_KEY_K_LINE_Y_START};
-    Vector2 endK = {LAUNCH_KEY_K_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM1};
-    DrawLineEx(startK, endK, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectK = {LAUNCH_KEY_K_X, LAUNCH_KEY_K_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectK, origin, 0.0f, GRAY);
-    Vector2 startL = {LAUNCH_KEY_L_LINE_X, LAUNCH_KEY_L_LINE_Y_START};
-    Vector2 endL = {LAUNCH_KEY_L_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM2};
-    DrawLineEx(startL, endL, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectL = {LAUNCH_KEY_L_X, LAUNCH_KEY_L_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectL, origin, 0.0f, GRAY);
+    UI_DrawKeyBox(LAUNCH_KEY_A_LINE_X, LAUNCH_KEY_A_LINE_X, LAUNCH_KEY_A_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM2,
+                LAUNCH_KEY_A_X, LAUNCH_KEY_A_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_S_LINE_X, LAUNCH_KEY_S_LINE_X, LAUNCH_KEY_S_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM1,
+                LAUNCH_KEY_S_X, LAUNCH_KEY_S_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_D_LINE_X, LAUNCH_KEY_D_LINE_X, LAUNCH_KEY_D_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM2,
+                LAUNCH_KEY_D_X, LAUNCH_KEY_D_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_F_LINE_X, LAUNCH_KEY_F_LINE_X, LAUNCH_KEY_F_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM1,
+                LAUNCH_KEY_F_X, LAUNCH_KEY_F_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_J_LINE_X, LAUNCH_KEY_J_LINE_X, LAUNCH_KEY_J_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM2,
+                LAUNCH_KEY_J_X, LAUNCH_KEY_J_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_K_LINE_X, LAUNCH_KEY_K_LINE_X, LAUNCH_KEY_K_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM1,
+                LAUNCH_KEY_K_X, LAUNCH_KEY_K_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_L_LINE_X, LAUNCH_KEY_L_LINE_X, LAUNCH_KEY_L_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM2,
+                LAUNCH_KEY_L_X, LAUNCH_KEY_L_Y);
+
     //Other keys
-    Vector2 startEnter = {LAUNCH_KEY_ENTER_LINE_X, LAUNCH_KEY_ENTER_LINE_Y_START};
-    Vector2 endEnter = {LAUNCH_KEY_ENTER_LINE_X, LAUNCH_KEY_LINE_END_TOP1};
-    DrawLineEx(startEnter, endEnter, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectEnter = {LAUNCH_KEY_ENTER_X, LAUNCH_KEY_ENTER_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectEnter, origin, 0.0f, GRAY);
-    Vector2 startRShift = {LAUNCH_KEY_RSHIFT_LINE_X, LAUNCH_KEY_RSHIFT_LINE_Y_START};
-    Vector2 endRShift = {LAUNCH_KEY_RSHIFT_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM1};
-    DrawLineEx(startRShift, endRShift, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectRShift = {LAUNCH_KEY_RSHIFT_X, LAUNCH_KEY_RSHIFT_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectRShift, origin, 0.0f, GRAY);
-    Vector2 startLShift = {LAUNCH_KEY_LSHIFT_LINE_X, LAUNCH_KEY_LSHIFT_LINE_Y_START};
-    Vector2 endLShift = {LAUNCH_KEY_LSHIFT_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM1};
-    DrawLineEx(startLShift, endLShift, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectLShift = {LAUNCH_KEY_LSHIFT_X, LAUNCH_KEY_LSHIFT_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectLShift, origin, 0.0f, GRAY);
-    Vector2 startSpace = {LAUNCH_KEY_SPACE_LINE_X, LAUNCH_KEY_SPACE_LINE_Y_START};
-    Vector2 endSpace = {LAUNCH_KEY_SPACE_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM2};
-    DrawLineEx(startSpace, endSpace, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectSpace = {LAUNCH_KEY_SPACE_X, LAUNCH_KEY_SPACE_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectSpace, origin, 0.0f, GRAY);
+    UI_DrawKeyBox(LAUNCH_KEY_ENTER_LINE_X, LAUNCH_KEY_ENTER_LINE_X, LAUNCH_KEY_ENTER_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP1,
+                LAUNCH_KEY_ENTER_X, LAUNCH_KEY_ENTER_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_RSHIFT_LINE_X, LAUNCH_KEY_RSHIFT_LINE_X, LAUNCH_KEY_RSHIFT_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM1,
+                LAUNCH_KEY_RSHIFT_X, LAUNCH_KEY_RSHIFT_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_LSHIFT_LINE_X, LAUNCH_KEY_LSHIFT_LINE_X, LAUNCH_KEY_LSHIFT_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM1,
+                LAUNCH_KEY_LSHIFT_X, LAUNCH_KEY_LSHIFT_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_SPACE_LINE_X, LAUNCH_KEY_SPACE_LINE_X, LAUNCH_KEY_SPACE_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM2,
+                LAUNCH_KEY_SPACE_X, LAUNCH_KEY_SPACE_Y);
+
     //Mouse
-    Vector2 startMouse = {LAUNCH_KEY_MOUSE_LINE_X, LAUNCH_KEY_MOUSE_LINE_Y_START};
-    Vector2 endMouse = {LAUNCH_KEY_MOUSE_LINE_X, LAUNCH_KEY_LINE_END_TOP1};
-    DrawLineEx(startMouse, endMouse, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectMouse = {LAUNCH_KEY_MOUSE_X, LAUNCH_KEY_MOUSE_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectMouse, origin, 0.0f, GRAY);
-    Vector2 startLClick = {LAUNCH_KEY_LCLICK_LINE_X, LAUNCH_KEY_LCLICK_LINE_Y_START};
-    Vector2 endLClick = {LAUNCH_KEY_LCLICK_LINE_X, LAUNCH_KEY_LINE_END_BOTTOM1};
-    DrawLineEx(startLClick, endLClick, LAUNCH_KEY_THICKNESS, GRAY);
-    Rectangle rectLClick = {LAUNCH_KEY_LCLICK_X, LAUNCH_KEY_LCLICK_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectLClick, origin, 0.0f, GRAY);
+    UI_DrawKeyBox(LAUNCH_KEY_MOUSE_LINE_X, LAUNCH_KEY_MOUSE_LINE_X, LAUNCH_KEY_MOUSE_LINE_Y_START, LAUNCH_KEY_LINE_END_TOP1,
+                LAUNCH_KEY_MOUSE_X, LAUNCH_KEY_MOUSE_Y);
+    UI_DrawKeyBox(LAUNCH_KEY_LCLICK_LINE_X, LAUNCH_KEY_LCLICK_LINE_X, LAUNCH_KEY_LCLICK_LINE_Y_START, LAUNCH_KEY_LINE_END_BOTTOM1,
+                LAUNCH_KEY_LCLICK_X, LAUNCH_KEY_LCLICK_Y);
+
     //Arrows
-    Vector2 startArrows = {LAUNCH_KEY_ARROWS_LINE_X1, LAUNCH_KEY_ARROWS_LINE_Y};
-    Vector2 endArrows = {LAUNCH_KEY_ARROWS_LINE_X2, LAUNCH_KEY_ARROWS_LINE_Y};
-    DrawLineEx(startArrows, endArrows, LAUNCH_ARROW_THICKNESS, GRAY);
-    Rectangle rectArrows = {LAUNCH_KEY_ARROWS_REC_X, LAUNCH_KEY_ARROWS_REC_Y, LAUNCH_KEY_REC_W, LAUNCH_KEY_REC_H};
-    DrawRectanglePro(rectArrows, origin, 0.0f, GRAY);
-    //Set the text variables for the console and draw the non-shared ones
+    UI_DrawKeyBox(LAUNCH_KEY_ARROWS_LINE_X1, LAUNCH_KEY_ARROWS_LINE_X2, LAUNCH_KEY_ARROWS_LINE_Y, LAUNCH_KEY_ARROWS_LINE_Y,
+                LAUNCH_KEY_ARROWS_REC_X, LAUNCH_KEY_ARROWS_REC_Y);
+    //Draw the controls depending on the console
     if (strcmp(game->console, "Nintendo GameCube") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "A");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "B");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "STICK");
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(rLeft_Txt, sizeof(rLeft_Txt), "%s", "X");
-        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rLeft = {LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rUp_Txt,   sizeof(rUp_Txt),   "%s", "Y");
-        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rUp = {LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "Z");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lt_Txt,    sizeof(lt_Txt),    "%s", "L");
-        Vector2 lt_Size = MeasureTextEx(Var_GetFontBold(), lt_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lt = {LAUNCH_LT_TXT_X, LAUNCH_LT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lt_Txt, lt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rt_Txt,    sizeof(rt_Txt),    "%s", "R");
-        Vector2 rt_Size = MeasureTextEx(Var_GetFontBold(), rt_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rt = {LAUNCH_RT_TXT_X, LAUNCH_RT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rt_Txt, rt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rs_Txt,    sizeof(rs_Txt),    "%s", "C");
-        Vector2 rs_Size = MeasureTextEx(Var_GetFontBold(), rs_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rs = {LAUNCH_RS_TXT_X, LAUNCH_RS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rs_Txt, rs, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+        UI_DrawControlTxt("START", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("X", LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Y", LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Z", LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L", LAUNCH_LT_TXT_X, LAUNCH_LT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R", LAUNCH_RT_TXT_X, LAUNCH_RT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("C", LAUNCH_RS_TXT_X, LAUNCH_RS_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
     else if (strcmp(game->console, "Nintendo DS") == 0) {
-        snprintf(enter_Txt,  sizeof(enter_Txt),  "%s", "START");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rShift_Txt,    sizeof(rShift_Txt),    "SELECT");
-        Vector2 rShift_Size = MeasureTextEx(Var_GetFontBold(), rShift_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rShift = {LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rShift_Txt, rShift, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(a_Txt,    sizeof(a_Txt),    "D-PAD");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "D-PAD");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "D-PAD");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "D-PAD");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(k_Txt,  sizeof(k_Txt),  "%s", "B");
-        Vector2 k_Size = MeasureTextEx(Var_GetFontBold(), k_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 k = {LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), k_Txt, k, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(l_Txt,  sizeof(l_Txt),  "%s", "A");
-        Vector2 l_Size = MeasureTextEx(Var_GetFontBold(), l_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 l = {LAUNCH_KEY_L_TXT_X, LAUNCH_KEY_L_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), l_Txt, l, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(j_Txt,    sizeof(j_Txt),    "Y");
-        Vector2 j_Size = MeasureTextEx(Var_GetFontBold(), j_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 j = {LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), j_Txt, j, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(i_Txt,    sizeof(i_Txt),    "X");
-        Vector2 i_Size = MeasureTextEx(Var_GetFontBold(), i_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 i = {LAUNCH_KEY_I_TXT_X, LAUNCH_KEY_I_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), i_Txt, i, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(q_Txt,    sizeof(q_Txt),    "L");
-        Vector2 q_Size = MeasureTextEx(Var_GetFontBold(), q_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 q = {LAUNCH_KEY_Q_TXT_X, LAUNCH_KEY_Q_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), q_Txt, q, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(e_Txt,    sizeof(e_Txt),    "R");
-        Vector2 e_Size = MeasureTextEx(Var_GetFontBold(), e_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 e = {LAUNCH_KEY_E_TXT_X, LAUNCH_KEY_E_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), e_Txt, e, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(space_Txt,    sizeof(space_Txt),    "LID");
-        Vector2 space_Size = MeasureTextEx(Var_GetFontBold(), space_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 space = {LAUNCH_KEY_SPACE_TXT_X, LAUNCH_KEY_SPACE_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), space_Txt, space, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(tab_Txt,    sizeof(tab_Txt),    "MIC");
-        Vector2 tab_Size = MeasureTextEx(Var_GetFontBold(), tab_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 tab = {LAUNCH_KEY_TAB_TXT_X, LAUNCH_KEY_TAB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), tab_Txt, tab, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(mouse_Txt,    sizeof(mouse_Txt),    "STYLUS");
-        Vector2 mouse_Size = MeasureTextEx(Var_GetFontBold(), mouse_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 mouse = {LAUNCH_KEY_MOUSE_TXT_X, LAUNCH_KEY_MOUSE_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), mouse_Txt, mouse, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lClick_Txt,    sizeof(lClick_Txt),    "TOUCH");
-        Vector2 lClick_Size = MeasureTextEx(Var_GetFontBold(), lClick_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lClick = {LAUNCH_KEY_LCLICK_TXT_X, LAUNCH_KEY_LCLICK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lClick_Txt, lClick, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+        UI_DrawControlTxt("START", LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SELECT", LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_KEY_L_TXT_X, LAUNCH_KEY_L_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Y", LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("X", LAUNCH_KEY_I_TXT_X, LAUNCH_KEY_I_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L", LAUNCH_KEY_Q_TXT_X, LAUNCH_KEY_Q_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R", LAUNCH_KEY_E_TXT_X, LAUNCH_KEY_E_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("LID", LAUNCH_KEY_SPACE_TXT_X, LAUNCH_KEY_SPACE_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("MIC", LAUNCH_KEY_TAB_TXT_X, LAUNCH_KEY_TAB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STYLUS", LAUNCH_KEY_MOUSE_TXT_X, LAUNCH_KEY_MOUSE_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("TOUCH", LAUNCH_KEY_LCLICK_TXT_X, LAUNCH_KEY_LCLICK_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
     else if (strcmp(game->console, "Sony PlayStation Portable") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(enter_Txt,  sizeof(enter_Txt),  "%s", "START");
-        Vector2 enter_Size = MeasureTextEx(Var_GetFontBold(), enter_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 enter = {LAUNCH_KEY_ENTER_TXT_X, LAUNCH_KEY_ENTER_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), enter_Txt, enter, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "X");
-        snprintf(k_Txt,  sizeof(k_Txt),  "%s", "X");
-        Vector2 k_Size = MeasureTextEx(Var_GetFontBold(), k_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 k = {LAUNCH_KEY_K_TXT_X, LAUNCH_KEY_K_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), k_Txt, k, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "O");
-        snprintf(l_Txt,  sizeof(l_Txt),  "%s", "O");
-        Vector2 l_Size = MeasureTextEx(Var_GetFontBold(), l_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 l = {LAUNCH_KEY_L_TXT_X, LAUNCH_KEY_L_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), l_Txt, l, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        snprintf(a_Txt,    sizeof(a_Txt),    "D-PAD");
-        Vector2 a_Size = MeasureTextEx(Var_GetFontBold(), a_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 a = {LAUNCH_KEY_A_TXT_X, LAUNCH_KEY_A_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), a_Txt, a, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(s_Txt,    sizeof(s_Txt),    "D-PAD");
-        Vector2 s_Size = MeasureTextEx(Var_GetFontBold(), s_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 s = {LAUNCH_KEY_S_TXT_X, LAUNCH_KEY_S_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), s_Txt, s, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(d_Txt,    sizeof(d_Txt),    "D-PAD");
-        Vector2 d_Size = MeasureTextEx(Var_GetFontBold(), d_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 d = {LAUNCH_KEY_D_TXT_X, LAUNCH_KEY_D_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), d_Txt, d, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(w_Txt,    sizeof(w_Txt),    "D-PAD");
-        Vector2 w_Size = MeasureTextEx(Var_GetFontBold(), w_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 w = {LAUNCH_KEY_W_TXT_X, LAUNCH_KEY_W_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), w_Txt, w, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(back_Txt,  sizeof(back_Txt),  "%s", "SELECT");
-        Vector2 back_Size = MeasureTextEx(Var_GetFontBold(), back_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 back = {LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), back_Txt, back, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rShift_Txt,    sizeof(rShift_Txt),    "SELECT");
-        Vector2 rShift_Size = MeasureTextEx(Var_GetFontBold(), rShift_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rShift = {LAUNCH_KEY_RSHIFT_TXT_X, LAUNCH_KEY_RSHIFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rShift_Txt, rShift, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rLeft_Txt, sizeof(rLeft_Txt), "%s", "SQR");
-        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rLeft = {LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(j_Txt,    sizeof(j_Txt),    "SQR");
-        Vector2 j_Size = MeasureTextEx(Var_GetFontBold(), j_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 j = {LAUNCH_KEY_J_TXT_X, LAUNCH_KEY_J_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), j_Txt, j, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rUp_Txt,   sizeof(rUp_Txt),   "%s", "TRI");
-        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rUp = {LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(i_Txt,    sizeof(i_Txt),    "TRI");
-        Vector2 i_Size = MeasureTextEx(Var_GetFontBold(), i_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 i = {LAUNCH_KEY_I_TXT_X, LAUNCH_KEY_I_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), i_Txt, i, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "L");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(u_Txt,    sizeof(u_Txt),    "L");
-        Vector2 u_Size = MeasureTextEx(Var_GetFontBold(), u_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 u = {LAUNCH_KEY_U_TXT_X, LAUNCH_KEY_U_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), u_Txt, u, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "R");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(o_Txt,    sizeof(o_Txt),    "R");
-        Vector2 o_Size = MeasureTextEx(Var_GetFontBold(), o_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 o = {LAUNCH_KEY_O_TXT_X, LAUNCH_KEY_O_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), o_Txt, o, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(arrows_Txt,    sizeof(arrows_Txt),    "ANALOG");
-        Vector2 arrows_Size = MeasureTextEx(Var_GetFontBold(), arrows_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 arrows = {LAUNCH_KEY_ARROWS_TXT_X, LAUNCH_KEY_ARROWS_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), arrows_Txt, arrows, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+        UI_DrawControlTxt("START", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("X", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("O", LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SELECT", LAUNCH_BACK_TXT_X, LAUNCH_BACK_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("SQR", LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("TRI", LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L", LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R", LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
     else if (strcmp(game->console, "Sega Saturn") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "B");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "C");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "D-PAD");
-        snprintf(dPad_Txt,    sizeof(dPad_Txt),    "%s", "D-PAD");
-        snprintf(rLeft_Txt, sizeof(rLeft_Txt), "%s", "A");
-        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rLeft = {LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rUp_Txt,   sizeof(rUp_Txt),   "%s", "Y");
-        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rUp = {LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "X");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "Z");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lt_Txt,    sizeof(lt_Txt),    "%s", "L");
-        Vector2 lt_Size = MeasureTextEx(Var_GetFontBold(), lt_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lt = {LAUNCH_LT_TXT_X, LAUNCH_LT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lt_Txt, lt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rt_Txt,    sizeof(rt_Txt),    "%s", "R");
-        Vector2 rt_Size = MeasureTextEx(Var_GetFontBold(), rt_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rt = {LAUNCH_RT_TXT_X, LAUNCH_RT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rt_Txt, rt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+        UI_DrawControlTxt("START", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("C", LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Y", LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("X", LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Z", LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L", LAUNCH_LT_TXT_X, LAUNCH_LT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R", LAUNCH_RT_TXT_X, LAUNCH_RT_TXT_Y, LAUNCH_CONTROL_SIZE);
     }
     else if (strcmp(game->console, "Sega Dreamcast") == 0) {
-        snprintf(start_Txt, sizeof(start_Txt), "%s", "START");
-        snprintf(rDown_Txt, sizeof(rDown_Txt), "%s", "A");
-        snprintf(rRight_Txt,sizeof(rRight_Txt),"%s", "B");
-        snprintf(ls_Txt,    sizeof(ls_Txt),    "%s", "STICK");
-        snprintf(dPad_Txt,     sizeof(dPad_Txt),     "%s", "D-PAD");
-        snprintf(rLeft_Txt, sizeof(rLeft_Txt), "%s", "X");
-        Vector2 rLeft_Size = MeasureTextEx(Var_GetFontBold(), rLeft_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rLeft = {LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rLeft_Txt, rLeft, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rUp_Txt,   sizeof(rUp_Txt),   "%s", "Y");
-        Vector2 rUp_Size = MeasureTextEx(Var_GetFontBold(), rUp_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rUp = {LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rUp_Txt, rUp, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lb_Txt,    sizeof(lb_Txt),    "%s", "Z");
-        Vector2 lb_Size = MeasureTextEx(Var_GetFontBold(), lb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lb = {LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lb_Txt, lb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rb_Txt,    sizeof(rb_Txt),    "%s", "C");
-        Vector2 rb_Size = MeasureTextEx(Var_GetFontBold(), rb_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rb = {LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rb_Txt, rb, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(lt_Txt,    sizeof(lt_Txt),    "%s", "L");
-        Vector2 lt_Size = MeasureTextEx(Var_GetFontBold(), lt_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 lt = {LAUNCH_LT_TXT_X, LAUNCH_LT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), lt_Txt, lt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-        snprintf(rt_Txt,    sizeof(rt_Txt),    "%s", "R");
-        Vector2 rt_Size = MeasureTextEx(Var_GetFontBold(), rt_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-        Vector2 rt = {LAUNCH_RT_TXT_X, LAUNCH_RT_TXT_Y};
-        DrawTextEx(Var_GetFontBold(), rt_Txt, rt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    }
-    //Controls all games use
-    Vector2 rDown_Size = MeasureTextEx(Var_GetFontBold(), rDown_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-    Vector2 rDown = {LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y};
-    DrawTextEx(Var_GetFontBold(), rDown_Txt, rDown, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    Vector2 rRight_Size = MeasureTextEx(Var_GetFontBold(), rRight_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-    Vector2 rRight = {LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y};
-    DrawTextEx(Var_GetFontBold(), rRight_Txt, rRight, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    Vector2 home_Size = MeasureTextEx(Var_GetFontBold(), home_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-    Vector2 home = {LAUNCH_HOME_TXT_X, LAUNCH_HOME_TXT_Y};
-    DrawTextEx(Var_GetFontBold(), home_Txt, home, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    Vector2 dPad_Size = MeasureTextEx(Var_GetFontBold(), dPad_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-    Vector2 dPad = {LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y};
-    DrawTextEx(Var_GetFontBold(), dPad_Txt, dPad, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    Vector2 start_Size = MeasureTextEx(Var_GetFontBold(), start_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-    Vector2 start = {LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y};
-    DrawTextEx(Var_GetFontBold(), start_Txt, start, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
-    Vector2 ls_Size = MeasureTextEx(Var_GetFontBold(), ls_Txt, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE);
-    Vector2 ls = {LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y};
-    DrawTextEx(Var_GetFontBold(), ls_Txt, ls, LAUNCH_CONTROL_SIZE, LAUNCH_CONTROL_SPACE, BLACK);
+        UI_DrawControlTxt("START", LAUNCH_START_TXT_X, LAUNCH_START_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("A", LAUNCH_RIGHT_FACE_DOWN_TXT_X, LAUNCH_RIGHT_FACE_DOWN_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("B", LAUNCH_RIGHT_FACE_RIGHT_TXT_X, LAUNCH_RIGHT_FACE_RIGHT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("STICK", LAUNCH_LS_TXT_X, LAUNCH_LS_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("D-PAD", LAUNCH_DPAD_TXT_X, LAUNCH_DPAD_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("X", LAUNCH_RIGHT_FACE_LEFT_TXT_X, LAUNCH_RIGHT_FACE_LEFT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Y", LAUNCH_RIGHT_FACE_UP_TXT_X, LAUNCH_RIGHT_FACE_UP_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("Z", LAUNCH_LB_TXT_X, LAUNCH_LB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("C", LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("L", LAUNCH_LT_TXT_X, LAUNCH_LT_TXT_Y, LAUNCH_CONTROL_SIZE);
+        UI_DrawControlTxt("R", LAUNCH_RT_TXT_X, LAUNCH_RT_TXT_Y, LAUNCH_CONTROL_SIZE);
+    }//Draw outline
+    Rectangle outline = {LAUNCH_CONTROLLER_X, LAUNCH_CONTROLLER_Y, LAUNCH_CONTROLLER_W * 2, LAUNCH_CONTROLLER_H};
+    DrawRectangleLinesEx(outline, LAUNCH_CONTROL_OUTLINE_THICKNESS, GRAY);
 }
 
 //Draw launching screen
@@ -1749,7 +841,7 @@ void UI_DrawDispDiag(bool in_game) {
 }
 
 //Draw base of the main screen
-static void UI_DrawBase() {
+static void UI_DrawBase(void) {
     // Clear background
     ClearBackground(BACKGROUND_CLR);
     //Draw background
@@ -1768,7 +860,7 @@ static void UI_DrawBase() {
 }
 
 //Change alphas when static
-void UI_ChangeAlpha_Static() {
+void UI_ChangeAlpha_Static(void) {
     //Blink the correct objects
     if (alphaSelectTxt_Blink == true) {
         // If less than 1, increment
@@ -1819,7 +911,7 @@ void UI_ChangeAlpha_Static() {
 }
 
 //Change alphas when scrolling grames
-static void UI_ChangeAlpha_ScrollGames() {
+static void UI_ChangeAlpha_ScrollGames(void) {
     //If less than 0, bring to 0
     if (Var_GetAlphaSelect() < 0.0f) {
         Var_SetAlphaSelect(0.0f);
@@ -1847,7 +939,7 @@ static void UI_ChangeAlpha_ScrollGames() {
 }
 
 //Change alphas when scrolling categories
-static void UI_ChangeAlpha_ScrollCateg() {
+static void UI_ChangeAlpha_ScrollCateg(void) {
     // If less than 0, bring to 0
     if (Var_GetAlphaSelect() < 0.0f) {
         Var_SetAlphaSelect(0.0f);
@@ -1889,7 +981,7 @@ static void UI_ChangeAlpha_ScrollCateg() {
 }
 
 //Draw the cateogires when they are static
-static void UI_DrawCateg_Static() {
+static void UI_DrawCateg_Static(void) {
     //Draw center category
     Vector2 centerCateg = {CENTER_CATEG_X, CENTER_CATEG_Y};
     DrawTextEx(Var_GetFontBold(), Categories_GetDisplayed(2), centerCateg, CENTER_CATEG_SIZE, BOTTOM_TXT_SPACE, Fade(Var_GetColor3(), alphaCategories_Out));
@@ -1902,7 +994,7 @@ static void UI_DrawCateg_Static() {
 }
 
 //Draw the animation of scrolling categories
-static void UI_DrawCateg_Scroll() {
+static void UI_DrawCateg_Scroll(void) {
     //If scrolling to the right
     if (Var_GetScrollCateg() == SCROLL_RIGHT) {
         //If images close enough to final spot
@@ -2027,7 +1119,7 @@ static void UI_DrawGame(int i, float alpha, bool scroll) {
 }
 
 //Draw the games when scrolling to the left
-static void UI_DrawGames_Left() {
+static void UI_DrawGames_Left(void) {
     UI_DrawGame(GAME_LEFT3, 1.0f, false);
     UI_DrawGame(GAME_LEFT2, 1.0f, false);
     UI_DrawGame(GAME_RIGHT2, 1.0f, false);
@@ -2037,7 +1129,7 @@ static void UI_DrawGames_Left() {
 }
 
 //Draw the games when scrolling to the right
-static void UI_DrawGames_Right() {
+static void UI_DrawGames_Right(void) {
     UI_DrawGame(GAME_RIGHT3, 1.0f, false);
     UI_DrawGame(GAME_LEFT2, 1.0f, false);
     UI_DrawGame(GAME_RIGHT2, 1.0f, false);
@@ -2047,7 +1139,7 @@ static void UI_DrawGames_Right() {
 }
 
 //Draw games when not scrolling
-static void UI_DrawGames_Normal() {
+static void UI_DrawGames_Normal(void) {
     //Draw new games
     if (Var_GetScrollCateg() != SCROLL_NO) {
         UI_DrawGame(GAME_LEFT3, alphaCategories_In, true);
@@ -2073,7 +1165,7 @@ static void UI_DrawGames_Normal() {
 }
 
 //Function for drawing the animation of scrolling games
-static void UI_DrawGames_Scroll() {
+static void UI_DrawGames_Scroll(void) {
     //If scrolling to the right
     if (Var_GetScrollGames() == SCROLL_RIGHT) {
         //Draw the games
@@ -2164,6 +1256,18 @@ static void UI_DrawGames_Scroll() {
     }
 }
 
+//Init function for the main UI
+void UI_Init(void) {
+    alphaGames = 1.0f;
+    alphaCategories_Out = 1.0f;
+    alphaCategories_In = 0.0f;
+    alphaSelectBox = 1.0f;
+    alphaSelectTxt_TimeElapsed = 0.0f;
+    alphaSelectTxt_Blink = true;
+    UI_ResetCoords_Games();
+    currentUIState = NORMAL;
+}
+
 //Tick function for the main UI
 void UI_Tick(ConsoleState* currentConsoleState) {
     //Transition
@@ -2172,13 +1276,11 @@ void UI_Tick(ConsoleState* currentConsoleState) {
         case NORMAL:
             //If not scrolling games to left, not scrolling categories, and the right input is pressed
             if (Var_GetScrollGames() != SCROLL_LEFT && Var_GetScrollCateg() == SCROLL_NO && (IsKeyDown(KEY_RIGHT) || LS_RIGHT)) {
-                //Scroll games to the right
                 Var_SetScrollGames(SCROLL_RIGHT);
                 currentUIState = SCROLL_GAMES;
             }
             //If not scrolling games to right, not scrolling categories, and the right input is pressed
             else if (Var_GetScrollGames() != SCROLL_RIGHT && Var_GetScrollCateg() == SCROLL_NO && (IsKeyDown(KEY_LEFT) || LS_LEFT)) {
-                //Scroll games to the left
                 Var_SetScrollGames(SCROLL_LEFT);
                 currentUIState = SCROLL_GAMES;
             }
@@ -2238,9 +1340,7 @@ void UI_Tick(ConsoleState* currentConsoleState) {
             //Start scrolling categories if right button is pressed
             if (IsKeyPressed(KEY_A) || LB_PRESS) {
                 Var_SetScrollGames(SCROLL_NO);
-                //Update displayed games
                 Games_ScrollLeft();
-                //Reset game values
                 UI_ResetCoords_Games();
                 Var_SetScrollCateg(SCROLL_LEFT);
                 currentUIState = SCROLL_CATEGORIES;
@@ -2250,9 +1350,7 @@ void UI_Tick(ConsoleState* currentConsoleState) {
             }
             else if (IsKeyPressed(KEY_D) || RB_PRESS) {
                 Var_SetScrollGames(SCROLL_NO);
-                //Update displayed games
                 Games_ScrollRight();
-                //Reset game values
                 UI_ResetCoords_Games();
                 Var_SetScrollCateg(SCROLL_RIGHT);
                 currentUIState = SCROLL_CATEGORIES;
@@ -2299,9 +1397,7 @@ void UI_Tick(ConsoleState* currentConsoleState) {
             UI_DrawBase();
             UI_DrawCateg_Static();
             UI_DrawGames_Normal();
-            //Draw bumpers
             UI_DrawTop();
-            //Draw bottom section of screen
             UI_DrawBottom();
             UI_DrawDispDiag(false);
             //If game is pressed, launch the game
@@ -2339,9 +1435,7 @@ void UI_Tick(ConsoleState* currentConsoleState) {
             UI_DrawBase();
             UI_DrawCateg_Scroll();
             UI_DrawGames_Normal();
-            //Draw bumpers
             UI_DrawTop();
-            //Draw bottom section of screen
             UI_DrawBottom();
             UI_DrawDispDiag(false);
             break;
@@ -2376,9 +1470,7 @@ void UI_Tick(ConsoleState* currentConsoleState) {
                 UI_DrawCateg_Static();
                 UI_DrawGames_Normal();
             }
-            //Draw bumpers
             UI_DrawTop();
-            //Draw bottom section of screen
             UI_DrawBottom();
             UI_DrawDispDiag(false);
             UIPause_Tick(currentConsoleState);
@@ -2390,26 +1482,10 @@ void UI_Tick(ConsoleState* currentConsoleState) {
             UI_ChangeAlpha_Static();
             UI_DrawCateg_Static();
             UI_DrawGames_Normal();
-            //Draw bumpers
             UI_DrawTop();
-            //Draw bottom section of screen
             UI_DrawBottom();
             UI_DrawDispDiag(false);
             Erase_Tick(Games_GetDisplayed(CURRENT_GAME), &currentUIState);
             break;
     }
-}
-
-//Init function for the main UI
-void UI_Init() {
-    //Initialize the alphas
-    alphaGames = 1.0f;
-    alphaCategories_Out = 1.0f;
-    alphaCategories_In = 0.0f;
-    alphaSelectBox = 1.0f;
-    alphaSelectTxt_TimeElapsed = 0.0f;
-    alphaSelectTxt_Blink = true;
-    //Reset the coordinates for the games
-    UI_ResetCoords_Games();
-    currentUIState = NORMAL;
 }

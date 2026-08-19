@@ -62,7 +62,7 @@ typedef enum {
 } EraseState;
 
 //Erase game data init function
-void Erase_Init();
+void Erase_Init(void);
 //Erase game data tick function
 void Erase_Tick(const game_t* game, UIState* currentUIState);
 

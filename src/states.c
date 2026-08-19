@@ -61,7 +61,7 @@ static Color States_NametoColor(char *c) {
 }
 
 //Load all game images (if not loaded already)
-void States_LoadGameImages() {
+void States_LoadGameImages(void) {
     //Ignore if all images are loaded
     if (allLoaded) {
         return;
@@ -94,38 +94,27 @@ void States_LoadGameImages() {
 }
 
 //Initialize the states
-void States_Init() {
-    //Console starts in boot state
+void States_Init(void) {
     currentConsoleState = STATE_BOOT;
     newConsoleState = STATE_MAIN_MENU;
-    //Boot timer starts at 0
     bootTimer = 0.0f;
-    //Launching timer starts at 0
     launchTimer = 0;
-    //Initially no games loaded
     gamesLoaded = 0;
     //Create thread for loading images
     pthread_create(&loadThread, NULL, Games_LoadImages, NULL);
-    //Start in a static position
     Var_SetScrollGames(SCROLL_NO);
     Var_SetScrollCateg(SCROLL_NO);
-    //All textures not loaded
     allLoaded = false;
-    //Game starts not running
     is_game_running = false;
-    //Load mappings file
     char *mappings = LoadFileText("assets/txt/gamecontrollerdb.txt");
     //If file loaded successfully, set mappings and unload file
     if (mappings != NULL) {
         SetGamepadMappings(mappings);
         UnloadFileText(mappings);
     }
-    //Initialize audio
     InitAudioDevice();
     Var_FindThermalZone();
-    //Strings to hold the text in the file
     char color1[COLOR_LEN] = "", color2[COLOR_LEN] = "", color3[COLOR_LEN] = "", bright[BRIGHT_LEN] = "", diag[DIAG_LEN] = "";
-    //Open the file
     FILE* f = fopen("assets/txt/ui.txt", "r");
     //Check if the file opened successfully
     if (f) {
@@ -205,13 +194,13 @@ void States_Init() {
     if (MeasureTextEx(Var_GetFontBold(), BOTTOM_TXT, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x > maxLen) {
         maxLen = MeasureTextEx(Var_GetFontBold(), BOTTOM_TXT, BOTTOM_TXT_SIZE, BOTTOM_TXT_SPACE).x;
     }
-    UI_LoadLogo();
+    UI_LoadLogos();
     UI_SetMaxLen(maxLen);
     UI_LoadControlsImgs();
 }
 
 //Update states and variables and draw the correct screen
-void States_UpdateAndDraw() {
+void States_UpdateAndDraw(void) {
     //Transition
     switch(currentConsoleState) {
         //Console boots up
@@ -253,7 +242,6 @@ void States_UpdateAndDraw() {
             if (!is_game_running) {
                 currentConsoleState = STATE_MAIN_MENU;
                 newConsoleState = STATE_MAIN_MENU;
-                //Set target FPS again
                 SetTargetFPS(FPS);
                 UI_Init();
             }
@@ -274,28 +262,21 @@ void States_UpdateAndDraw() {
 
         //Console boots up
         case STATE_BOOT:
-            //Draw the boot up screen
             UI_DrawBootScreen();
-            //Increment boot timer
             bootTimer += GetFrameTime();
-            //Draw brightness
             DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
 
         //Drawing the main menu
         case STATE_MAIN_MENU:
-            //Draw UI for the menu
             UI_Tick(&newConsoleState);
-            //Draw brightness
             DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
 
         //Launching app
         case STATE_LAUNCHING:
             UI_DrawLaunch(Games_GetDisplayed(CURRENT_GAME));
-            //Increment timer
             launchTimer += GetFrameTime();
-            //Draw brightness
             DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
             
@@ -303,9 +284,7 @@ void States_UpdateAndDraw() {
         case STATE_APP_LAUNCHER:
             //If the game is libretro
             if (Games_GetDisplayed(CURRENT_GAME)->libRetro == true) {
-                //Call play tick function and check if game is still running
                 is_game_running = Play_TickLib(Games_GetDisplayed(CURRENT_GAME));
-                //Draw brightness
                 DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             }
             else {
@@ -315,9 +294,7 @@ void States_UpdateAndDraw() {
 
         //View diagnostics menu
         case STATE_VIEW_DIAG:
-            //Call diagnostics tick function
             Diagnostics_Tick(&newConsoleState);
-            //Draw brightness
             DrawRectangle(0, 0, Var_GetMonitorWidth(), Var_GetMonitorHeight(), (Color){ 0, 0, 0, Var_GetBright() });
             break;
    }

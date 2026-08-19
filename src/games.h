@@ -74,17 +74,17 @@ void Games_UpdateNewIndexes(int direction);
 //Update the indexes of the current game category
 void Games_UpdateIndexes(const char *categ);
 //Update the array of the new games displayed
-void Games_NewRefresh();
+void Games_NewRefresh(void);
 //Update the games displayed for the new category
-void Games_Refresh();
+void Games_Refresh(void);
 //Clear game data
 bool Games_ClearData(const game_t* game);
 //Initialize game library
-void Games_Init();
+void Games_Init(void);
 //Shift the order of the games to the right
-void Games_ScrollRight();
+void Games_ScrollRight(void);
 //Shift the order of the games to the left
-void Games_ScrollLeft();
+void Games_ScrollLeft(void);
 //Get one of the loaded images
 Image* Games_GetLoadedImage(int i);
 //Get whether an image is loaded
@@ -92,7 +92,7 @@ bool Games_GetIsLoaded(int i);
 //Load game cover textures
 void* Games_LoadImages(void *args);
 //Unload game cover textures
-void Games_UnloadTextures();
+void Games_UnloadTextures(void);
 
 
 #endif

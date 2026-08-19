@@ -38,8 +38,8 @@ typedef enum {
 } BrightnessState;
 
 //Brightness init function
-void Brightness_Init();
+void Brightness_Init(void);
 //Brightness otick function
-void Brightness_Tick();
+void Brightness_Tick(void);
 
 #endif

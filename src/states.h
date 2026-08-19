@@ -11,10 +11,10 @@
 #define DIAG_LEN 5
 
 //Load all game images (if not loaded already)
-void States_LoadGameImages();
+void States_LoadGameImages(void);
 //Initialize the states
-void States_Init();
+void States_Init(void);
 //Update states and variabels and draw the correct screen
-void States_UpdateAndDraw();
+void States_UpdateAndDraw(void);
 
 #endif

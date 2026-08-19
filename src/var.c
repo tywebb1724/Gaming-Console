@@ -45,38 +45,31 @@ static float frameMsPeak;
 static float frameMsTotal;
 static float frameMsWorst;
 static int frameMsCount;
-//Emulator fps variables
-static float emuFps = 0.0f;
-static int emuFrameAccum = 0;
 //Power off variable
 static bool powerOff;
 
 //Path for the cpu temperature
 static char cpuThermalPath[THERM_PATH_LEN] = "";
+//Emulator fps variables
+static float emuFps = 0.0f;
+static int emuFrameAccum = 0;
 
 
 //Initialize the variables
-void Var_Init() {
-    //Get monitor width and height
+void Var_Init(void) {
     monitorWidth = GetMonitorWidth(0);
     monitorHeight = GetMonitorHeight(0);
-    //Load the fonts into this file
     fontRegular = LoadFontEx("assets/fonts/Exo2-Regular.ttf", 64, NULL, 0);
     fontBold = LoadFontEx("assets/fonts/Exo2-Bold.ttf", 64, NULL, 0);
-    //Load the backgrounds
     backgroundBlue = LoadTexture("assets/images/other/blue_background.png");
     backgroundRed = LoadTexture("assets/images/other/red_background.png");
     backgroundGreen = LoadTexture("assets/images/other/green_background.png");
     backgroundYellow = LoadTexture("assets/images/other/yellow_background.png");
-    //Set display variables as false
     displayBrightness = false;
     displayTheme = false;
-    //Initialize cpu temperature and clock speed
     cpuTemp = 0;
     cpuClock = 0;
-    //Timer for diagnostics
     diagTimer = DIAG_TIME;
-    //Initialize frame variables to 0
     frameMsAvg = 0;
     frameMsPeak = 0;
     frameMsTotal = 0;
@@ -87,16 +80,17 @@ void Var_Init() {
 }
 
 //Get brightness value
-float Var_GetBright() {
+float Var_GetBright(void) {
     return brightness;
 }
 
 //Catch bad brightness values
 static float Var_ClampBright(float value) {
-    //Catch bad brightness values
+    //If too low, return max brightness
     if (!(value >= MAX_BRIGHTNESS)) {
         return MAX_BRIGHTNESS;
     }
+    //If too high, return min brightess
     if (value > MIN_BRIGHTNESS) {
         return MIN_BRIGHTNESS;
     }
@@ -114,17 +108,17 @@ void Var_AddBright(float value) {
 }
 
 //Get theme color 1
-Color Var_GetColor1() {
+Color Var_GetColor1(void) {
     return themeColor1;
 }
 
 //Get theme color 2
-Color Var_GetColor2() {
+Color Var_GetColor2(void) {
     return themeColor2;
 }
 
 //Get theme color 3
-Color Var_GetColor3() {
+Color Var_GetColor3(void) {
     return themeColor3;
 }
 
@@ -144,12 +138,12 @@ void Var_SetColor3(Color color) {
 }
 
 //Get scroll games
-ScrollState Var_GetScrollGames() {
+ScrollState Var_GetScrollGames(void) {
     return scrollGames;
 }
 
 //Get scroll categories
-ScrollState Var_GetScrollCateg() {
+ScrollState Var_GetScrollCateg(void) {
     return scrollCategories;
 }
 
@@ -164,7 +158,7 @@ void Var_SetScrollCateg(ScrollState state) {
 }
 
 //Get display diagnostics
-bool Var_GetDiag() {
+bool Var_GetDiag(void) {
     return displayDiag;
 }
 
@@ -174,7 +168,7 @@ void Var_SetDiag(bool value) {
 }
 
 //Get alpha select text
-float Var_GetAlphaSelect() {
+float Var_GetAlphaSelect(void) {
     return alphaSelectTxt;
 }
 
@@ -189,7 +183,7 @@ void Var_AddAlphaSelect(float value) {
 }
 
 //Get the current background
-Texture2D Var_GetBackground() {
+Texture2D Var_GetBackground(void) {
     return currentBackground;
 }
 
@@ -237,8 +231,7 @@ static const char *Var_ColorToName(Color c) {
 }
 
 //Update the UI text file
-void Var_UpdateUIFile() {
-    //Open the file
+void Var_UpdateUIFile(void) {
     FILE *f = fopen("assets/txt/ui.txt", "w");
     //If it opens correctly, write the variables
     if (f) {
@@ -252,27 +245,27 @@ void Var_UpdateUIFile() {
 }
 
 //Get bold font
-Font Var_GetFontBold() {
+Font Var_GetFontBold(void) {
     return fontBold;
 }
 
 //Get regular font
-Font Var_GetFontRegular() {
+Font Var_GetFontRegular(void) {
     return fontRegular;
 }
 
 //Get monitor width
-float Var_GetMonitorWidth() {
+float Var_GetMonitorWidth(void) {
     return monitorWidth;
 }
 
 //Get monitor height
-float Var_GetMonitorHeight() {
+float Var_GetMonitorHeight(void) {
     return monitorHeight;
 }
 
 //Get whether brightness options are being displayed
-bool Var_GetDisplayBright() {
+bool Var_GetDisplayBright(void) {
     return displayBrightness;
 }
 
@@ -282,7 +275,7 @@ void Var_SetDisplayBright(bool value) {
 }
 
 //Get whether theme options are being displayed
-bool Var_GetDisplayTheme() {
+bool Var_GetDisplayTheme(void) {
     return displayTheme;
 }
 
@@ -292,8 +285,7 @@ void Var_SetDisplayTheme(bool value) {
 }
 
 //Find the path to the cpu temperature
-void Var_FindThermalZone() {
-    //Open the directory
+void Var_FindThermalZone(void) {
     DIR* d = opendir("/sys/class/thermal");
     //If doesn't open successfully, exit
     if (!d) return;
@@ -302,10 +294,8 @@ void Var_FindThermalZone() {
     while ((entry = readdir(d)) != NULL) {
         //If not the correct entry, go to next one
         if (strncmp(entry->d_name, "thermal_zone", 12) != 0) continue;
-        //Get the opath
         char typePath[300];
         snprintf(typePath, sizeof(typePath), "/sys/class/thermal/%s/type", entry->d_name);
-        //Open file
         FILE* tf = fopen(typePath, "r");
         //If doesn't open successfully, exit
         if (!tf) continue;
@@ -333,7 +323,6 @@ void Var_UpdateTemp(void) {
     if (diagTimer < DIAG_TIME) return;
     //If no path, exit
     if (cpuThermalPath[0] == '\0') return;
-    //Open file path
     FILE* f = fopen(cpuThermalPath, "r");
     //If doesn't open successfully, exit
     if (f == NULL) return;
@@ -346,23 +335,24 @@ void Var_UpdateTemp(void) {
 }
 
 //Get CPU temperature
-float Var_GetTemp() {
+float Var_GetTemp(void) {
     return cpuTemp;
 }
 
 //Update CPU clock speed
-void Var_UpdateClock() {
+void Var_UpdateClock(void) {
     int highest = 0;
     //Cycle through possible cores
     for (int i = 0; i < 16; i++) { 
-        //Get paths for the cores
         char path[128];
         snprintf(path, sizeof(path),
                  "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_cur_freq", i);
         FILE* f = fopen(path, "r");
+        //If file doesn't open correctly, move to the next one
         if (!f) break;
         //Get the frequency
         int freq = 0;
+        //If frequency is higher than current highest, set it as current highest
         if (fscanf(f, "%d", &freq) == 1 && freq > highest) {
             highest = freq;
         }
@@ -372,12 +362,12 @@ void Var_UpdateClock() {
 }
 
 //Get CPU clock speed
-int Var_GetClock() {
+int Var_GetClock(void) {
     return cpuClock;
 }
 
 //Update frame time
-void Var_UpdateFrame() {
+void Var_UpdateFrame(void) {
     float ms = GetFrameTime() * MICRO_TO_MILLI;
     frameMsTotal += ms;
     frameMsCount++;
@@ -389,11 +379,11 @@ void Var_UpdateFrame() {
     if (diagTimer < DIAG_TIME) {
         return;
     }
+    //If time has passed, calculate average time
     if (frameMsCount > 0) {
         frameMsAvg = frameMsTotal / frameMsCount;
     }
     frameMsPeak = frameMsWorst;
-    //Start a new window
     frameMsTotal = 0.0f;
     frameMsWorst = 0.0f;
     frameMsCount = 0;
@@ -401,24 +391,22 @@ void Var_UpdateFrame() {
 }
 
 //Get average frame time
-float Var_GetFrameAvg() {
+float Var_GetFrameAvg(void) {
     return frameMsAvg;
 }
 
 //Get worst frame time
-float Var_GetFrameWorst() {
+float Var_GetFrameWorst(void) {
     return frameMsPeak;
 }
 
 //Update emulator FPS
 void Var_UpdateEmuFps(void) {
-    // ccumulate the core frames produced since last call, every frame
     emuFrameAccum += GetAndResetVRCBCount();
     //Stop if time hasn't passed
     if (diagTimer < DIAG_TIME) {
         return;
     }
-    //frames / seconds = FPS
     emuFps = emuFrameAccum / DIAG_TIME;
     emuFrameAccum = 0;
 }

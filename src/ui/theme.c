@@ -11,8 +11,7 @@ static float themeTimeElapsed;
 
 
 //Update the time elapsed on current theme
-static void Theme_UpdateTime() {
-    //Increment the time elapsed
+static void Theme_UpdateTime(void) {
     themeTimeElapsed += GetFrameTime();
     //If time getting too big, bring back to the threshold
     if (themeTimeElapsed > MAX_TIME_ELAPSED_THEME) {
@@ -21,7 +20,7 @@ static void Theme_UpdateTime() {
 }
 
 //Draw the theme options
-static void Theme_Draw() {
+static void Theme_Draw(void) {
     //Draw whole section
     Rectangle rectSec = {
         UIPAUSE_RECT_X,
@@ -97,139 +96,144 @@ static void Theme_Draw() {
     }
 }
 
+//Inputs to go down a section
+static bool Theme_Down(void) {
+    return (IsKeyPressed(KEY_DOWN)) || ((IsKeyDown(KEY_DOWN) || LS_DOWN) && themeTimeElapsed >= SELECT_TIME);
+}
+
+//Inputs to go up a section
+static bool Theme_Up(void) {
+    return (IsKeyPressed(KEY_UP)) || ((IsKeyDown(KEY_UP) || LS_UP) && themeTimeElapsed >= SELECT_TIME);
+}
+
+//Inputs to select a section
+static bool Theme_Select(void) {
+    return ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A());
+}
+
 //Theme options init function
-void Theme_Init() {
-    //Set time on the current theme to 0
+void Theme_Init(void) {
     themeTimeElapsed = 0;
-    //Start the theme options on the first theme
     currentThemeState = THEME_1;
 }
 
 //Theme options tick function
-void Theme_Tick() {
+void Theme_Tick(void) {
     //Transition
     switch (currentThemeState) {
-    //Blue theme
-    case THEME_1:
-        //Go up or down themes depending on user input
-        if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && themeTimeElapsed >= 0.2f)) {
-            currentThemeState = THEME_2;
-            themeTimeElapsed = 0.0f;
-        }
-        else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && themeTimeElapsed >= 0.2f)) {
-            currentThemeState = THEME_4;
-            themeTimeElapsed = 0.0f;
-        }
-        break;
+        //Blue theme
+        case THEME_1:
+            //Go up or down themes depending on user input
+            if (Theme_Down()) {
+                currentThemeState = THEME_2;
+                themeTimeElapsed = 0.0f;
+            }
+            else if (Theme_Up()) {
+                currentThemeState = THEME_4;
+                themeTimeElapsed = 0.0f;
+            }
+            break;
 
-    //Red theme
-    case THEME_2:
-        //Go up or down themes depending on user input
-        if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && themeTimeElapsed >= 0.2f)) {
-            currentThemeState = THEME_3;
-            themeTimeElapsed = 0.0f;
-        }
-        else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && themeTimeElapsed >= 0.2f)) {
-            currentThemeState = THEME_1;
-            themeTimeElapsed = 0.0f;
-        }
-        break;
+        //Red theme
+        case THEME_2:
+            //Go up or down themes depending on user input
+            if (Theme_Down()) {
+                currentThemeState = THEME_3;
+                themeTimeElapsed = 0.0f;
+            }
+            else if (Theme_Up()) {
+                currentThemeState = THEME_1;
+                themeTimeElapsed = 0.0f;
+            }
+            break;
 
-    //Green theme
-    case THEME_3:
-        //Go up or down themes depending on user input
-        if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && themeTimeElapsed >= 0.2f)) {
-            currentThemeState = THEME_4;
-            themeTimeElapsed = 0.0f;
-        }
-        else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && themeTimeElapsed >= 0.2f)) {
-            currentThemeState = THEME_2;
-            themeTimeElapsed = 0.0f;
-        }
-        break;
+        //Green theme
+        case THEME_3:
+            //Go up or down themes depending on user input
+            if (Theme_Down()) {
+                currentThemeState = THEME_4;
+                themeTimeElapsed = 0.0f;
+            }
+            else if (Theme_Up()) {
+                currentThemeState = THEME_2;
+                themeTimeElapsed = 0.0f;
+            }
+            break;
 
-    //Yellow theme
-    case THEME_4:
-        //Go up or down themes depending on user input
-        if ((IsKeyPressed(KEY_DOWN)) || ((IsKeyPressed(KEY_DOWN) || LS_DOWN) && themeTimeElapsed >= 0.2f)) {
-            currentThemeState = THEME_1;
-            themeTimeElapsed = 0.0f;
-        }
-        else if ((IsKeyPressed(KEY_UP)) || ((IsKeyPressed(KEY_UP) || LS_UP) && themeTimeElapsed >= 0.2f)) {
-            currentThemeState = THEME_3;
-            themeTimeElapsed = 0.0f;
-        }
-        break;
+        //Yellow theme
+        case THEME_4:
+            //Go up or down themes depending on user input
+            if (Theme_Down()) {
+                currentThemeState = THEME_1;
+                themeTimeElapsed = 0.0f;
+            }
+            else if (Theme_Up()) {
+                currentThemeState = THEME_3;
+                themeTimeElapsed = 0.0f;
+            }
+            break;
     }
 
     //Action
     switch (currentThemeState) {
-    //Blue theme
-    case THEME_1:
-        //Draw the menu
-        Theme_Draw();
-        //Increase the time the current theme has been selected
-        Theme_UpdateTime();
-        //Set the theme if selected by user
-        if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
-            Var_SetColor1(BLUE);
-            Var_SetColor2(BLACK);
-            Var_SetColor3(WHITE);
-            Var_SetBackground(Var_NametoBackground("BLUE"));
-            Var_UpdateUIFile();
-            Controller_SetWasPressed_A(true);
-        }
-        break;
+        //Blue theme
+        case THEME_1:
+            Theme_Draw();
+            Theme_UpdateTime();
+            //Set the theme if selected by user
+            if (Theme_Select()) {
+                Var_SetColor1(BLUE);
+                Var_SetColor2(BLACK);
+                Var_SetColor3(WHITE);
+                Var_SetBackground(Var_NametoBackground("BLUE"));
+                Var_UpdateUIFile();
+                Controller_SetWasPressed_A(true);
+            }
+            break;
 
-    //Red theme
-    case THEME_2:
-        //Draw the menu
-        Theme_Draw();
-        //Increase the time the current theme has been selected
-        Theme_UpdateTime();
-        //Set the theme if selected by user
-        if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
-            Var_SetColor1(RED);
-            Var_SetColor2(BLACK);
-            Var_SetColor3(WHITE);
-            Var_SetBackground(Var_NametoBackground("RED"));
-            Var_UpdateUIFile();
-            Controller_SetWasPressed_A(true);
-        }
-        break;
+        //Red theme
+        case THEME_2:
+            Theme_Draw();
+            Theme_UpdateTime();
+            //Set the theme if selected by user
+            if (Theme_Select()) {
+                Var_SetColor1(RED);
+                Var_SetColor2(BLACK);
+                Var_SetColor3(WHITE);
+                Var_SetBackground(Var_NametoBackground("RED"));
+                Var_UpdateUIFile();
+                Controller_SetWasPressed_A(true);
+            }
+            break;
 
-    //Green theme
-    case THEME_3:
-        //Draw the menu
-        Theme_Draw();
-        //Increase the time the current theme has been selected
-        Theme_UpdateTime();
-        //Set the theme if selected by user
-        if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
-            Var_SetColor1(GREEN);
-            Var_SetColor2(BLACK);
-            Var_SetColor3(WHITE);
-            Var_SetBackground(Var_NametoBackground("GREEN"));
-            Var_UpdateUIFile();
-            Controller_SetWasPressed_A(true);
-        }
-        break;
+        //Green theme
+        case THEME_3:
+            Theme_Draw();
+            Theme_UpdateTime();
+            //Set the theme if selected by user
+            if (Theme_Select()) {
+                Var_SetColor1(GREEN);
+                Var_SetColor2(BLACK);
+                Var_SetColor3(WHITE);
+                Var_SetBackground(Var_NametoBackground("GREEN"));
+                Var_UpdateUIFile();
+                Controller_SetWasPressed_A(true);
+            }
+            break;
 
-    //Yellow theme
-    case THEME_4:
-        //Draw the menu
-        Theme_Draw();
-        //Increase the time the current theme has been selected
-        Theme_UpdateTime();
-        //Set the theme if selected by user
-        if ((IsKeyPressed(KEY_ENTER) || A_PRESS) && !Controller_GetWasPressed_A()) {
-            Var_SetColor1(YELLOW);
-            Var_SetColor2(BLACK);
-            Var_SetColor3(WHITE);
-            Var_SetBackground(Var_NametoBackground("YELLOW"));
-            Var_UpdateUIFile();
-            Controller_SetWasPressed_A(true);
-        }
-        break;
+        //Yellow theme
+        case THEME_4:
+            Theme_Draw();
+            Theme_UpdateTime();
+            //Set the theme if selected by user
+            if (Theme_Select()) {
+                Var_SetColor1(YELLOW);
+                Var_SetColor2(BLACK);
+                Var_SetColor3(WHITE);
+                Var_SetBackground(Var_NametoBackground("YELLOW"));
+                Var_UpdateUIFile();
+                Controller_SetWasPressed_A(true);
+            }
+            break;
     }
 }

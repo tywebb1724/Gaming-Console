@@ -100,7 +100,6 @@ void Games_UpdateIndexes(const char *categ) {
             break;
         }
     }
-    //Update range and current index
     games_range = end_index - start_index + 1;
     games_index = start_index + 2;
 }
@@ -129,7 +128,6 @@ void Games_Refresh() {
 bool Games_ClearData(const game_t* game) {
     //If saves through battery method
     if (game->save == BATTERY) {
-        //Get file path
         char save_path[SAVE_PATH_LEN];
         snprintf(save_path, sizeof(save_path), "%s.srm", game->romPath);
         //Remove save file
@@ -146,7 +144,6 @@ bool Games_ClearData(const game_t* game) {
     else if (game->save == EXTERNAL) {
         //Check which console
         if (strcmp(game->console, "Sony PlayStation") == 0) {
-            //Get file path
             char save_path[SAVE_PATH_LEN];
             snprintf(save_path, sizeof(save_path), "assets/saves/%s.mcd", game->serial);
             //Remove save file
@@ -160,7 +157,6 @@ bool Games_ClearData(const game_t* game) {
             }
         }
         else if (strcmp(game->console, "Sega CD") == 0) {
-            //Get file path
             char save_path[SAVE_PATH_LEN];
             char path[TEMP_PATH_LEN];
             snprintf(path, sizeof(path), "%s", game->romPath);
@@ -183,10 +179,8 @@ bool Games_ClearData(const game_t* game) {
             }
         }
         else if (strcmp(game->console, "Sony PlayStation Portable") == 0) {
-            //Create command for removing file
             char command[COMMAND_STR_LEN] = "";
             snprintf(command, sizeof(command), "rm -rf \".var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SAVEDATA/%s\"", game->serial);
-            //Run command
             int result = system(command);
             //Check if command worked
             if (result == 0) {
@@ -199,10 +193,8 @@ bool Games_ClearData(const game_t* game) {
             }
         }
         else if (strcmp(game->console, "Sega Saturn") == 0) {
-            //Create command for removing file
             char command[COMMAND_STR_LEN] = "";
             snprintf(command, sizeof(command), "rm -rf \".var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates/%s\"", game->serial);
-            //Run command
             int result = system(command);
             //Check if command worked
             if (result == 0) {
@@ -215,7 +207,6 @@ bool Games_ClearData(const game_t* game) {
             }
         }
         else if (strcmp(game->console, "Nintendo DS") == 0) {
-            //Get file path
             char save_path[SAVE_PATH_LEN];
             char path[TEMP_PATH_LEN];
             snprintf(path, sizeof(path), "%s", game->romPath);
@@ -238,7 +229,6 @@ bool Games_ClearData(const game_t* game) {
             }
         }
         else if (strcmp(game->console, "Nintendo GameCube") == 0) {
-            //Get file path
             char save_path[SAVE_PATH_LEN];
             snprintf(save_path, sizeof(save_path), ".var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/USA/Card A/%s.gci", game->serial);
             //Remove save file
@@ -252,7 +242,6 @@ bool Games_ClearData(const game_t* game) {
             }
         }
         else if (strcmp(game->console, "Sega Dreamcast") == 0) {
-            //Get file path
             char save_path[SAVE_PATH_LEN];
             snprintf(save_path, sizeof(save_path), ".var/app/org.flycast.Flycast/data/flycast/%s_vmu_save_A1.bin", game->serial);
             //Remove save file
@@ -748,13 +737,13 @@ void Games_Init() {
 }
 
 //Shift the order of the games to the right
-void Games_ScrollRight() {
+void Games_ScrollRight(void) {
     games_index = start_index + (games_index - start_index + 1) % games_range;
     Games_Refresh();
 }
 
 //Shift the order of the games to the left
-void Games_ScrollLeft() {
+void Games_ScrollLeft(void) {
     games_index = start_index + (games_index - start_index - 1 + games_range) % games_range;
     Games_Refresh();
 }
@@ -771,7 +760,6 @@ bool Games_GetIsLoaded(int i) {
 
 //Load game cover textures
 void* Games_LoadImages(void *args) {
-    //Detach the thread
     pthread_detach(pthread_self());
     int s = start_index, e = end_index;
     //Load the images of the current category first
@@ -793,7 +781,7 @@ void* Games_LoadImages(void *args) {
 }
 
 //Unload game cover textures
-void Games_UnloadTextures() {
+void Games_UnloadTextures(void) {
     //Unload all images
     for (int i = 0; i < GAMES_LEN; i++) {
         UnloadTexture(gamesLibrary[i].cover);

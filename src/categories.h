@@ -19,11 +19,11 @@ const char* Categories_Get(int i);
 //Get a single category from the displayed array
 const char* Categories_GetDisplayed(int i);
 //Init function for the categories
-void Categories_Init();
+void Categories_Init(void);
 //Shift the order of the categories to the right
-void Categories_ScrollRight();
+void Categories_ScrollRight(void);
 //Shift the order of the categories to the left
-void Categories_ScrollLeft();
+void Categories_ScrollLeft(void);
 
 
 #endif

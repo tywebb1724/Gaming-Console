@@ -16,22 +16,15 @@
 
 //Main function
 int main(void) {
-    //Synch refresh rates
     SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_UNDECORATED);
-    //Initialize a window 
     InitWindow(RESOLUTION_LEN, RESOLUTION_WIDTH, "Custom Console OS");
-    //Go fullscreen
     ToggleFullscreen();
-    //Initialize state machines
+    SetTargetFPS(FPS);
     Var_Init();
     Games_Init();
     Categories_Init();
     States_Init();
-    //Set target FPS to 60
-    SetTargetFPS(FPS);
-    //Find any controllers that are already plugged in
     Controller_Refresh();
-    //Not powering off
     Var_SetPowerOff(false);
     //Main game loop
     while (!Var_GetPowerOff()) {
@@ -47,20 +40,15 @@ int main(void) {
         if (!HOME_DOWN && Controller_GetWasPressed_Home()) {
             Controller_SetWasPressed_Home(false);
         }
-        //Start drawing
+        //Update and draw on screen
         BeginDrawing();
-        //Update console and draw
         States_UpdateAndDraw();
-        //Stop drawing
         EndDrawing();
         //Load game images (if not already loaded)
         States_LoadGameImages();
     }
-    //Stop any possibly running game
     Play_StopLib(Games_GetDisplayed(CURRENT_GAME));
-    //Unload game textures and close window
     Games_UnloadTextures();
-    //Close window
     CloseWindow();
     return 0;
 }

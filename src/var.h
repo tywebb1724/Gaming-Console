@@ -8,7 +8,7 @@
 //Conversion values
 #define MICRO_TO_MILLI 1000
 #define DEGREE_CONVERSION 1000.0f
-
+//Length of the thermal path string
 #define THERM_PATH_LEN 300
 
 //Scrolling states
@@ -28,19 +28,19 @@ typedef enum {
 } ConsoleState;
 
 //Initialize the variables
-void Var_Init();
+void Var_Init(void);
 //Get brightness value
-float Var_GetBright();
+float Var_GetBright(void);
 //Set brightness value
 void Var_SetBright(float value);
 //Set brightness value
 void Var_AddBright(float value);
 //Get theme color 1
-Color Var_GetColor1();
+Color Var_GetColor1(void);
 //Get theme color 2
-Color Var_GetColor2();
+Color Var_GetColor2(void);
 //Get theme color 3
-Color Var_GetColor3();
+Color Var_GetColor3(void);
 //Set theme color 1
 void Var_SetColor1(Color color);
 //Set theme color 2
@@ -48,63 +48,63 @@ void Var_SetColor2(Color color);
 //Set theme color 3
 void Var_SetColor3(Color color);
 //Get scroll games
-ScrollState Var_GetScrollGames();
+ScrollState Var_GetScrollGames(void);
 //Get scroll categories
-ScrollState Var_GetScrollCateg();
+ScrollState Var_GetScrollCateg(void);
 //Set scroll games
 void Var_SetScrollGames(ScrollState state);
 //Set scroll categories
 void Var_SetScrollCateg(ScrollState state);
 //Get display diagnostics
-bool Var_GetDiag();
+bool Var_GetDiag(void);
 //Set display diagnostics
 void Var_SetDiag(bool value);
 //Get alpha select text
-float Var_GetAlphaSelect();
+float Var_GetAlphaSelect(void);
 //Set alpha select text
 void Var_SetAlphaSelect(float value);
 //Set alpha select text
 void Var_AddAlphaSelect(float value);
 //Get the current background
-Texture2D Var_GetBackground();
+Texture2D Var_GetBackground(void);
 //Set the current background
 void Var_SetBackground(Texture2D background);
 //Extract a background from a color name
 Texture2D Var_NametoBackground(char *c);
 //Update the UI text file
-void Var_UpdateUIFile();
+void Var_UpdateUIFile(void);
 //Get bold font
-Font Var_GetFontBold();
+Font Var_GetFontBold(void);
 //Get regular font
-Font Var_GetFontRegular();
+Font Var_GetFontRegular(void);
 //Get monitor width
-float Var_GetMonitorWidth();
+float Var_GetMonitorWidth(void);
 //Get monitor height
-float Var_GetMonitorHeight();
+float Var_GetMonitorHeight(void);
 //Get whether brightness options are being displayed
-bool Var_GetDisplayBright();
+bool Var_GetDisplayBright(void);
 //Set whether brightness options are being displayed
 void Var_SetDisplayBright(bool value);
 //Get whether theme options are being displayed
-bool Var_GetDisplayTheme();
+bool Var_GetDisplayTheme(void);
 //Set whether theme options are being displayed
 void Var_SetDisplayTheme(bool value);
 //Find the path to the cpu temperature
-void Var_FindThermalZone();
+void Var_FindThermalZone(void);
 //Update CPU temperature
-void Var_UpdateTemp();
+void Var_UpdateTemp(void);
 //Get CPU temperature
-float Var_GetTemp();
+float Var_GetTemp(void);
 //Update CPU clock speed
-void Var_UpdateClock();
+void Var_UpdateClock(void);
 //Get CPU clock speed
-int Var_GetClock();
+int Var_GetClock(void);
 //Update frame time
-void Var_UpdateFrame();
+void Var_UpdateFrame(void);
 //Get average frame time
-float Var_GetFrameAvg();
+float Var_GetFrameAvg(void);
 //Get worst frame time
-float Var_GetFrameWorst();
+float Var_GetFrameWorst(void);
 //Update emulator FPS
 void Var_UpdateEmuFps(void);
 //Get emulator FPS

@@ -27,7 +27,7 @@ const char* Categories_GetDisplayed(int i) {
 }
 
 //Update the displayed categories 
-static void Categories_Refresh() {
+static void Categories_Refresh(void) {
     int offset;
     int targetIndex;
     //Cycle through the categories
@@ -38,14 +38,12 @@ static void Categories_Refresh() {
         if (targetIndex < 0) {
             targetIndex += CATEGORIES_LEN;
         }
-        //Update the displayed array given the index
         categoriesDisplayed[i] = categories[targetIndex];
     }
 }
 
 //Init function for the consoles
-void Categories_Init() {
-    //Set all the categories
+void Categories_Init(void) {
     categories[ARCADE_INDEX] = "Arcade";
     categories[HANDHELD_INDEX] = "Handheld Classics";
     categories[NIN3D_INDEX] = "Nintendo 3D";
@@ -53,20 +51,18 @@ void Categories_Init() {
     categories[OTHER_INDEX] = "TurboGrafx/PC/Other";
     categories[SEGA_INDEX] = "Sega";
     categories[PS_INDEX] = "PlayStation";
-    //Start with the Nintendo 3D category
     categoriesIndex = NIN3D_INDEX;
-    //Update the initial displayed categories
     Categories_Refresh();
 }
 
 //Shift the order of the consoles to the right
-void Categories_ScrollRight() {
+void Categories_ScrollRight(void) {
     categoriesIndex = (categoriesIndex + 1) % CATEGORIES_LEN;
     Categories_Refresh();
 }
 
 //Shift the order of the consoles to the left
-void Categories_ScrollLeft() {
+void Categories_ScrollLeft(void) {
     categoriesIndex = (categoriesIndex - 1 + CATEGORIES_LEN) % CATEGORIES_LEN;
     Categories_Refresh();
 }

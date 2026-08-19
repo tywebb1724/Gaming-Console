@@ -9,7 +9,7 @@
 static BrightnessState currentBrightnessState;
 
 //Draw the brightness options screen
-static void Brightness_Draw() {
+static void Brightness_Draw(void) {
     //Draw whole section
     Rectangle rect1 = {
         UIPAUSE_RECT_X,
@@ -47,12 +47,12 @@ static void Brightness_Draw() {
 }
 
 //Brightness init function
-void Brightness_Init() {
+void Brightness_Init(void) {
     currentBrightnessState = NEITHER;
 }
 
 //Brightness tick function
-void Brightness_Tick() {
+void Brightness_Tick(void) {
     //Transition
     switch (currentBrightnessState) {
         //Not increasing or decreasing brightness
@@ -72,7 +72,6 @@ void Brightness_Tick() {
             //If no longer pressing to the left, stop changing brightness
             if (!IsKeyDown(KEY_LEFT) && !LS_LEFT) {
                 currentBrightnessState = NEITHER;
-                //Update the UI file
                 Var_UpdateUIFile();
             }
             break;
@@ -82,7 +81,6 @@ void Brightness_Tick() {
             //If no longer pressing to the right, stop changing brightness
             if (!IsKeyDown(KEY_RIGHT) && !LS_RIGHT) {
                 currentBrightnessState = NEITHER;
-                //Update the UI file
                 Var_UpdateUIFile();
             }
             break;
@@ -92,23 +90,18 @@ void Brightness_Tick() {
     switch (currentBrightnessState) {
         //Not increasing or decreasing brightness
         case NEITHER:
-            //Draw brightness options screen
             Brightness_Draw();
             break;
 
         //Decreasing brightness
         case LEFT_PRESS:
-            //Draw brightness options screen
             Brightness_Draw();
-            //Decrease brightness
             Var_AddBright(BRIGHTNESS_INCREMENT);
             break;
 
         //Increasing brightness
         case RIGHT_PRESS:
-            //Draw brightness options screen
             Brightness_Draw();
-            //Increase brightness
             Var_AddBright(- BRIGHTNESS_INCREMENT);
             break;
     }
