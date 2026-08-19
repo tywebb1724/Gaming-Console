@@ -31,9 +31,6 @@ int main(void) {
     SetTargetFPS(FPS);
     //Find any controllers that are already plugged in
     Controller_Refresh();
-    printf("%s\n", GetGamepadName(0));
-    printf("%s\n", GetGamepadName(1));
-    printf("%s\n", GetGamepadName(2));
     //Not powering off
     Var_SetPowerOff(false);
     //Main game loop

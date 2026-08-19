@@ -639,6 +639,7 @@ bool Play_TickLib(const game_t* game) {
         //Game is running
         case PLAY_GO:
             Play_Advance();
+            Play_Draw(game);
             saveTimeElapsed += GetFrameTime();
             //If it has been long enough since last saved
             if (saveTimeElapsed >= SAVE_TIME) {
