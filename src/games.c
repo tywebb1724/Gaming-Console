@@ -238,6 +238,10 @@ bool Games_ClearData(const game_t* game) {
                     return false;
                 }
             }
+            else {
+                printf("Could not resolve save path (HOME not set)\n");
+                return false;
+            }
         }
         else if (strcmp(game->console, "Nintendo DS") == 0) {
             char save_path[SAVE_PATH_LEN];
@@ -277,6 +281,10 @@ bool Games_ClearData(const game_t* game) {
                     return false;
                 }
             }
+            else {
+                printf("Could not resolve save path (HOME not set)\n");
+                return false;
+            }
         }
         else if (strcmp(game->console, "Sega Dreamcast") == 0) {
             char rel_path[SAVE_PATH_LEN];
@@ -293,6 +301,10 @@ bool Games_ClearData(const game_t* game) {
                     printf("No save data to clear (or delete failed): %s\n", save_path);
                     return false;
                 }
+            }
+            else {
+                printf("Could not resolve save path (HOME not set)\n");
+                return false;
             }
         }
     }
