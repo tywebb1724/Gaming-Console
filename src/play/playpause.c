@@ -23,7 +23,7 @@ static float playPauseTimeElapsed;
 
 
 //Update the time elapsed on one section of the paused screen
-static void PlayPause_UpdateTime() {
+static void PlayPause_UpdateTime(void) {
     playPauseTimeElapsed += GetFrameTime();
     //If the variable is getting too big, bring it back down
     if (playPauseTimeElapsed > MAX_TIME_ELAPSED_PLAYPAUSE) {
@@ -1034,7 +1034,7 @@ static void PlayPause_DrawControls(const game_t* game) {
 }
 
 //Draw the pause screen
-static void PlayPause_Draw() {
+static void PlayPause_Draw(void) {
     //Draw whole section
     Rectangle rectSection = {
         PLAYPAUSE_RECT_X,
@@ -1154,7 +1154,7 @@ static PlayState PlayPause_Exit(PlayState returnState) {
 }
 
 //PlayPause initialization
-void PlayPause_Init() {
+void PlayPause_Init(void) {
     //Load images
     controlsImg = LoadTexture("assets/images/other/controller.png");
     keyImg = LoadTexture("assets/images/other/keyboard.png");
@@ -1170,7 +1170,7 @@ void PlayPause_Init() {
 }
 
 //PlayPause tick
-PlayState PlayPause_Tick() {
+PlayState PlayPause_Tick(void) {
     //Transition
     switch (currentPlayPauseState) {
         //Resume game section

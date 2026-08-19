@@ -25,12 +25,12 @@ Texture2D emulator_texture;
 static double accumulator;
 //FPS of the game
 static double core_fps;
-//Current state of the game after being launce
+//Current state of the game after being launched
 static PlayState currentPlayState;
 static PlayState pauseState;
 //Time between saves
 static float saveTimeElapsed;
-//Variables for resuming game after being pasued
+//Variables for resuming game after being paused
 static bool resuming;
 static float resumeTimer;
 //Whether the game is running or not
@@ -39,12 +39,12 @@ static bool is_game_running;
 static float killRequestedTime;
 static bool killEscalated;
 //Paths for config files
-static char dolphinIniPath[512];
-static char melonDSPath[512];
-static char ppssppControlsPath[512];
-static char ppssppIniPath[512];
-static char flycastEmuPath[512];
-static char saturnPath[512];
+static char dolphinIniPath[CONFIG_PATH_LEN];
+static char melonDSPath[CONFIG_PATH_LEN];
+static char ppssppControlsPath[CONFIG_PATH_LEN];
+static char ppssppIniPath[CONFIG_PATH_LEN];
+static char flycastEmuPath[CONFIG_PATH_LEN];
+static char saturnPath[CONFIG_PATH_LEN];
 
 //Used for hardware rendering
 static RenderTexture2D hw_target = {0}; 
@@ -88,7 +88,7 @@ static bool Play_CopyConfig(const char* srcPath, const char* destPath) {
         fclose(src);
         return false;
     }
-    char buffer[4096];
+    char buffer[BUFFER_WRITE_LEN];
     size_t bytesRead;
     //Copy all the contents of the source file to the destination file
     while ((bytesRead = fread(buffer, 1, sizeof(buffer), src)) > 0) {
@@ -121,13 +121,13 @@ static pid_t Play_FindProcess(const char* processName) {
         }
         //Skip non-numeric entries
         if (!isNumeric) continue;
-        char commPath[300];
+        char commPath[COMM_PATH_LEN];
         //Create path
         snprintf(commPath, sizeof(commPath), "/proc/%s/comm", entry->d_name);
         FILE* f = fopen(commPath, "r");
         //If process stopped during this sequence
         if (!f) continue;
-        char comm[256] = "";
+        char comm[COMM_LEN] = "";
         //Get name
         if (fgets(comm, sizeof(comm), f)) {
             size_t len = strlen(comm);
@@ -165,13 +165,7 @@ bool Play_IsN64Active(void) {
 
 //Tells whether the game uses libretro
 static bool Play_IsLibRetro(const game_t* game) {
-    //Check if the game uses libretro or not
-    if (game->libRetro == true) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return game->libRetro;
 }
 
 //Apply the key and pad maps
@@ -287,21 +281,21 @@ static void Play_ApplyMaps(const char* corePath) {
     }
     //Doom controls
     else if (strcmp(corePath, PATH_PRBOOM) == 0) {
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_LEFT]  = 0; 
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_L]  = KEY_A;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_R]  = KEY_D;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_X]  = KEY_F;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_R2] = KEY_E;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_L2] = KEY_Q;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_A]  = KEY_SPACE;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_Y]  = KEY_LEFT_SHIFT;
-            your_key_map[RETRO_DEVICE_ID_JOYPAD_SELECT] = KEY_TAB;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_X] = GAMEPAD_BUTTON_RIGHT_TRIGGER_2;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_A] = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_L2] = GAMEPAD_BUTTON_LEFT_TRIGGER_1;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_R2] = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;
-            your_pad_map[RETRO_DEVICE_ID_JOYPAD_Y] = GAMEPAD_BUTTON_LEFT_THUMB;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_LEFT]  = 0; 
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_RIGHT] = 0;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L]  = KEY_A;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_R]  = KEY_D;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_X]  = KEY_F;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_R2] = KEY_E;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_L2] = KEY_Q;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_A]  = KEY_SPACE;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_Y]  = KEY_LEFT_SHIFT;
+        your_key_map[RETRO_DEVICE_ID_JOYPAD_SELECT] = KEY_TAB;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_X] = GAMEPAD_BUTTON_RIGHT_TRIGGER_2;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_A] = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_L2] = GAMEPAD_BUTTON_LEFT_TRIGGER_1;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_R2] = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;
+        your_pad_map[RETRO_DEVICE_ID_JOYPAD_Y] = GAMEPAD_BUTTON_LEFT_THUMB;
         }
 }
 
@@ -354,12 +348,12 @@ void Play_StopLib(const game_t* game) {
     CloseRetroCore();
     //Mark that the game is no longer running
     is_game_running = false;
-    //Make cursore visible
+    //Make cursor visible
     EnableCursor();
 }
 
 //Advance libretro game
-static void Play_Advance() {
+static void Play_Advance(void) {
     double step = 1.0f / core_fps;
     double frameTime = GetFrameTime();
     //Guard against stalls
@@ -368,7 +362,7 @@ static void Play_Advance() {
     }
     accumulator += frameTime;
     //Cap the accumulator
-    if (accumulator > step * 2.0) {
+    if (accumulator > MAX_FRAME_TIME) {
         accumulator = step;
     }
     //Wait for the time on the frame to be greater than or equal to the frame target time
@@ -421,7 +415,7 @@ static void Play_Draw(const game_t* game) {
         destWidth  = Var_GetMonitorWidth();
         destHeight = destWidth / targetAspect;
     }
-    float rot = -(game_rotation * 90.0f);
+    float rot = -(game_rotation * ROTATION_DEGREES);
     float drawW = swapped ? destHeight : destWidth;
     float drawH = swapped ? destWidth  : destHeight;
     Rectangle src  = { 0.0f, 0.0f, texW, texH };
@@ -429,8 +423,20 @@ static void Play_Draw(const game_t* game) {
     Vector2  origin = { drawW / 2.0f, drawH / 2.0f };
     //Draw texture on the screen
     DrawTexturePro(emulator_texture, src, dest, origin, rot, WHITE);
-    //Draw diganostics (if applys)
+    //Draw diagnostics (if applies)
     UI_DrawDispDiag(true);
+}
+
+//Kill external app
+static void Play_KillApp(const game_t* game, int sig) {
+    pid_t realPid = Play_FindProcess(game->processName);
+    //If process is running, kill it safely
+    if (realPid > 0) {
+        kill(realPid, sig);
+    } 
+    else {
+        kill(extAppId, sig);
+    }
 }
 
 //Play initialization
@@ -553,14 +559,7 @@ bool Play_TickExt(const game_t* game) {
     if (extAppId < 0) return false;
     //If home button pressed, close the app
     if (IsKeyPressed(KEY_ESCAPE) || HOME_PRESS) {
-        pid_t realPid = Play_FindProcess(game->processName);
-        //If process is runnning, kill it safely
-        if (realPid > 0) {
-            kill(realPid, SIGTERM);
-        } 
-        else {
-            kill(extAppId, SIGTERM);
-        }
+        Play_KillApp(game, SIGTERM);
         killRequestedTime = GetTime();
     }
     int status;
@@ -576,13 +575,7 @@ bool Play_TickExt(const game_t* game) {
     if (killRequestedTime > 0 && !killEscalated) {
         //If kill was requested long enough ago, escalate the kill
         if (GetTime() - killRequestedTime >= KILL_TIME) {
-            pid_t realPid = Play_FindProcess(game->processName);
-            //If process is runnning, kill it immediately
-            if (realPid > 0) {
-                kill(realPid, SIGKILL);
-            } else {
-                kill(extAppId, SIGKILL);
-            }
+            Play_KillApp(game, SIGKILL);
             killEscalated = true;
         }
     }

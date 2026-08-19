@@ -47,6 +47,12 @@
 #define PATH_FLYCAST_EMU_SRC "assets/emulator-configs/flycast/emu.cfg"
 #define PATH_FLYCAST_EMU_DEST ".var/app/org.flycast.Flycast/config/flycast/emu.cfg"
 #define PATH_FLYCAST_CONTROLS ".var/app/org.flycast.Flycast/config/flycast/mappings/"
+#define CONFIG_PATH_LEN 512
+#define COMM_LEN 256
+#define COMM_PATH_LEN 300
+#define BUFFER_WRITE_LEN 4096
+#define ROTATION_DEGREES 90.0f
+#define MAX_FRAME_TIME (step * 2.0f)
 
 //Get whether doom core is active
 bool Play_IsDoomActive(void);

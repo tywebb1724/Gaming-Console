@@ -15,7 +15,4 @@
 #define MAX_BRIGHTNESS 0
 #define MIN_BRIGHTNESS 200
 
-
-
-
 #endif

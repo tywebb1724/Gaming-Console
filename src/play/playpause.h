@@ -25,8 +25,8 @@ typedef enum {
 
 
 //PlayPause initialization
-void PlayPause_Init();
+void PlayPause_Init(void);
 //PlayPause tick
-PlayState PlayPause_Tick();
+PlayState PlayPause_Tick(void);
 
 #endif
