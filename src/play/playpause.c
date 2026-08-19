@@ -21,9 +21,9 @@ static bool displayControls;
 //Time spent on current section
 static float playPauseTimeElapsed;
 
+
 //Update the time elapsed on one section of the paused screen
 static void PlayPause_UpdateTime() {
-    //Increment counter
     playPauseTimeElapsed += GetFrameTime();
     //If the variable is getting too big, bring it back down
     if (playPauseTimeElapsed > MAX_TIME_ELAPSED_PLAYPAUSE) {
@@ -1146,7 +1146,7 @@ static PlayState PlayPause_Exit(PlayState returnState) {
     UnloadTexture(keyImg);
     UnloadTexture(mouseImg);
     UnloadTexture(arrowsImg);
-    //Set control variables
+    //Set controller variables
     Controller_SetWasPressed_A(true);
     Controller_SetWasPressed_B(true);
     Controller_SetWasPressed_Home(true);
@@ -1160,11 +1160,8 @@ void PlayPause_Init() {
     keyImg = LoadTexture("assets/images/other/keyboard.png");
     mouseImg = LoadTexture("assets/images/other/mouse.png");
     arrowsImg = LoadTexture("assets/images/other/arrow_keys.png");
-    //Time elapsed on selected section
     playPauseTimeElapsed = 0.0f;
-    //Start pause menu at top section
     currentPlayPauseState = PLAYPAUSE_RESUME;
-    //Don't display the controls
     displayControls = false;
     //Set controls to pressed
     Controller_SetWasPressed_A(true);
@@ -1174,7 +1171,7 @@ void PlayPause_Init() {
 
 //PlayPause tick
 PlayState PlayPause_Tick() {
-    // Transition
+    //Transition
     switch (currentPlayPauseState) {
         //Resume game section
         case PLAYPAUSE_RESUME:
@@ -1255,7 +1252,7 @@ PlayState PlayPause_Tick() {
             }
     }
 
-    // Action
+    //Action
     switch (currentPlayPauseState) {
         //Resume game section
         case PLAYPAUSE_RESUME:
@@ -1267,7 +1264,6 @@ PlayState PlayPause_Tick() {
                 return PlayPause_Exit(PLAY_RESUME);
             }
             UI_ChangeAlpha_Static();
-            //Draw menu and update time
             PlayPause_Draw();
             PlayPause_UpdateTime();
             break;
@@ -1286,7 +1282,6 @@ PlayState PlayPause_Tick() {
                 return PlayPause_Exit(PLAY_RESUME);
             }
             UI_ChangeAlpha_Static();
-            //Draw menu and update time
             PlayPause_Draw();
             PlayPause_UpdateTime();
             break;
@@ -1319,7 +1314,6 @@ PlayState PlayPause_Tick() {
                 PlayPause_Draw();
             }
             UI_ChangeAlpha_Static();
-            //Update time
             PlayPause_UpdateTime();
             break;
 
@@ -1333,12 +1327,10 @@ PlayState PlayPause_Tick() {
             }
             //Resume game
             if ((HOME_PRESS && !Controller_GetWasPressed_Home()) || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B())) {
-                /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
                 return PlayPause_Exit(PLAY_RESUME);
             }
             UI_ChangeAlpha_Static();
-            //Draw menu and update time
             PlayPause_Draw();
             PlayPause_UpdateTime();
             break;
@@ -1356,7 +1348,6 @@ PlayState PlayPause_Tick() {
                return PlayPause_Exit(PLAY_RESUME);
             }
             UI_ChangeAlpha_Static();
-            //Draw menu and update time
             PlayPause_Draw();
             PlayPause_UpdateTime();
             break;
@@ -1369,16 +1360,13 @@ PlayState PlayPause_Tick() {
             }
             //Resume game
             if ((HOME_PRESS && !Controller_GetWasPressed_Home()) || ((IsKeyPressed(KEY_ESCAPE) || B_PRESS) && !Controller_GetWasPressed_B())) {
-                /// mouseWasPressed = true;
                 currentPlayPauseState = PLAYPAUSE_RESUME;
                 return PlayPause_Exit(PLAY_RESUME);
             }
             UI_ChangeAlpha_Static();
-            //Draw menu and update time
             PlayPause_Draw();
             PlayPause_UpdateTime();
             break;
     }
-
     return PLAY_PAUSE;
 }

@@ -33,8 +33,7 @@
 #define PLAY_RESUME_RECT_Y (PLAY_RESUME_Y - Var_GetMonitorHeight() / 80.0f)
 #define PLAY_RESUME_RECT_W (resumeSize.x + Var_GetMonitorWidth() / 40.0f)
 #define PLAY_RESUME_RECT_H (resumeSize.y + Var_GetMonitorHeight() / 40.0f)
-
-
+//Paths for config files
 #define PATH_DOLPHIN_INI_SRC "assets/emulator-configs/dolphin/Dolphin.ini"
 #define PATH_DOLPHIN_INI_DEST ".var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/Dolphin.ini"
 #define PATH_MELON_SRC "assets/emulator-configs/melonds/melonDS.toml"

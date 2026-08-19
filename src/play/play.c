@@ -58,7 +58,7 @@ static pid_t extAppId = -1;
 //Build path for the config files
 static bool Play_BuildConfigPath(char* outPath, size_t outSize, const char* relativePath) {
     const char* home = getenv("HOME");
-    //Error getting home
+    //Error getting home directory
     if (!home) {
         fprintf(stderr, "BuildConfigPath: HOME environment variable not set\n");
         return false;
@@ -99,50 +99,52 @@ static bool Play_CopyConfig(const char* srcPath, const char* destPath) {
     return true;
 }
 
-//Finds the PID of a running process by name (matches /proc/<pid>/comm)
+//Finds the PID of a running process by name
 static pid_t Play_FindProcess(const char* processName) {
     DIR* procDir = opendir("/proc");
+    //Error opening directory
     if (!procDir) {
         fprintf(stderr, "FindProcessByName: couldn't open /proc: %s\n", strerror(errno));
         return -1;
     }
-
     struct dirent* entry;
+    //Read all the entries in the directory
     while ((entry = readdir(procDir)) != NULL) {
-        // /proc entries for processes are directories named after their PID (all digits)
         bool isNumeric = true;
+        //Look for entires that are all numeric
         for (const char* c = entry->d_name; *c; c++) {
+            //If a character isn't numeric, it's not what we want
             if (!isdigit((unsigned char)*c)) {
                 isNumeric = false;
                 break;
             }
         }
-        if (!isNumeric) continue;   // skip non-PID entries (self, net, cpuinfo, etc.)
-
+        //Skip non-numeric entries
+        if (!isNumeric) continue;
         char commPath[300];
+        //Create path
         snprintf(commPath, sizeof(commPath), "/proc/%s/comm", entry->d_name);
-
         FILE* f = fopen(commPath, "r");
-        if (!f) continue;   // process may have exited between readdir and fopen — skip
-
+        //If process stopped during this sequence
+        if (!f) continue;
         char comm[256] = "";
+        //Get name
         if (fgets(comm, sizeof(comm), f)) {
-            // Strip the trailing newline /proc/*/comm always includes
             size_t len = strlen(comm);
+            //Get rid of new line
             if (len > 0 && comm[len - 1] == '\n') {
                 comm[len - 1] = '\0';
             }
         }
         fclose(f);
-
+        //If it matches the process name
         if (strcmp(comm, processName) == 0) {
             closedir(procDir);
             return (pid_t)atoi(entry->d_name);
         }
     }
-
     closedir(procDir);
-    return -1;   // not found
+    return -1; 
 }
 
 //Set active core variables 
@@ -163,7 +165,7 @@ bool Play_IsN64Active(void) {
 
 //Tells whether the game uses libretro
 static bool Play_IsLibRetro(const game_t* game) {
-    //Check if the game is uses libretro or not
+    //Check if the game uses libretro or not
     if (game->libRetro == true) {
         return true;
     }
@@ -174,7 +176,7 @@ static bool Play_IsLibRetro(const game_t* game) {
 
 //Apply the key and pad maps
 static void Play_ApplyMaps(const char* corePath) {
-    //Reset key maps
+    //Reset maps
     for (int i = 0; i < RETRO_DEVICE_ID_JOYPAD_R3 + 1; i++) { 
         your_key_map[i] = 0; 
         your_pad_map[i] = 0; 
@@ -324,62 +326,57 @@ static float Play_GetConsoleAspect(const char* console) {
 
 //Stop the libretro game
 void Play_StopLib(const game_t* game) {
-    //If a game is currently running
-    if (is_game_running) {
-        //If the game saves by battery, save before closing game
-        if (game->save == BATTERY) {
-            SaveBattery(game->romPath);
-        }
-        //Stop game audio
-        StopRetroAudio();
-        //Unload game
-        if (core_unload_game) {
-            core_unload_game();
-        }
-        //Release/destroy GPU resources
-        TriggerContextDestroy();
-        //Unload hardware render drawing texture
-        if (hw_target.id != 0) {
-            UnloadRenderTexture(hw_target);
-            hw_target.id = 0;
-        }
-        //Unload main emulator drawing texture
-        if (emulator_texture.id != 0) {
-            UnloadTexture(emulator_texture);
-            emulator_texture.id = 0;
-        }
-        //Close the core
-        CloseRetroCore();
-        //Mark that the game is no longer running
-        is_game_running = false;
-        //Make cursore visible
-        EnableCursor();
+    //Exit if game is not running
+    if (!is_game_running) return;
+    //If the game saves by battery, save before closing game
+    if (game->save == BATTERY) {
+        SaveBattery(game->romPath);
     }
+    //Stop game audio
+    StopRetroAudio();
+    //Unload game
+    if (core_unload_game) {
+        core_unload_game();
+    }
+    //Release/destroy GPU resources
+    TriggerContextDestroy();
+    //Unload hardware render drawing texture
+    if (hw_target.id != 0) {
+        UnloadRenderTexture(hw_target);
+        hw_target.id = 0;
+    }
+    //Unload main emulator drawing texture
+    if (emulator_texture.id != 0) {
+        UnloadTexture(emulator_texture);
+        emulator_texture.id = 0;
+    }
+    //Close the core
+    CloseRetroCore();
+    //Mark that the game is no longer running
+    is_game_running = false;
+    //Make cursore visible
+    EnableCursor();
 }
 
 //Advance libretro game
 static void Play_Advance() {
-    //How long one frame should take
     double step = 1.0f / core_fps;
-    //How long last frame took
     double frameTime = GetFrameTime();
     //Guard against stalls
     if (frameTime > MAX_FRAME_TIME) {
         frameTime = MAX_FRAME_TIME;
     }
-    //Keep track how long this frame has been up
     accumulator += frameTime;
     //Cap the accumulator
     if (accumulator > step * 2.0) {
         accumulator = step;
     }
-        //Wait for the time on the frame to be greater than or equal to the frame target time
+    //Wait for the time on the frame to be greater than or equal to the frame target time
     while (accumulator >= step) {
         //Run the core
         if (is_game_running && core_run) {
             core_run();
         }
-        //Subtract the target time for each frame
         accumulator -= step;
     }
     //Present the frame
@@ -391,12 +388,9 @@ static void Play_Draw(const game_t* game) {
     ClearBackground(BLACK);
     //Determine whether game must be rotated
     unsigned game_rotation = GetGameRotation();
-    //If game is rotated sideways (rotated 90 or 270 degrees)
     bool swapped = (game_rotation == ROTATION_90 || game_rotation == ROTATION_270);
-    //Width and height of the texture
     float texW = (float)emulator_texture.width;
     float texH = (float)emulator_texture.height;
-    //Define target aspect ration
     float targetAspect;
     //Get target aspect ratio depending on the console
     if (strcmp(game->console, "Arcade") == 0) {
@@ -420,7 +414,6 @@ static void Play_Draw(const game_t* game) {
     if (swapped) {
         targetAspect = 1.0f / targetAspect;
     }
-    //Fit image to the screen
     float destHeight = Var_GetMonitorHeight();
     float destWidth  = destHeight * targetAspect;
     //If the width it too much, fit the width to the screen and recompute height
@@ -428,12 +421,9 @@ static void Play_Draw(const game_t* game) {
         destWidth  = Var_GetMonitorWidth();
         destHeight = destWidth / targetAspect;
     }
-    //Get how much the game needs to be rotated
     float rot = -(game_rotation * 90.0f);
-    //Height and width to drawing, depending on rotation
     float drawW = swapped ? destHeight : destWidth;
     float drawH = swapped ? destWidth  : destHeight;
-    //Source, destination, and origin rectangles
     Rectangle src  = { 0.0f, 0.0f, texW, texH };
     Rectangle dest = { Var_GetMonitorWidth() / 2.0f, Var_GetMonitorHeight() / 2.0f, drawW, drawH };
     Vector2  origin = { drawW / 2.0f, drawH / 2.0f };
@@ -445,29 +435,22 @@ static void Play_Draw(const game_t* game) {
 
 //Play initialization
 void Play_Init(const game_t* game) {
-    //Start by running the game
     currentPlayState = PLAY_GO;
-    //No time since last saved
     saveTimeElapsed = 0.0f;
-    //Not resuming from pause menu
     resuming = false;
-    //Resume timer set at 0
     resumeTimer = 0.0f;
-    //Not running the game yet
     is_game_running = false;
-    //If the game is libretro
+    //Initialize depending on type of game
     if (Play_IsLibRetro(game)) {
-        //Reset previous rotation settings
+        //Reset from last game
         SetGameRotation(0);
-        //Unload the previous texture from the last emulator ran
         UnloadTexture(emulator_texture);
-        //Generate blank texture for game to render on
+        //Blank texture
         Image blank = GenImageColor(BLANK_GAME_TEXT_W, BLANK_GAME_TEXT_H, BLACK);
         emulator_texture = LoadTextureFromImage(blank);
         UnloadImage(blank);
-        //Keep pixels sharp
         SetTextureFilter(emulator_texture, TEXTURE_FILTER_POINT);
-        //Set current core variables
+        //Set current core variables (for DOOM and N64)
         Play_SetCurrentCore(game->corePath);
         //Apply controls depending on the game
         Play_ApplyMaps(game->corePath);
@@ -475,24 +458,19 @@ void Play_Init(const game_t* game) {
         if (LoadRetroCore(game->corePath)) {
             //Load the game
             if (LoadGame(game->romPath)) {
-                //Mark that the game is running
                 is_game_running = true;
                 //For hardware rendered games
                 if (hw_target.id == 0) {
                     hw_target = LoadRenderTexture(BLANK_GAME_TEXT_W, BLANK_GAME_TEXT_H);
                 }
                 SetHWFramebuffer(hw_target.id);
-                //Reinitialize GPU resources
                 TriggerContextReset();
                 //If game saves through battery, load the last save
                 if (game->save == BATTERY) {
                     LoadBattery(game->romPath);
                 }
-                //Get the FPS for the game
                 core_fps = GetCoreTargetFPS();
-                //Start the audio
                 StartRetroAudio();
-                //Reset frame timing
                 accumulator = 0.0;
                 DisableCursor();
             }
@@ -500,12 +478,9 @@ void Play_Init(const game_t* game) {
                 is_game_running = false;
             }
         }
-        //Reset time since last saved game
         saveTimeElapsed = 0;
-        //Initialize state of the game
         currentPlayState = PLAY_GO;
     }
-    //If the game is through an external application
     else {
         //Use correct config files depending on the application
         if (strcmp(game->corePath, PATH_GAMECUBE) == 0) {
@@ -542,7 +517,7 @@ void Play_Init(const game_t* game) {
                 Play_CopyConfig(PATH_PPSSPP_CONTROLS_SRC, ppssppControlsPath);
             }
         }
-
+        //Create new process
         pid_t pid = fork();
         //Child process
         if (pid == 0) {
@@ -578,35 +553,31 @@ bool Play_TickExt(const game_t* game) {
     if (extAppId < 0) return false;
     //If home button pressed, close the app
     if (IsKeyPressed(KEY_ESCAPE) || HOME_PRESS) {
-        pid_t realPid = Play_FindProcess(game->processName);   // see note below
+        pid_t realPid = Play_FindProcess(game->processName);
+        //If process is runnning, kill it safely
         if (realPid > 0) {
             kill(realPid, SIGTERM);
-        } else {
-            // Fall back to the fork()'d PID in case it IS the real process
-            // (e.g. an emulator launched without Flatpak wrapping it)
+        } 
+        else {
             kill(extAppId, SIGTERM);
         }
         killRequestedTime = GetTime();
     }
-
-    //Check status of the result (still watches the ORIGINAL fork()'d child,
-    //since that's the one this process actually owns and can wait() on)
     int status;
     pid_t result = waitpid(extAppId, &status, WNOHANG);
     //If no longer running
     if (result == extAppId) {
         extAppId = -1;
-        //Focus the menu window again
         SetWindowFocused();
         Controller_SetWasPressed_Home(true);
         return false;
     }
-
     //If kill has been requested but not escalated yet
     if (killRequestedTime > 0 && !killEscalated) {
         //If kill was requested long enough ago, escalate the kill
         if (GetTime() - killRequestedTime >= KILL_TIME) {
             pid_t realPid = Play_FindProcess(game->processName);
+            //If process is runnning, kill it immediately
             if (realPid > 0) {
                 kill(realPid, SIGKILL);
             } else {
@@ -674,36 +645,27 @@ bool Play_TickLib(const game_t* game) {
     switch (currentPlayState) {
         //Game is running
         case PLAY_GO:
-            //Advance the game
             Play_Advance();
-            //Draw the game
-            Play_Draw(game);
-            //See how long since game has last saved
             saveTimeElapsed += GetFrameTime();
-            //If it has been a minute since last saved
+            //If it has been long enough since last saved
             if (saveTimeElapsed >= SAVE_TIME) {
                 //If game saves by battery, save correctly
                 if (game->save == BATTERY) {
                     SaveBattery(game->romPath);
                 }
-                //Reset save timer
                 saveTimeElapsed = 0.0f;
             }
             break;
 
         //Game is paused
         case PLAY_PAUSE:
-            //Draw the game
             Play_Draw(game);
-            //Draw pause menu
             pauseState = PlayPause_Tick();
             break;
 
         //Resuming game
         case PLAY_RESUME:
-            //Draw the game
             Play_Draw(game);
-            //See how long since started resuming
             resumeTimer += GetFrameTime();
             //Draw resuming text
             Vector2 resumeSize = MeasureTextEx(Var_GetFontRegular(), PLAY_RESUME_TXT, PLAY_RESUME_SIZE, PLAY_RESUME_SPACE);
@@ -722,6 +684,5 @@ bool Play_TickLib(const game_t* game) {
             Play_StopLib(game);
             return false;
     }
-
     return true;
 }
