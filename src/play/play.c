@@ -362,7 +362,7 @@ static void Play_Advance(void) {
     }
     accumulator += frameTime;
     //Cap the accumulator
-    if (accumulator > MAX_FRAME_TIME) {
+    if (accumulator > step * ACCUMULATOR_MAX_MULTIPLIER) {
         accumulator = step;
     }
     //Wait for the time on the frame to be greater than or equal to the frame target time

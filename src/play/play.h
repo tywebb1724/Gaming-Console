@@ -13,9 +13,11 @@
 #define ASPECT_OTHER (4.0f / 3) 
 //Max time in one frame
 #define MAX_FRAME_TIME 0.25f
+#define ACCUMULATOR_MAX_MULTIPLIER (2.0f)
 //Rotation macros
 #define ROTATION_90 1
 #define ROTATION_270 3
+#define ROTATION_DEGREES 90.0f
 //Blank game image macros
 #define BLANK_GAME_TEXT_W 640
 #define BLANK_GAME_TEXT_H 480
@@ -46,13 +48,11 @@
 #define PATH_SATURN_DEST ".var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/Ymir.toml"
 #define PATH_FLYCAST_EMU_SRC "assets/emulator-configs/flycast/emu.cfg"
 #define PATH_FLYCAST_EMU_DEST ".var/app/org.flycast.Flycast/config/flycast/emu.cfg"
-#define PATH_FLYCAST_CONTROLS ".var/app/org.flycast.Flycast/config/flycast/mappings/"
+//String lengths
 #define CONFIG_PATH_LEN 512
 #define COMM_LEN 256
 #define COMM_PATH_LEN 300
 #define BUFFER_WRITE_LEN 4096
-#define ROTATION_DEGREES 90.0f
-#define MAX_FRAME_TIME (step * 2.0f)
 
 //Get whether doom core is active
 bool Play_IsDoomActive(void);
