@@ -779,7 +779,8 @@ static void UI_DrawControls_Ext(const game_t* game) {
         UI_DrawControlTxt("C", LAUNCH_RB_TXT_X, LAUNCH_RB_TXT_Y, LAUNCH_CONTROL_SIZE);
         UI_DrawControlTxt("L", LAUNCH_LT_TXT_X, LAUNCH_LT_TXT_Y, LAUNCH_CONTROL_SIZE);
         UI_DrawControlTxt("R", LAUNCH_RT_TXT_X, LAUNCH_RT_TXT_Y, LAUNCH_CONTROL_SIZE);
-    }//Draw outline
+    }
+    //Draw outline
     Rectangle outline = {LAUNCH_CONTROLLER_X, LAUNCH_CONTROLLER_Y, LAUNCH_CONTROLLER_W * 2, LAUNCH_CONTROLLER_H};
     DrawRectangleLinesEx(outline, LAUNCH_CONTROL_OUTLINE_THICKNESS, GRAY);
 }
@@ -799,11 +800,11 @@ void UI_DrawLaunch(const game_t* game) {
     char homeTxt[55];
     //Draw the controls based on whether it is libretro or external app
     if (game->libRetro) {
-        snprintf(homeTxt, sizeof(homeTxt), LAUNCH_HOME_LIB);
+        snprintf(homeTxt, sizeof(homeTxt), "%s", LAUNCH_HOME_LIB);
         UI_DrawControls_Lib(game);
     }
     else {
-        snprintf(homeTxt, sizeof(homeTxt), LAUNCH_HOME_EXT);
+        snprintf(homeTxt, sizeof(homeTxt), "%s", LAUNCH_HOME_EXT);
         UI_DrawControls_Ext(game);
     }
     //Home instructions

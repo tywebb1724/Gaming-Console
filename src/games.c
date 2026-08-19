@@ -60,11 +60,11 @@ void Games_UpdateNewIndexes(int direction) {
     else {
         //If the first category in the array, new category is the last one
         if (start_index == 0) {
-            snprintf(categ, "%s", gamesLibrary[GAMES_LEN - 1].category);
+            snprintf(categ, sizeof(categ), "%s", gamesLibrary[GAMES_LEN - 1].category);
         }
         //If not, it's the previous category
         else {
-            snprintf(categ, "%s", gamesLibrary[start_index - 1].category);
+            snprintf(categ, sizeof(categ), "%s", gamesLibrary[start_index - 1].category);
         }
         //Search the games for the start of the new category
         for (int i = 0; i < GAMES_LEN; i++) {

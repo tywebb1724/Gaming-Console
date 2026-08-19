@@ -38,7 +38,7 @@ static void Brightness_Draw(void) {
     Vector2 point6 = {BRIGHT_LS_RIGHT_X - (BRIGHT_LS_TRIANGLE_SIZE / 2), BRIGHT_LS_Y - BRIGHT_LS_TRIANGLE_SIZE / 2};
     DrawTriangle(point6, point5, point4, Fade(Var_GetColor2(), Var_GetAlphaSelect()));
     //Draw percentage
-    char percentTxt[5];
+    char percentTxt[PERCENT_STR_LEN];
     int brightPercent = (int)((MIN_BRIGHTNESS - Var_GetBright()) / (MIN_BRIGHTNESS / 100.0f));
     snprintf(percentTxt, sizeof(percentTxt), "%d%%", brightPercent);
     Vector2 brightnessPercentSize = MeasureTextEx(Var_GetFontBold(), percentTxt, BRIGHTNESS_PERCENT_SIZE, UIPAUSE_TITLE_SPACE);

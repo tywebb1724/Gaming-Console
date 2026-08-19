@@ -1,9 +1,6 @@
 #ifndef THEME_H
 #define THEME_H
 
-//Macros for navigating the menu
-#define MAX_TIME_ELAPSED_THEME 1000000
-#define THRESHOLD_TIME_ELAPSED_THEME 0.25f
 //Macros for drawing the menu
 #define THEME_TXT "Select theme"
 #define THEME_TXT_SIZE (Var_GetMonitorWidth() / 40.0f)

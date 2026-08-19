@@ -3,6 +3,8 @@
 
 #include "var.h"
 
+//String length for brightness percentage
+#define PERCENT_STR_LEN 5
 //Drawing main text
 #define BRIGHTNESS_TXT "Adjust brightness"
 #define BRIGHTNESS_TXT_SIZE (Var_GetMonitorWidth() / 40.0f)

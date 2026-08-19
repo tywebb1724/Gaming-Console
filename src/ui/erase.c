@@ -14,8 +14,8 @@ static bool erased;
 static void Erase_UpdateTime(void) {
     eraseTimeElapsed += GetFrameTime();
     //If time getting too big, bring back to the threshold
-    if (eraseTimeElapsed > MAX_TIME_ELAPSED_ERASE) {
-        eraseTimeElapsed = THRESHOLD_TIME_ELAPSED_ERASE;
+    if (eraseTimeElapsed > MAX_TIME_ELAPSED) {
+        eraseTimeElapsed = THRESHOLD_TIME_ELAPSED;
     }
 }
 
@@ -83,13 +83,13 @@ static void Erase_DrawDone(void) {
     //Draw erased
     if (erased) {
         Vector2 erasedSize = MeasureTextEx(Var_GetFontRegular(), UI_ERASE_ERASED, UI_ERASE_ERASED_SIZE, UI_ERASE_TITLE_SPACE);
-        Vector2 erased = {UI_ERASE_ERASED_X, UI_ERASE_ERASED_Y};
-        DrawTextEx(Var_GetFontRegular(), UI_ERASE_ERASED, erased, UI_ERASE_ERASED_SIZE, UI_ERASE_TITLE_SPACE, Var_GetColor3());
+        Vector2 erasedPos = {UI_ERASE_ERASED_X, UI_ERASE_ERASED_Y};
+        DrawTextEx(Var_GetFontRegular(), UI_ERASE_ERASED, erasedPos, UI_ERASE_ERASED_SIZE, UI_ERASE_TITLE_SPACE, Var_GetColor3());
     }
     else {
         Vector2 erasedSize = MeasureTextEx(Var_GetFontRegular(), UI_ERASE_NOT_ERASED, UI_ERASE_ERASED_SIZE, UI_ERASE_TITLE_SPACE);
-        Vector2 erased = {UI_ERASE_ERASED_X, UI_ERASE_ERASED_Y};
-        DrawTextEx(Var_GetFontRegular(), UI_ERASE_NOT_ERASED, erased, UI_ERASE_ERASED_SIZE, UI_ERASE_TITLE_SPACE, Var_GetColor3());
+        Vector2 erasedPos = {UI_ERASE_ERASED_X, UI_ERASE_ERASED_Y};
+        DrawTextEx(Var_GetFontRegular(), UI_ERASE_NOT_ERASED, erasedPos, UI_ERASE_ERASED_SIZE, UI_ERASE_TITLE_SPACE, Var_GetColor3());
     }
     //Draw close text
     Vector2 closeSize = MeasureTextEx(Var_GetFontRegular(), UI_ERASE_CLOSE, UI_ERASE_CLOSE_SIZE, UI_ERASE_TITLE_SPACE);

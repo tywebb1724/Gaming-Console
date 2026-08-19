@@ -5,9 +5,6 @@
 #include "games.h"
 #include "ui.h"
 
-//Macros for navigating the menu
-#define MAX_TIME_ELAPSED_ERASE 1000000
-#define THRESHOLD_TIME_ELAPSED_ERASE 0.25f
 //Macros for drawing the menu
 #define THICKNESS_UI_ERASE (Var_GetMonitorHeight() / 500.0f)
 #define UI_ERASE_RECT_X (CENTER_X - UI_ERASE_RECT_W / 2)

@@ -343,7 +343,7 @@ float Var_GetTemp(void) {
 void Var_UpdateClock(void) {
     int highest = 0;
     //Cycle through possible cores
-    for (int i = 0; i < 16; i++) { 
+    for (int i = 0; i < MAX_CPU_CORES; i++) { 
         char path[128];
         snprintf(path, sizeof(path),
                  "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_cur_freq", i);

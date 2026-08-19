@@ -14,8 +14,8 @@ static float themeTimeElapsed;
 static void Theme_UpdateTime(void) {
     themeTimeElapsed += GetFrameTime();
     //If time getting too big, bring back to the threshold
-    if (themeTimeElapsed > MAX_TIME_ELAPSED_THEME) {
-        themeTimeElapsed = THRESHOLD_TIME_ELAPSED_THEME;
+    if (themeTimeElapsed > MAX_TIME_ELAPSED) {
+        themeTimeElapsed = THRESHOLD_TIME_ELAPSED;
     }
 }
 

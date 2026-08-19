@@ -1,9 +1,6 @@
 #ifndef PLAYPAUSE_CONFIG_H
 #define PLAYPAUSE_CONFIG_H
 
-//Macros for navigating pause menu
-#define MAX_TIME_ELAPSED_PLAYPAUSE 1000000
-#define THRESHOLD_TIME_ELAPSED_PLAYPAUSE 0.25f
 //String lengths
 #define PLAYPAUSE_STR_LEN 15
 //Drawing pause menu

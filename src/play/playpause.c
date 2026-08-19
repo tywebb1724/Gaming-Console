@@ -26,8 +26,8 @@ static float playPauseTimeElapsed;
 static void PlayPause_UpdateTime(void) {
     playPauseTimeElapsed += GetFrameTime();
     //If the variable is getting too big, bring it back down
-    if (playPauseTimeElapsed > MAX_TIME_ELAPSED_PLAYPAUSE) {
-        playPauseTimeElapsed = THRESHOLD_TIME_ELAPSED_PLAYPAUSE;
+    if (playPauseTimeElapsed > MAX_TIME_ELAPSED) {
+        playPauseTimeElapsed = THRESHOLD_TIME_ELAPSED;
     }
 }
 

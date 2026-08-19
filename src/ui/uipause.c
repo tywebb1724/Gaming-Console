@@ -17,8 +17,8 @@ static float uipauseTimeElapsed;
 static void UIPause_UpdateTime(void) {
     uipauseTimeElapsed += GetFrameTime();
     //If time getting too big, bring back to the threshold
-    if (uipauseTimeElapsed > MAX_TIME_ELAPSED_UIPAUSE) {
-        uipauseTimeElapsed = THRESHOLD_TIME_ELAPSED_UIPAUSE;
+    if (uipauseTimeElapsed > MAX_TIME_ELAPSED) {
+        uipauseTimeElapsed = THRESHOLD_TIME_ELAPSED;
     }
 }
 
@@ -65,7 +65,7 @@ static void UIPause_Draw(UIPauseState currentUIPauseState, ConsoleState currentC
         UIPAUSE_SELECT_RECT_W,
         UIPAUSE_SELECT_RECT_H};
     DrawRectangleRoundedLinesEx(rectDDiag, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, THICKNESS_UIPAUSE, Var_GetColor3());
-    char *diagTxt;
+    const char *diagTxt;
     //Change text depending on if diagnostics currently being displayee
     if (Var_GetDiag()) {
         diagTxt = UIPAUSE_HIDE_DIAGNOSTICS;
@@ -83,7 +83,7 @@ static void UIPause_Draw(UIPauseState currentUIPauseState, ConsoleState currentC
         UIPAUSE_SELECT_RECT_W,
         UIPAUSE_SELECT_RECT_H};
     DrawRectangleRoundedLinesEx(rectDiag, UIPAUSE_ROUND, UIPAUSE_SEGMENTS, THICKNESS_UIPAUSE, Var_GetColor3());
-    char *menuTxt;
+    const char *menuTxt;
     //Change text depending on if on main menu or diagnostics screen
     if (currentConsoleState == STATE_VIEW_DIAG) {
         menuTxt = UIPAUSE_MAIN;
@@ -218,6 +218,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
                 currentUIPauseState = VIEW_DIAGNOSTICS;
                 uipauseTimeElapsed = 0.0f;
             }
+            break;
         }
 
     //Action
@@ -308,6 +309,7 @@ void UIPause_Tick(ConsoleState* currentConsoleState) {
             }
             UIPause_Draw(currentUIPauseState, *currentConsoleState);
             UIPause_UpdateTime();
+            break;
             
     }
 }

@@ -16,6 +16,9 @@
 #define MIN_BRIGHTNESS 200
 //Time on a selected section before moving to the next one
 #define SELECT_TIME 0.2f
+//Macros for scrolling sections
+#define MAX_TIME_ELAPSED 1000000
+#define THRESHOLD_TIME_ELAPSED 0.25f
 
 #define DISPLAY_CENTER_OFFSET 2
 

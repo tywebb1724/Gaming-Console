@@ -10,6 +10,8 @@
 #define DEGREE_CONVERSION 1000.0f
 //Length of the thermal path string
 #define THERM_PATH_LEN 300
+//Max cpu cores to check for
+#define MAX_CPU_CORES 16
 
 //Scrolling states
 typedef enum {

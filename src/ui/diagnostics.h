@@ -25,6 +25,8 @@
 #define REFRESH_TXT_Y (TEMP_TXT_Y + Var_GetMonitorHeight() / 12.0f)
 #define CONTROL_TXT_X (FRAME_TXT_X)
 #define CONTROL_TXT_Y (REFRESH_TXT_Y)
+//
+#define KHZ_TO_GHZ 1000000.0f
 
 
 //State of the diagnostics screen

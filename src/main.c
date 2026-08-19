@@ -11,13 +11,13 @@
 #include <stdio.h>
 
 //Length and width of the resolution
-#define RESOLUTION_LEN 1920
-#define RESOLUTION_WIDTH 1080
+#define RESOLUTION_WIDTH 1920
+#define RESOLUTION_HEIGHT 1080
 
 //Main function
 int main(void) {
     SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_UNDECORATED);
-    InitWindow(RESOLUTION_LEN, RESOLUTION_WIDTH, "Custom Console OS");
+    InitWindow(RESOLUTION_WIDTH, RESOLUTION_HEIGHT, "Custom Console OS");
     ToggleFullscreen();
     SetTargetFPS(FPS);
     Var_Init();
