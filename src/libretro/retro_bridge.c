@@ -11,13 +11,11 @@
 #include "rlgl.h"
 #include "controller.h"
 #include "play/play.h"
+#include "retro_bridge.h"
 
 #ifndef RETRO_ENVIRONMENT_SET_SYSTEM_DIRECTORY
 #define RETRO_ENVIRONMENT_SET_SYSTEM_DIRECTORY 16
 #endif
-
-#define MOUSE_SENSITIVITY 1.0f
-#define RIGHT_STICK_TURN_SENSITIVITY 1.5f
 
 //External dependencies from the main Raylib application
 extern Texture2D emulator_texture;
@@ -56,8 +54,6 @@ static volatile unsigned int ringRead = 0;
 
 static struct retro_hw_render_callback hw_render_callback = {0};
 
-void CloseRetroCore(void);
-
 //Core setter function pointers
 void (*core_set_environment)(retro_environment_t);
 void (*core_set_video_refresh)(retro_video_refresh_t);
@@ -94,7 +90,7 @@ unsigned GetGameRotation(void) {
 }
 
 void SetGameRotation(unsigned val) {
-    game_rotation = 0;
+    game_rotation = val;
 }
 
 //Called by raylib when the stream needs more data
@@ -169,7 +165,7 @@ void TriggerContextDestroy(void) {
 void LoadBattery(const char* rom_path) {
     if (!core_get_memory_data || !core_get_memory_size) return;
 
-    char save_path[512];
+    char save_path[SAVE_PATH_LEN];
     snprintf(save_path, sizeof(save_path), "%s.srm", rom_path);
 
     void* core_save_ram = core_get_memory_data(RETRO_MEMORY_SAVE_RAM);
@@ -188,7 +184,7 @@ void LoadBattery(const char* rom_path) {
 void SaveBattery(const char* rom_path) {
     if (!core_get_memory_data || !core_get_memory_size) return;
 
-    char save_path[512];
+    char save_path[SAVE_PATH_LEN];
     snprintf(save_path, sizeof(save_path), "%s.srm", rom_path);
 
     void* core_save_ram = core_get_memory_data(RETRO_MEMORY_SAVE_RAM);
@@ -333,15 +329,15 @@ static int16_t input_state_cb(unsigned port, unsigned device, unsigned index, un
 
             if (Play_IsDoomActive()) {
                 // Left stick: forward/back + strafe
-                if (id == RETRO_DEVICE_ID_JOYPAD_UP    && ly < -0.5f) return 1;
-                if (id == RETRO_DEVICE_ID_JOYPAD_DOWN  && ly >  0.5f) return 1;
-                if (id == RETRO_DEVICE_ID_JOYPAD_L     && lx < -0.5f) return 1;  // strafe left
-                if (id == RETRO_DEVICE_ID_JOYPAD_R     && lx >  0.5f) return 1;  // strafe right
+                if (id == RETRO_DEVICE_ID_JOYPAD_UP    && ly < -STICK_DIGITAL_THRESHOLD) return 1;
+                if (id == RETRO_DEVICE_ID_JOYPAD_DOWN  && ly >  STICK_DIGITAL_THRESHOLD) return 1;
+                if (id == RETRO_DEVICE_ID_JOYPAD_L     && lx < -STICK_DIGITAL_THRESHOLD) return 1;  // strafe left
+                if (id == RETRO_DEVICE_ID_JOYPAD_R     && lx >  STICK_DIGITAL_THRESHOLD) return 1;  // strafe right
 
                 // Right stick: turn
                 float rx = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_RIGHT_X);
-                if (id == RETRO_DEVICE_ID_JOYPAD_LEFT  && rx < -0.5f) return 1;
-                if (id == RETRO_DEVICE_ID_JOYPAD_RIGHT && rx >  0.5f) return 1;
+                if (id == RETRO_DEVICE_ID_JOYPAD_LEFT  && rx < -STICK_DIGITAL_THRESHOLD) return 1;
+                if (id == RETRO_DEVICE_ID_JOYPAD_RIGHT && rx >  STICK_DIGITAL_THRESHOLD) return 1;
             }
             else if (Play_IsN64Active()) {
                 // Intentionally empty: N64's D-pad and stick are separate inputs.
@@ -350,10 +346,10 @@ static int16_t input_state_cb(unsigned port, unsigned device, unsigned index, un
             }
             else {
                 // Everything else: left stick as dpad
-                if (id == RETRO_DEVICE_ID_JOYPAD_LEFT  && lx < -0.5f) return 1;
-                if (id == RETRO_DEVICE_ID_JOYPAD_RIGHT && lx >  0.5f) return 1;
-                if (id == RETRO_DEVICE_ID_JOYPAD_UP    && ly < -0.5f) return 1;
-                if (id == RETRO_DEVICE_ID_JOYPAD_DOWN  && ly >  0.5f) return 1;
+                if (id == RETRO_DEVICE_ID_JOYPAD_LEFT  && lx < -STICK_DIGITAL_THRESHOLD) return 1;
+                if (id == RETRO_DEVICE_ID_JOYPAD_RIGHT && lx >  STICK_DIGITAL_THRESHOLD) return 1;
+                if (id == RETRO_DEVICE_ID_JOYPAD_UP    && ly < -STICK_DIGITAL_THRESHOLD) return 1;
+                if (id == RETRO_DEVICE_ID_JOYPAD_DOWN  && ly >  STICK_DIGITAL_THRESHOLD) return 1;
             }
         }
         return 0;
@@ -364,32 +360,32 @@ static int16_t input_state_cb(unsigned port, unsigned device, unsigned index, un
         if (id == RETRO_DEVICE_ID_ANALOG_X) {
             if (kbdOK) {
                 if (Play_IsN64Active()) {
-                    if (IsKeyDown(KEY_A)) return -32767;
-                    if (IsKeyDown(KEY_D)) return  32767;
+                    if (IsKeyDown(KEY_A)) return -ANALOG_MAX;
+                    if (IsKeyDown(KEY_D)) return  ANALOG_MAX;
                 } else {
-                    if (IsKeyDown(KEY_LEFT))  return -32767;
-                    if (IsKeyDown(KEY_RIGHT)) return  32767;
+                    if (IsKeyDown(KEY_LEFT))  return -ANALOG_MAX;
+                    if (IsKeyDown(KEY_RIGHT)) return  ANALOG_MAX;
                 }
             }
             if (padOK) {
                 float v = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_LEFT_X);
-                if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
+                if (v < -ANALOG_DEADZONE || v > ANALOG_DEADZONE) return (int16_t)(v * ANALOG_MAX);
             }
             return 0;
         }
         if (id == RETRO_DEVICE_ID_ANALOG_Y) {
             if (kbdOK) {
                 if (Play_IsN64Active()) {
-                    if (IsKeyDown(KEY_W)) return -32767;
-                    if (IsKeyDown(KEY_S)) return  32767;
+                    if (IsKeyDown(KEY_W)) return -ANALOG_MAX;
+                    if (IsKeyDown(KEY_S)) return  ANALOG_MAX;
                 } else {
-                    if (IsKeyDown(KEY_UP))   return -32767;
-                    if (IsKeyDown(KEY_DOWN)) return  32767;
+                    if (IsKeyDown(KEY_UP))   return -ANALOG_MAX;
+                    if (IsKeyDown(KEY_DOWN)) return  ANALOG_MAX;
                 }
             }
             if (padOK) {
                 float v = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_LEFT_Y);
-                if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
+                if (v < -ANALOG_DEADZONE || v > ANALOG_DEADZONE) return (int16_t)(v * ANALOG_MAX);
             }
             return 0;
         }
@@ -399,25 +395,25 @@ static int16_t input_state_cb(unsigned port, unsigned device, unsigned index, un
     // ---- RIGHT ANALOG STICK (N64 C-buttons / PS1 right stick) ----
     if (device == RETRO_DEVICE_ANALOG && index == RETRO_DEVICE_INDEX_ANALOG_RIGHT) {
         if (id == RETRO_DEVICE_ID_ANALOG_X) {
-            if (kbdOK && IsKeyDown(KEY_J)) return -32767;
-            if (kbdOK && IsKeyDown(KEY_L)) return  32767;
+            if (kbdOK && IsKeyDown(KEY_J)) return -ANALOG_MAX;
+            if (kbdOK && IsKeyDown(KEY_L)) return  ANALOG_MAX;
             if (padOK) {
                 float v = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_RIGHT_X);
-                if (v < -0.2f || v > 0.2f) {
-                    float scaled = v * 32767.0f * RIGHT_STICK_TURN_SENSITIVITY;
-                    if (scaled >  32767.0f) scaled =  32767.0f;
-                    if (scaled < -32767.0f) scaled = -32767.0f;
+                if (v < -ANALOG_DEADZONE || v > ANALOG_DEADZONE) {
+                    float scaled = v * ANALOG_MAX * RIGHT_STICK_TURN_SENSITIVITY;
+                    if (scaled >  ANALOG_MAX) scaled =  ANALOG_MAX;
+                    if (scaled < -ANALOG_MAX) scaled = -ANALOG_MAX;
                     return (int16_t)scaled;
                 }
             }
             return 0;
         }
         if (id == RETRO_DEVICE_ID_ANALOG_Y) {
-            if (kbdOK && IsKeyDown(KEY_I)) return -32767;   // C-up
-            if (kbdOK && IsKeyDown(KEY_K)) return  32767;   // C-down
+            if (kbdOK && IsKeyDown(KEY_I)) return -ANALOG_MAX;   // C-up
+            if (kbdOK && IsKeyDown(KEY_K)) return  ANALOG_MAX;   // C-down
             if (padOK) {
                 float v = GetGamepadAxisMovement(slot, GAMEPAD_AXIS_RIGHT_Y);
-                if (v < -0.2f || v > 0.2f) return (int16_t)(v * 32767);
+                if (v < -ANALOG_DEADZONE || v > ANALOG_DEADZONE) return (int16_t)(v * ANALOG_MAX);
             }
             return 0;
         }
@@ -440,7 +436,7 @@ void TriggerContextReset(void) {
     }
 }
 
-void my_custom_logger(enum retro_log_level level, const char *fmt, ...) {
+static void my_custom_logger(enum retro_log_level level, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     printf("LIBRETRO-LOG: ");

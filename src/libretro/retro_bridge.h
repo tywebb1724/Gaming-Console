@@ -4,6 +4,13 @@
 #include <stdbool.h>
 #include "libretro.h"
 
+#define SAVE_PATH_LEN 512
+#define ANALOG_MAX 32767.0f
+#define ANALOG_DEADZONE 0.2f
+#define STICK_DIGITAL_THRESHOLD 0.5f
+#define MOUSE_SENSITIVITY 1.0f
+#define RIGHT_STICK_TURN_SENSITIVITY 1.5f
+
 // --- Core function pointers (defined in retro_bridge.c) ---
 extern void (*core_init)(void);
 extern bool (*core_load_game)(const struct retro_game_info *info);
