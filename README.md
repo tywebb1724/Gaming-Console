@@ -42,8 +42,8 @@ A gaming emulator frontend to organize and run old games through libretro and ot
 1. Open a terminal in the extracted folder
 2. Run the install script:
 ```bash
-    chmod +x install.sh
-    ./install.sh
+ >  chmod +x install.sh
+ >  ./install.sh
 ```
 
     This will:
@@ -55,14 +55,14 @@ A gaming emulator frontend to organize and run old games through libretro and ot
 
 3. If you downloaded the source (Option 2), build the project
 ```bash
-    make
+ >  make
 ```
 
 4. Add the ROMS and BIOS files (see [Directory Structure](#directory-structure) below for where each console's files go). **ROMS and BIOS files are not included - you must supply your own legally obtained copies.**
 
 5. Launch the app using the desktop icon, or run it directly:
 ```bash
-   ./SP1DER-GAMES
+ >  ./SP1DER-GAMES
 ```
 
 ### A note on display settings
