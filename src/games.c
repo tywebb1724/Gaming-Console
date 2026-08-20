@@ -768,22 +768,454 @@ static void Games_Playstation_Init() {
     }
 }
 
+
+static void Games_GetCovers(char* romPath, char* coverPath) {
+
+}
+
+//Extract title from GBA ROM
+void Games_GetGBATitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //GBA internal title is 12 bytes at offset 0xA0
+    if (fseek(f, GBA_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[GBA_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, GBA_RAW_LEN - 1, f) == GBA_RAW_LEN - 1) {
+            rawTitle[GBA_RAW_LEN - 1] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from SNES ROM
+void Games_GetSNESTitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //SNES internal title is 21 bytes at offset 0x7FC0
+    if (fseek(f, SNES_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[SNES_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, SNES_RAW_LEN - 1, f) == SNES_RAW_LEN - 1) {
+            rawTitle[SNES_RAW_LEN - 1] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from N64 ROM
+void Games_GetN64Title(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //N64 internal title is 20 bytes at offset 0x20
+    if (fseek(f, N64_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[N64_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, N64_RAW_LEN - 1, f) == N64_RAW_LEN - 1) {
+            rawTitle[N64_RAW_LEN] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from Genesis ROM
+void Games_GetGenesisTitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //Genesis internal title is 48 bytes at offset 0x150
+    if (fseek(f, GENESIS_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[GENESIS_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, GENESIS_RAW_LEN - 1, f) == GENESIS_RAW_LEN - 1) {
+            rawTitle[GENESIS_RAW_LEN - 1] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from Game Boy / Game Boy Color ROM
+void Games_GetGBTitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //Game Boy internal title is 16 bytes at offset 0x0134
+    if (fseek(f, GB_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[GB_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, GB_RAW_LEN - 1, f) == GB_RAW_LEN - 1) {
+            rawTitle[GB_RAW_LEN - 1] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from Nintendo DS ROM
+void Games_GetDSTitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //NDS internal title is 12 bytes at offset 0x0000
+    if (fseek(f, DS_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[DS_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, DS_RAW_LEN - 1, f) == DS_RAW_LEN - 1) {
+            rawTitle[DS_RAW_LEN - 1] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from PlayStation Portable ROM
+void Games_GetPSPTitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //PSP ISO internal volume header title is 128 bytes at offset 0x8028
+    if (fseek(f, PSP_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[PSP_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, PSP_RAW_LEN - 1, f) == PSP_RAW_LEN - 1) {
+            rawTitle[PSP_RAW_LEN - 1] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from PS1 ROM (Filename fallback)
+void Games_GetPS1Title(const char* romPath, game_t* game) {
+    //PS1 games lack a standardized internal ASCII title string.
+    //Use clean filename as default title.
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from GameCube / Wii ISO
+void Games_GetGCTitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //GameCube game title is stored plain text at offset 0x20 (up to 64/96 bytes)
+    if (fseek(f, GC_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[GC_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, GC_RAW_LEN - 1, f) == GC_RAW_LEN - 1) {
+            rawTitle[GC_RAW_LEN - 1] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from NES ROM
+void Games_GetNESTitle(const char* romPath, game_t* game) {
+    //NES internal title is typically handled via filename, but iNES header starts at 0x0
+    //Skipping 16-byte iNES header, PRG-ROM data starts at offset 0x10. NES headers lack reliable text titles, fallback to filename.
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from Sega Master System / Game Gear ROM
+void Games_GetSMSTitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //SMS/GG header sits at 0x7FFF (32KB), 0x3FFF (16KB), or 0x1FFF (8KB)
+    //Check 0x7FF0 for the 'TMR SEGA' magic string first
+    if (fseek(f, SMS_OFFSET, SEEK_SET) == 0) {
+        char magic[SMS_MAGIC_LEN] = {0};
+        if (fread(magic, 1, SMS_MAGIC_LEN - 1, f) == SMS_MAGIC_LEN - 1 && strncmp(magic, "TMR SEGA", SMS_MAGIC_LEN - 1) == 0) {
+            //SMS headers do not store an ASCII title string, only serial/checksum
+            //Falling back to filename
+            fclose(f);
+            snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header check fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from Sega CD ROM
+void Games_GetSegaCDTitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //Sega CD internal title is 48 bytes at offset 0x0150 (same header layout as Genesis)
+    if (fseek(f, SEGACD_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[SEGACD_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, SEGACD_RAW_LEN - 1, f) == SEGACD_RAW_LEN - 1) {
+            rawTitle[SEGACD_RAW_LEN - 1] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from Sega Saturn ROM
+void Games_GetSaturnTitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //Sega Saturn internal title is 112 bytes at offset 0x0060 (IP.BIN area)
+    if (fseek(f, SATURN_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[SATURN_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, SATURN_RAW_LEN - 1, f) == SATURN_RAW_LEN - 1) {
+            rawTitle[SATURN_RAW_LEN - 1] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from Sega Dreamcast ROM
+void Games_GetDreamcastTitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //Dreamcast internal title is 128 bytes at offset 0x0080 in IP.BIN
+    if (fseek(f, DREAMCAST_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[DREAMCAST_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, DREAMCAST_RAW_LEN - 1, f) == DREAMCAST_RAW_LEN - 1) {
+            rawTitle[DREAMCAST_RAW_LEN - 1] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from Atari Lynx ROM
+void Games_GetLynxTitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //Atari Lynx header uses 64-byte LNX structure; ASCII title is 32 bytes at offset 0x000A
+    if (fseek(f, LYNX_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[LYNX_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, LYNX_RAW_LEN - 1, f) == LYNX_RAW_LEN - 1) {
+            rawTitle[LYNX_RAW_LEN - 1] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from Neo Geo Pocket / Pocket Color ROM
+void Games_GetNGPCTitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //NGPC internal title is 12 bytes at offset 0x0024
+    if (fseek(f, NGPC_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[NGPC_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, NGPC_RAW_LEN - 1, f) == NGPC_RAW_LEN - 1) {
+            rawTitle[NGPC_RAW_LEN- 1] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from DOOM WAD File
+void Games_GetDoomTitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //Check for IWAD or PWAD magic header bytes (4 bytes)
+    char magic[DOOM_MAGIC_LEN] = {0};
+    if (fread(magic, 1, DOOM_MAGIC_LEN - 1, f) == DOOM_MAGIC_LEN - 1) {
+        if (strcmp(magic, "IWAD") == 0 || strcmp(magic, "PWAD") == 0) {
+            //WAD files store lumps without a single title string header
+            //Fallback directly to WAD filename
+            fclose(f);
+            snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if magic check fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from TurboGrafx-16 / PC Engine ROM
+void Games_GetTG16Title(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //TG16 HuCard header sits at offset 0x1FFF (8K), 0x3FFF (16K), or 0x7FFF (32K)
+    //Checks 0x7FFF for the 16-byte title area
+    if (fseek(f, TG16_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[TG16_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, TG16_RAW_LEN - 1, f) == TG16_RAW_LEN - 1) {
+            rawTitle[TG16_RAW_LEN - 1] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from TurboGrafx-CD / PCE-CD ROM
+void Games_GetTGCDTitle(const char* romPath, game_t* game) {
+    FILE* f = fopen(romPath, "rb");
+    //Check if error opening file
+    if (!f) return;
+    //TGCD sector 0 / ISO volume label stores descriptor metadata at offset 0x8028
+    if (fseek(f, TGCD_OFFSET, SEEK_SET) == 0) {
+        char rawTitle[TGCD_RAW_LEN] = {0};
+        //Read raw title
+        if (fread(rawTitle, 1, TGCD_RAW_LEN - 1, f) == TGCD_RAW_LEN - 1) {
+            rawTitle[TGCD_RAW_LEN - 1] = '\0';
+            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+            fclose(f);
+            return;
+        }
+    }
+    fclose(f);
+    //Fallback to filename if header read fails
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+//Extract title from Arcade (MAME / FinalBurn Neo) ROM zip
+void Games_GetArcadeTitle(const char* romPath, game_t* game) {
+    //Arcade ROMs are .zip archives containing raw board dump ROM chips.
+    //There is no internal ASCII title string in arcade ZIP dumps.
+    //The ZIP base filename (e.g., "tmnt.zip", "mslug.zip") serves as the driver/game ID.
+    //Fallback directly to filename
+    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+}
+
+
+static void Games_GetRoms(char* romExtension, char* dirPath) {
+    FilePathList files = LoadDirectoryFiles(dirPath);
+    for (int i = 0; i < files.count; i++) {
+        if (IsFileExtension(files.paths[i], romExtension)) {
+            snprintf(gamesLibrary[games_init_index].title, sizeof(gamesLibrary[games_init_index].title), "%s", GetFileNameWithoutExt(files.paths[i]));
+            snprintf(gamesLibrary[games_init_index].romPath, sizeof(gamesLibrary[games_init_index].romPath), "%s", files.paths[i]);
+            snprintf(gamesLibrary[games_init_index].console, sizeof(gamesLibrary[games_init_index].console), "%s", consoleName);
+
+            // 2. Check if local cover image exists
+            char coverPath[256];
+            snprintf(coverPath, sizeof(coverPath), "covers/%s/%s.png", consoleName, game.title);
+            
+            if (FileExists(coverPath)) {
+                gamesLibrary[games_init_index].cover = LoadTexture(coverPath);
+                gamesLibrary[games_init_index].hasCover = true;
+            } else {
+                // Mark for background scraper thread
+                gamesLibrary[games_init_index].hasCover = false;
+            }
+            games_init_index += 1;
+        }
+    }
+    UnloadDirectoryFiles(files);
+}
+
 //Initialize game library
 void Games_Init() {
+    games_init_index = 0;
     //Arcade games
-    Games_Arcade_Init();
-    //Handheld classics games
-    Games_Handheld_Init();
+    Games_GetRoms(".zip", "assets/roms/Arcade");
+    //Handheld games
+    Games_GetRoms(".nds", "assets/roms/Nintendo DS");
+    Games_GetRoms(".gg", "assets/roms/Sega Game Gear");
+    Games_GetRoms(".gba", "assets/roms/Game Boy Advance");
+    Games_GetRoms(".gbc", "assets/roms/Game Boy Color");
+    Games_GetRoms(".gb", "assets/roms/Game Boy");
+    Games_GetRoms(".ngc", "assets/roms/Neo Geo Pocket Color");
+    Games_GetRoms(".iso", "assets/roms/Sony PlayStation Portable");
+    Games_GetRoms(".lyx", "assets/roms/Atari Lynx");
     //Nintendo 3D games
-    Games_Nint3D_Init();
-    //Retro Nintendo games
-    Games_NintRet_Init();
-    //Retro PC & indie games
-    Games_PCIndie_Init();
-    //Sega central games
-    Games_Sega_Init();
-    //Sony Playstation games
-    Games_Playstation_Init();
+    Games_GetRoms(".ciso", "assets/roms/Nintendo GameCube");
+    Games_GetRoms(".z64", "assets/roms/Nintendo 64");
+    //Nintendo retro games
+    Games_GetRoms(".nes", "assets/roms/Nintendo Entertainment System");
+    Games_GetRoms(".sfc", "assets/roms/Super Nintendo Entertainment System");
+    Games_GetRoms(".smc", "assets/roms/Super Nintendo Entertainment System");
+    //PC/Indie/Other games
+    Games_GetRoms(".pce", "assets/roms/TurboGrafx-16");
+    Games_GetRoms(".chd", "assets/roms/TurboGrafx-CD");
+    Games_GetRoms(".WAD", "assets/roms/PC");
+    //Sega games
+    Games_GetRoms(".chd", "assets/roms/Sega CD");
+    Games_GetRoms(".chd", "assets/roms/Sega Dreamcast");
+    Games_GetRoms(".md", "assets/roms/Sega Genesis");
+    Games_GetRoms(".sms", "assets/roms/Sega Master System");
+    Games_GetRoms(".chd", "assets/roms/Sega Saturn");
+    //PS1 games
+    Games_GetRoms();
+    
+
     //Start with the Nintendo 3D games
     Games_UpdateIndexes("Nintendo 3D");
     Games_Refresh();

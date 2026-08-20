@@ -36,6 +36,43 @@
 #define PATH_DREAMCAST "org.flycast.Flycast"
 #define PATH_SATURN "io.github.strikerx3.ymir"
 
+#define TITLE_MAX_LEN 128
+#define GBA_RAW_LEN 13
+#define GBA_OFFSET 0x0A0
+#define N64_RAW_LEN 21
+#define N64_OFFSET 0x020
+#define SNES_RAW_LEN 22
+#define SNES_OFFSET 0x7FC0
+#define GENESIS_RAW_LEN 49
+#define GENESIS_OFFSET 0x150
+#define GB_RAW_LEN 17
+#define GB_OFFSET 0x0134
+#define DS_RAW_LEN 13
+#define DS_OFFSET 0x0000
+#define PSP_RAW_LEN 129
+#define PSP_OFFSET 0x8028
+#define GC_RAW_LEN 65
+#define GC_OFFSET 0x20
+#define SMS_RAW_LEN
+#define SMS_OFFSET 0x7FF0
+#define SEGACD_RAW_LEN 49
+#define SEGACD_OFFSET 0x0150
+#define SATURN_RAW_LEN 113
+#define SATURN_OFFSET 0x0060
+#define DREAMCAST_RAW_LEN 129 
+#define DREAMCAST_OFFSET 0x0080
+#define LYNX_RAW_LEN 33
+#define LYNX_OFFSET 0x000A
+#define NGPC_RAW_LEN 13
+#define NGPC_OFFSET 0x0024
+#define TG16_RAW_LEN 17
+#define TG16_OFFSET 0x7FF0
+#define TGCD_RAW_LEN 33
+#define TGCD_OFFSET 0x8028
+#define SMS_MAGIC_LEN 9
+#define DOOM_MAGIC_LEN 5
+
+
 
 //Types of game saves
 typedef enum {
@@ -46,7 +83,7 @@ typedef enum {
 
 //Game struct
 typedef struct {
-    char *title;
+    char title[TITLE_MAX_LEN];
     char *coverPath;
     Texture2D cover;
     char *console;
@@ -62,6 +99,7 @@ typedef struct {
     char *serial;
     char *processName;
 } game_t;
+
 
 //Get a game from the main array
 game_t* Games_Get(int i);

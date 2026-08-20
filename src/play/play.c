@@ -54,7 +54,6 @@ static bool g_isN64Active  = false;
 //ID for external application
 static pid_t extAppId = -1;
 
-
 //Build path for the config files
 static bool Play_BuildConfigPath(char* outPath, size_t outSize, const char* relativePath) {
     const char* home = getenv("HOME");
@@ -97,6 +96,249 @@ static bool Play_CopyConfig(const char* srcPath, const char* destPath) {
     fclose(src);
     fclose(dest);
     return true;
+}
+
+//Find the value for a given SDL mapping key (e.g. "a", "leftx") in a mapping string
+static bool Play_FindSDLMappingValue(const char* mappingStr, const char* key, char* outValue, size_t outSize) {
+    char keyPrefix[32];
+    snprintf(keyPrefix, sizeof(keyPrefix), ",%s:", key);
+    const char* found = strstr(mappingStr, keyPrefix);
+    //If key isn't found, exit
+    if (!found) return false;
+    found += strlen(keyPrefix);
+    const char* end = strchr(found, ',');
+    size_t len = end ? (size_t)(end - found) : strlen(found);
+    //If length too big, shrink it
+    if (len >= outSize) len = outSize - 1;
+    strncpy(outValue, found, len);
+    outValue[len] = '\0';
+    return true;
+}
+
+//Extract the raw numeric index from a value like "b3", "a2", or "h0.1" (hat index only)
+static int Play_ExtractSDLIndex(const char* value) {
+    //If it finds a mapping letter, extract the number after it
+    if (value[0] == 'b' || value[0] == 'a' || value[0] == 'h') {
+        return atoi(value + 1);
+    }
+    return -1;
+}
+
+//Sort order of axes
+static int Play_CompareAxisEntries(const void* a, const void* b) {
+    return ((const AxisEntry*)a)->axisIndex - ((const AxisEntry*)b)->axisIndex;
+}
+
+//Sort order of buttons
+static int Play_CompareButtonEntries(const void* a, const void* b) {
+    return ((const ButtonEntry*)a)->buttonIndex - ((const ButtonEntry*)b)->buttonIndex;
+}
+
+//Generate the correct Flycast mappings for the specific controller
+static bool Play_GenerateFlycastMapping(const char* sdlMappingStr, const char* controllerName, const char* destPath) {
+    FILE* dest = fopen(destPath, "w");
+    //Check for error opening destination file
+    if (!dest) return false;
+    char value[16];
+    //Gather axes and sort entries
+    AxisEntry axes[6];
+    int axisCount = 0;
+    const char* axisRoles[] = {"leftx", "lefty", "rightx", "righty", "lefttrigger", "righttrigger"};
+    //Go throug possible axes
+    for (int i = 0; i < 6; i++) {
+        //Find the mapping value
+        if (Play_FindSDLMappingValue(sdlMappingStr, axisRoles[i], value, sizeof(value))) {
+            axes[axisCount].axisIndex = Play_ExtractSDLIndex(value);
+            axes[axisCount].role = axisRoles[i];
+            axisCount++;
+        }
+    }
+    qsort(axes, axisCount, sizeof(AxisEntry), Play_CompareAxisEntries);
+    //Write analog section and assign axes
+    fprintf(dest, "[analog]\n");
+    int bindNum = 0;
+    int triggerAxes[2] = {-1, -1};
+    int triggerCount = 0;
+    //Go through the axes
+    for (int i = 0; i < axisCount; i++) {
+        //Check name and assign bindings
+        if (strcmp(axes[i].role, "leftx") == 0) {
+            fprintf(dest, "bind%d = %d-:btn_analog_left\n", bindNum++, axes[i].axisIndex);
+            fprintf(dest, "bind%d = %d+:btn_analog_right\n", bindNum++, axes[i].axisIndex);
+        }
+        else if (strcmp(axes[i].role, "lefty") == 0) {
+            fprintf(dest, "bind%d = %d-:btn_analog_up\n", bindNum++, axes[i].axisIndex);
+            fprintf(dest, "bind%d = %d+:btn_analog_down\n", bindNum++, axes[i].axisIndex);
+        }
+        else if (strcmp(axes[i].role, "rightx") == 0) {
+            fprintf(dest, "bind%d = %d-:axis2_left\n", bindNum++, axes[i].axisIndex);
+            fprintf(dest, "bind%d = %d+:axis2_right\n", bindNum++, axes[i].axisIndex);
+        }
+        else if (strcmp(axes[i].role, "righty") == 0) {
+            fprintf(dest, "bind%d = %d-:axis2_up\n", bindNum++, axes[i].axisIndex);
+            fprintf(dest, "bind%d = %d+:axis2_down\n", bindNum++, axes[i].axisIndex);
+        }
+        else if (strcmp(axes[i].role, "lefttrigger") == 0) {
+            fprintf(dest, "bind%d = %d+:btn_trigger_left\n", bindNum++, axes[i].axisIndex);
+            triggerAxes[triggerCount++] = axes[i].axisIndex;
+        }
+        else if (strcmp(axes[i].role, "righttrigger") == 0) {
+            fprintf(dest, "bind%d = %d+:btn_trigger_right\n", bindNum++, axes[i].axisIndex);
+            triggerAxes[triggerCount++] = axes[i].axisIndex;
+        }
+    }
+    //Sort the two trigger axis indices ascending, for the [emulator] triggers= line
+    if (triggerAxes[0] > triggerAxes[1]) {
+        int tmp = triggerAxes[0]; triggerAxes[0] = triggerAxes[1]; triggerAxes[1] = tmp;
+    }
+    //Gather button entries and sort
+    ButtonEntry buttons[8];
+    int buttonCount = 0;
+    const char* buttonRoles[] = {"a", "b", "x", "y", "leftshoulder", "rightshoulder", "start", "guide"};
+    const char* flycastNames[] = {"btn_a", "btn_b", "btn_x", "btn_y", "btn_z", "btn_c", "btn_start", "btn_menu"};
+    //Go through the buttons
+    for (int i = 0; i < 8; i++) {
+        //Find mappings values
+        if (Play_FindSDLMappingValue(sdlMappingStr, buttonRoles[i], value, sizeof(value))) {
+            buttons[buttonCount].buttonIndex = Play_ExtractSDLIndex(value);
+            buttons[buttonCount].flycastName = flycastNames[i];
+            buttonCount++;
+        }
+    }
+    qsort(buttons, buttonCount, sizeof(ButtonEntry), Play_CompareButtonEntries);
+    //Write digital section
+    fprintf(dest, "\n[digital]\n");
+    bindNum = 0;
+    //Scan buttons in order and assign bind numbers
+    for (int i = 0; i < buttonCount; i++) {
+        fprintf(dest, "bind%d = %d:%s\n", bindNum++, buttons[i].buttonIndex, buttons[i].flycastName);
+    }
+    //D-pad is always a fixed offset, right after the scanned digital buttons
+    fprintf(dest, "bind%d = 256:btn_dpad1_up\n", bindNum++);
+    fprintf(dest, "bind%d = 257:btn_dpad1_down\n", bindNum++);
+    fprintf(dest, "bind%d = 258:btn_dpad1_left\n", bindNum++);
+    fprintf(dest, "bind%d = 259:btn_dpad1_right\n", bindNum++);
+    //Emulator section
+    fprintf(dest, "\n[emulator]\n");
+    fprintf(dest, "dead_zone = 10\n");
+    fprintf(dest, "mapping_name = %s\n", controllerName);
+    fprintf(dest, "rumble_power = 100\n");
+    fprintf(dest, "saturation = 100\n");
+    fprintf(dest, "triggers = %d,%d\n", triggerAxes[0], triggerAxes[1]);
+    fprintf(dest, "version = 4\n");
+    fclose(dest);
+    return true;
+}
+
+//Apply controller mappings for Flycast
+static void Play_ApplyFlycastMappings(void) {
+    FILE* probe = popen("./sdl_name_probe", "r");
+    //Check for error opening probe
+    if (!probe) {
+        fprintf(stderr, "Play_ApplyFlycastMappings: failed to run probe helper\n");
+        return;
+    }
+    char nameLine[128];
+    char mappingLine[512];
+    //Get the lines
+    while (fgets(nameLine, sizeof(nameLine), probe)) {
+        size_t len = strlen(nameLine);
+        //Strip newline from string
+        if (len > 0 && nameLine[len - 1] == '\n') nameLine[len - 1] = '\0';
+        //Read the mapping-string line that follows each name line
+        if (!fgets(mappingLine, sizeof(mappingLine), probe)) break;
+        len = strlen(mappingLine);
+        //Strip newline from string
+        if (len > 0 && mappingLine[len - 1] == '\n') mappingLine[len - 1] = '\0';
+        //Skip controllers SDL couldn't provide a standard mapping for
+        if (strcmp(mappingLine, "(no mapping string available)") == 0 ||
+            strcmp(mappingLine, "(not recognized as a game controller — no mapping available)") == 0) {
+            continue;
+        }
+        char mappingRelPath[256];
+        snprintf(mappingRelPath, sizeof(mappingRelPath),
+                 ".var/app/org.flycast.Flycast/config/flycast/mappings/SDL_%s.cfg", nameLine);
+        char mappingDestPath[CONFIG_PATH_LEN];
+        //Build config path and check for error
+        if (Play_BuildConfigPath(mappingDestPath, sizeof(mappingDestPath), mappingRelPath)) {
+            //Generate Flycast mappings and check for error
+            if (Play_GenerateFlycastMapping(mappingLine, nameLine, mappingDestPath)) {
+            } 
+            else {
+                fprintf(stderr, "Play_ApplyFlycastMappings: failed to generate mapping for '%s'\n", nameLine);
+            }
+        }
+    }
+    pclose(probe);
+}
+
+//Writes mappings blocks for each controller
+static bool Play_WriteDolphinBlock(FILE* dest, const char* templatePath, int slot, const char* controllerName) {
+    FILE* src = fopen(templatePath, "r");
+    //Check for error opening source file
+    if (!src) {
+        fprintf(stderr, "WriteDolphinBlock: couldn't open template %s\n", templatePath);
+        return false;
+    }
+    char line[256];
+    //Go through all lines
+    while (fgets(line, sizeof(line), src)) {
+        char output[300];
+        char* slotMarker = strstr(line, "{SLOT}");
+        char* nameMarker = strstr(line, "{NAME}");
+        //Replace slots with the number of the pad
+        if (slotMarker) {
+            snprintf(output, sizeof(output), "[GCPad%d]\n", slot);
+            fputs(output, dest);
+        }
+        //Replace names with device names
+        else if (nameMarker) {
+            snprintf(output, sizeof(output), "Device = SDL/0/%s\n", controllerName);
+            fputs(output, dest);
+        }
+        //Don't change other lines
+        else {
+            fputs(line, dest);
+        }
+    }
+    fclose(src);
+    return true;
+}
+
+//Apply controller mappings for Dolphin
+static void Play_ApplyDolphinMappings(void) {
+    FILE* probe = popen("./sdl_name_probe", "r");
+    //Check for error opening probe
+    if (!probe) {
+        fprintf(stderr, "Play_ApplyDolphinMappings: failed to run probe helper\n");
+        return;
+    }
+    char destPath[CONFIG_PATH_LEN];
+    //Build config path and check for error
+    if (!Play_BuildConfigPath(destPath, sizeof(destPath),
+                              ".var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/GCPadNew.ini")) {
+        pclose(probe);
+        return;
+    }
+    FILE* dest = fopen(destPath, "w");
+    //Check for error opening destination file
+    if (!dest) {
+        fprintf(stderr, "Play_ApplyDolphinMappings: couldn't open destination %s\n", destPath);
+        pclose(probe);
+        return;
+    }
+    char line[128];
+    int slot = 1;
+    //Go through all controller slots
+    while (slot <= 4 && fgets(line, sizeof(line), probe)) {
+        size_t len = strlen(line);
+        //Check for valid lines and write blocks
+        if (len > 0 && line[len - 1] == '\n') line[len - 1] = '\0';
+        Play_WriteDolphinBlock(dest, "assets/emulator-configs/dolphin/GCPad_block.template", slot, line);
+        slot++;
+    }
+    fclose(dest);
+    pclose(probe);
 }
 
 //Finds the PID of a running process by name
@@ -494,6 +736,7 @@ void Play_Init(const game_t* game) {
             if (Play_BuildConfigPath(dolphinIniPath, sizeof(dolphinIniPath), PATH_DOLPHIN_INI_DEST)) {
                 Play_CopyConfig(PATH_DOLPHIN_INI_SRC, dolphinIniPath);
             }
+            Play_ApplyDolphinMappings();
         }
         else if (strcmp(game->corePath, PATH_DS) == 0) {
             //Update config file
@@ -512,6 +755,7 @@ void Play_Init(const game_t* game) {
             if (Play_BuildConfigPath(flycastEmuPath, sizeof(flycastEmuPath), PATH_FLYCAST_EMU_DEST)) {
                 Play_CopyConfig(PATH_FLYCAST_EMU_SRC, flycastEmuPath);
             }
+            Play_ApplyFlycastMappings();
         }
         else if (strcmp(game->corePath, PATH_PSP) == 0) {
             //Update ini file

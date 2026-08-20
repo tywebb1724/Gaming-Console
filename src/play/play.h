@@ -54,6 +54,19 @@
 #define COMM_PATH_LEN 300
 #define BUFFER_WRITE_LEN 4096
 
+//Represents one axis's role, in ascending SDL axis-index order
+typedef struct {
+    int axisIndex;
+    const char* role;
+} AxisEntry;
+
+//Represents one button's role, in ascending SDL button-index order
+typedef struct {
+    int buttonIndex;
+    const char* flycastName;
+} ButtonEntry;
+
+
 //Get whether doom core is active
 bool Play_IsDoomActive(void);
 //Get whether N64 core is active

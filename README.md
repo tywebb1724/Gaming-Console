@@ -18,7 +18,7 @@ A gaming emulator frontend to organize and run old games through libretro and ot
 * **Internet Connection:** Needed to install raylib and Flatpak applications
 * **Permissions:** sudo access
 * **Storage:** 
-* **Display:** Some type of monitor, TV, or other display set to 1080p, 60 FPS
+* **Display:** Some type of monitor, TV, or other display set to 1080p @ 60 Hz
 * **ROMS:** Game files for the games included that the user wishes to play (placed in assets/roms/)
 * **BIOS Files:** For each console that requires it (placed in assets/system/ for libretro games and other locations for Flatpak applications)
 * **Controller:** Some type of Xbox Controller and a keyboard/mouse
