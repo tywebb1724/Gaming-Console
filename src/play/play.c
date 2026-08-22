@@ -660,6 +660,8 @@ static void Play_Draw(const game_t* game) {
     float rot = -(game_rotation * ROTATION_DEGREES);
     float drawW = swapped ? destHeight : destWidth;
     float drawH = swapped ? destWidth  : destHeight;
+    printf("height: %f\n", drawH);
+    printf("width: %f\n", drawW);
     Rectangle src  = { 0.0f, 0.0f, texW, texH };
     Rectangle dest = { Var_GetMonitorWidth() / 2.0f, Var_GetMonitorHeight() / 2.0f, drawW, drawH };
     Vector2  origin = { drawW / 2.0f, drawH / 2.0f };
@@ -690,6 +692,9 @@ void Play_Init(const game_t* game) {
     is_game_running = false;
     //Initialize depending on type of game
     if (Play_IsLibRetro(game)) {
+        if (strcmp(game->corePath, PATH_PS1) == 0) {
+    Games_SnapshotSaveFolder("assets/saves");
+}
         //Reset from last game
         SetGameRotation(0);
         UnloadTexture(emulator_texture);
@@ -745,6 +750,12 @@ void Play_Init(const game_t* game) {
             }
         }
         else if (strcmp(game->corePath, PATH_SATURN) == 0) {
+            char savestatesDir[CONFIG_PATH_LEN];
+    if (Play_BuildConfigPath(savestatesDir, sizeof(savestatesDir),
+                              ".var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates")) {
+        Games_SnapshotSaveFolder(savestatesDir);
+        
+    }
             //Update config file
             if (Play_BuildConfigPath(saturnPath, sizeof(saturnPath), PATH_SATURN_DEST)) {
                 Play_CopyConfig(PATH_SATURN_SRC, saturnPath);
@@ -756,6 +767,10 @@ void Play_Init(const game_t* game) {
                 Play_CopyConfig(PATH_FLYCAST_EMU_SRC, flycastEmuPath);
             }
             Play_ApplyFlycastMappings();
+            char flycastSaveDir[CONFIG_PATH_LEN];
+    if (Play_BuildConfigPath(flycastSaveDir, sizeof(flycastSaveDir), ".var/app/org.flycast.Flycast/data/flycast")) {
+        Games_SnapshotSaveFolder(flycastSaveDir);
+    }
         }
         else if (strcmp(game->corePath, PATH_PSP) == 0) {
             //Update ini file
@@ -811,6 +826,15 @@ bool Play_TickExt(const game_t* game) {
     //If no longer running
     if (result == extAppId) {
         extAppId = -1;
+        char savestatesDir[CONFIG_PATH_LEN];
+    if (Play_BuildConfigPath(savestatesDir, sizeof(savestatesDir),
+                              ".var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates")) {
+        Games_DetectNewYmirSaveFolder(game, savestatesDir);
+    }
+    char flycastSaveDir[CONFIG_PATH_LEN];
+    if (Play_BuildConfigPath(flycastSaveDir, sizeof(flycastSaveDir), ".var/app/org.flycast.Flycast/data/flycast")) {
+        Games_DetectNewFlycastSaveFile(game, flycastSaveDir);
+    }
         SetWindowFocused();
         Controller_SetWasPressed_Home(true);
         return false;
@@ -919,6 +943,7 @@ bool Play_TickLib(const game_t* game) {
 
         //Exiting game
         case PLAY_EXIT:
+            Games_DetectNewPS1SaveFile(game, "assets/saves");
             Play_StopLib(game);
             return false;
     }

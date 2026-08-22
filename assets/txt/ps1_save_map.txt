@@ -1,0 +1,17 @@
+assets/roms/Sony PlayStation/Spider-Man (2000).chd|SLUS-00875_1
+assets/roms/Sony PlayStation/Pac-Man World.chd|SLUS-00439_1
+assets/roms/Sony PlayStation/Mega Man X4.chd|SLUS-00561_1
+assets/roms/Sony PlayStation/Metal Gear Solid.m3u|SLUS-00594_1
+assets/roms/Sony PlayStation/Soul Blade.chd|SLUS-00240_1
+assets/roms/Sony PlayStation/Street Fighter: Alpha 3.chd|SLUS-00821_1
+assets/roms/Sony PlayStation/Twisted Metal 2.chd|SCUS-94306_1
+assets/roms/Arcade/Pac-Man.zip|SCUS-94306_1
+assets/roms/Arcade/Punisher Arcade.zip|SCUS-94306_1
+assets/roms/Atari Lynx/Ninja Gaiden.lyx|SCUS-94306_1
+assets/roms/Neo Geo Pocket Color/Metal Slug - 2nd Mission.ngc|SCUS-94306_1
+assets/roms/Game Boy Color/Super Mario Bros. Deluxe.gbc|SCUS-94306_1
+assets/roms/Game Boy Advance/The Legend of Zelda: Minish Cap.gba|SCUS-94306_1
+assets/roms/Sega Game Gear/Sonic Blast.gg|SCUS-94306_1
+assets/roms/Arcade/punisher.zip|SLUS-00561_1
+assets/roms/Arcade/mslug3.zip|SLUS-00561_1
+assets/roms/Arcade/tmnt22pu.zip|SLUS-00561_1

@@ -30,7 +30,7 @@ endif
 
 CFLAGS  := $(STD) $(WARN) $(OPT) $(SANI) $(INC) $(RAYLIB_CFLAGS)
 LDFLAGS := $(SANI)
-LDLIBS  := $(RAYLIB_LIBS) -lm -lpthread -ldl -lrt
+LDLIBS  := $(RAYLIB_LIBS) -lm -lpthread -ldl -lrt -lz
 
 # --- SDL2 name-probe helper (used to detect controller names for Flycast mapping files) ---
 SDL2_CFLAGS := $(shell pkg-config --cflags sdl2 2>/dev/null)

@@ -4,9 +4,9 @@
 #include "raylib.h"
 
 //Max amount of games console can hold
-#define MAX_GAMES 60
+#define MAX_GAMES 80
 //Size of the current games library
-#define GAMES_LEN 56
+#define GAMES_LEN Games_GetLength()
 //Number of games displayed on the screen at once
 #define GAMES_ON_SCREEN 5
 //String lengths
@@ -34,15 +34,19 @@
 #define PATH_PSP "org.ppsspp.PPSSPP"
 #define PATH_DS "net.kuribo64.melonDS"
 #define PATH_DREAMCAST "org.flycast.Flycast"
-#define PATH_SATURN "io.github.strikerx3.ymir"
+#define PATH_SATURN "io.github.strikerx3.ymir"\
+
+#define PROCESS_MELON "melonDS"
+#define PROCESS_DOLPHIN "dolphin-emu"
+#define PROCESS_YMIR "ymir-sdl3"
+#define PROCESS_FLYCAST "Flycast-rend"
+#define PROCESS_PPSSPP "PPSSPPSDL"
 
 #define TITLE_MAX_LEN 128
 #define GBA_RAW_LEN 13
 #define GBA_OFFSET 0x0A0
 #define N64_RAW_LEN 21
 #define N64_OFFSET 0x020
-#define SNES_RAW_LEN 22
-#define SNES_OFFSET 0x7FC0
 #define GENESIS_RAW_LEN 49
 #define GENESIS_OFFSET 0x150
 #define GB_RAW_LEN 17
@@ -53,14 +57,6 @@
 #define PSP_OFFSET 0x8028
 #define GC_RAW_LEN 65
 #define GC_OFFSET 0x20
-#define SMS_RAW_LEN
-#define SMS_OFFSET 0x7FF0
-#define SEGACD_RAW_LEN 49
-#define SEGACD_OFFSET 0x0150
-#define SATURN_RAW_LEN 113
-#define SATURN_OFFSET 0x0060
-#define DREAMCAST_RAW_LEN 129 
-#define DREAMCAST_OFFSET 0x0080
 #define LYNX_RAW_LEN 33
 #define LYNX_OFFSET 0x000A
 #define NGPC_RAW_LEN 13
@@ -69,8 +65,18 @@
 #define TG16_OFFSET 0x7FF0
 #define TGCD_RAW_LEN 33
 #define TGCD_OFFSET 0x8028
-#define SMS_MAGIC_LEN 9
-#define DOOM_MAGIC_LEN 5
+#define SNES_COPIER_HEADER_SIZE 512
+#define SNES_LOROM_OFFSET 0x7FC0
+#define SNES_HIROM_OFFSET 0xFFC0
+#define SNES_RAW_LEN 21
+
+#define ISO_PVD_OFFSET 0x8000
+#define ISO_SECTOR_SIZE 2048
+#define SFO_MAGIC 0x46535000
+
+
+#define MAX_M3U_SKIP_ENTRIES 64
+#define M3U_LINE_LEN 512
 
 
 
@@ -84,22 +90,30 @@ typedef enum {
 //Game struct
 typedef struct {
     char title[TITLE_MAX_LEN];
-    char *coverPath;
+    char coverPath[256];
     Texture2D cover;
-    char *console;
+    char console[256];
     float x;
     float y;
     float w;
     float h;
     char *category;
-    char *romPath;
+    char romPath[256];
     char *corePath;
     bool libRetro;
     save_t save;
-    char *serial;
+    char serial[256];
     char *processName;
 } game_t;
 
+
+
+int Games_GetLength();
+
+void Games_SnapshotSaveFolder(const char* savestatesDir);
+void Games_DetectNewYmirSaveFolder(game_t* game, const char* savestatesDir);
+void Games_DetectNewPS1SaveFile(game_t* game, const char* savesDir);
+void Games_DetectNewFlycastSaveFile(game_t* game, const char* saveDir);
 
 //Get a game from the main array
 game_t* Games_Get(int i);

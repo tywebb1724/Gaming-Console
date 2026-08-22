@@ -1,0 +1,6 @@
+assets/roms/Sega Saturn/Fighting Vipers.chd|B1334F8949ED55769416D83D7A19F1C5
+assets/roms/Sega Saturn/Daytona USA.chd|C8355C918C5A97B9E4AB9322DDAFDB1E
+assets/roms/Nintendo DS/Pokemon HeartGold.nds|C8355C918C5A97B9E4AB9322DDAFDB1E
+assets/roms/Nintendo DS/Chrono Trigger.nds|C8355C918C5A97B9E4AB9322DDAFDB1E
+assets/roms/Nintendo DS/Mario Kart DS.nds|C8355C918C5A97B9E4AB9322DDAFDB1E
+assets/roms/Nintendo DS/Pokemon SoulSilver.nds|C8355C918C5A97B9E4AB9322DDAFDB1E

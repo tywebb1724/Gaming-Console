@@ -5,6 +5,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdatomic.h>
+#include <stdint.h>
+#include <ctype.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 
 //Arrays to hold all games, the games displayed, and the new games displayed
@@ -12,7 +17,7 @@ static game_t gamesLibrary[MAX_GAMES];
 static game_t* gamesDisplayed[GAMES_ON_SCREEN + DISPLAY_CENTER_OFFSET];
 static game_t* newGamesDisplayed[GAMES_ON_SCREEN];
 //Array to hold loaded images during boot up
-static Image LoadedImages[GAMES_LEN];
+static Image LoadedImages[MAX_GAMES];
 //Indexes and range to keep track of current and new games
 static int games_index;
 static int start_index;
@@ -21,11 +26,17 @@ static int games_range;
 static int start_index_new;
 
 //Variables to keep track of which images and textures are loaded
-static atomic_bool isLoaded[GAMES_LEN] = { false };
+static atomic_bool isLoaded[MAX_GAMES] = { false };
 //Indexes for initializing the games
-static int games_init_index = 0;
+static int gamesLen = 0;
 static int temp_start_section = 0;
+static char m3uSkipList[MAX_M3U_SKIP_ENTRIES][256];
+static int m3uSkipCount = 0;
 
+
+int Games_GetLength() {
+    return gamesLen;
+}
 
 //Get a game from the main array
 game_t* Games_Get(int i) {
@@ -143,6 +154,7 @@ static bool Games_BuildHomePath(char* outPath, size_t outSize, const char* relat
 
 //Clear game data
 bool Games_ClearData(const game_t* game) {
+    printf("%s\n", game->serial);
     //If saves through battery method
     if (game->save == BATTERY) {
         char save_path[SAVE_PATH_LEN];
@@ -196,54 +208,87 @@ bool Games_ClearData(const game_t* game) {
             }
         }
         else if (strcmp(game->console, "Sony PlayStation Portable") == 0) {
-            char command[COMMAND_STR_LEN] = "";
-            char rel_path[SAVE_PATH_LEN];
-            snprintf(rel_path, sizeof(rel_path), ".var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SAVEDATA/%s", game->serial);
-            char save_path[SAVE_PATH_LEN];
-            //Get home path
-            if (Games_BuildHomePath(save_path, sizeof(save_path), rel_path)) {
-                snprintf(command, sizeof(command), "rm -rf \"%s\"", save_path);
-                int result = system(command);
-                //Check if command worked
-                if (result == 0) {
-                    printf("Cleared PSP save data for %s\n", game->serial);
-                    return true;
-                } 
-                else {
-                    printf("Failed to clear PSP save (or none existed)\n");
-                    return false;
-                }
-            }
-            else {
-                printf("Could not resolve save path (HOME not set)\n");
-                return false;
+    char parent_rel_path[SAVE_PATH_LEN];
+    snprintf(parent_rel_path, sizeof(parent_rel_path), ".var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SAVEDATA");
+
+    char parent_abs_path[SAVE_PATH_LEN];
+    if (!Games_BuildHomePath(parent_abs_path, sizeof(parent_abs_path), parent_rel_path)) {
+        printf("Could not resolve PSP save path (HOME not set)\n");
+        return false;
+    }
+
+    DIR* dir = opendir(parent_abs_path);
+    if (!dir) {
+        printf("Failed to open PSP save directory (or none exists): %s\n", parent_abs_path);
+        return false;
+    }
+
+    bool cleared_any = false;
+    size_t serial_len = strlen(game->serial);
+    struct dirent* entry;
+
+    while ((entry = readdir(dir)) != NULL) {
+        // Skip '.' and '..'
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+
+        // Check if directory name starts with the serial prefix
+        if (strncmp(entry->d_name, game->serial, serial_len) == 0) {
+            char target_path[SAVE_PATH_LEN];
+            snprintf(target_path, sizeof(target_path), "%s/%s", parent_abs_path, entry->d_name);
+
+            char command[COMMAND_STR_LEN];
+            snprintf(command, sizeof(command), "rm -rf \"%s\"", target_path);
+
+            if (system(command) == 0) {
+                printf("Cleared PSP save data directory: %s\n", entry->d_name);
+                cleared_any = true;
+            } else {
+                printf("Failed to delete PSP save folder: %s\n", entry->d_name);
             }
         }
+    }
+    closedir(dir);
+
+    if (!cleared_any) {
+        printf("No PSP save folders found matching prefix: %s\n", game->serial);
+    }
+    return cleared_any;
+}
         else if (strcmp(game->console, "Sega Saturn") == 0) {
-            char command[COMMAND_STR_LEN] = "";
-            char rel_path[SAVE_PATH_LEN];
-            snprintf(rel_path, sizeof(rel_path), ".var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates/%s", game->serial);
-            char save_path[SAVE_PATH_LEN];
-            //Get home path
-            if (Games_BuildHomePath(save_path, sizeof(save_path), rel_path)) {
-                snprintf(command, sizeof(command), "rm -rf \"%s\"", save_path);
-                int result = system(command);
-                //Check if command worked
-                if (result == 0) {
-                    printf("Cleared Saturn save data for %s\n", game->serial);
-                    return true;
-                } 
-                else {
-                    printf("Failed to clear Saturn save (or none existed)\n");
-                    return false;
-                }
-            }
-            else {
-                printf("Could not resolve save path (HOME not set)\n");
-                return false;
-            }
+    if (game->serial == NULL || game->serial[0] == '\0') {
+        printf("No known save folder for this game yet — nothing to clear\n");
+        return false;
+    }
+
+    char rel_path[SAVE_PATH_LEN];
+    snprintf(rel_path, sizeof(rel_path),
+             ".var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates/%s", game->serial);
+
+    char save_path[SAVE_PATH_LEN];
+    if (Games_BuildHomePath(save_path, sizeof(save_path), rel_path)) {
+        //Check whether there's actually anything to delete first
+        struct stat st;
+        if (stat(save_path, &st) != 0) {
+            printf("Save data for %s was already cleared\n", game->serial);
+            return false;
         }
-        else if (strcmp(game->console, "Nintendo DS") == 0) {
+
+        char command[COMMAND_STR_LEN];
+        snprintf(command, sizeof(command), "rm -rf \"%s\"", save_path);
+        int result = system(command);
+        if (result == 0) {
+            printf("Cleared Saturn save data for %s\n", game->serial);
+            return true;
+        } else {
+            printf("Failed to clear Saturn save\n");
+            return false;
+        }
+    } else {
+        printf("Could not resolve save path (HOME not set)\n");
+        return false;
+    }
+}
+else if (strcmp(game->console, "Nintendo DS") == 0) {
             char save_path[SAVE_PATH_LEN];
             char path[TEMP_PATH_LEN];
             snprintf(path, sizeof(path), "%s", game->romPath);
@@ -266,26 +311,49 @@ bool Games_ClearData(const game_t* game) {
             }
         }
         else if (strcmp(game->console, "Nintendo GameCube") == 0) {
-            char rel_path[SAVE_PATH_LEN];
-            snprintf(rel_path, sizeof(rel_path), ".var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/USA/Card A/%s.gci", game->serial);
-            char save_path[SAVE_PATH_LEN];
-            //Get home path
-            if (Games_BuildHomePath(save_path, sizeof(save_path), rel_path)) {
-                //Remove save file
-                if (remove(save_path) == 0) {
-                    printf("Cleared save data: %s\n", save_path);
-                    return true;
-                } 
-                else {
-                    printf("No save data to clear (or delete failed): %s\n", save_path);
-                    return false;
-                }
-            }
-            else {
-                printf("Could not resolve save path (HOME not set)\n");
-                return false;
+    char parent_rel[SAVE_PATH_LEN];
+    snprintf(parent_rel, sizeof(parent_rel), 
+             ".var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/USA/Card A");
+
+    char parent_abs[SAVE_PATH_LEN];
+    if (!Games_BuildHomePath(parent_abs, sizeof(parent_abs), parent_rel)) {
+        printf("Could not resolve GameCube save path (HOME not set)\n");
+        return false;
+    }
+
+    DIR* dir = opendir(parent_abs);
+    if (!dir) {
+        printf("Failed to open GameCube Card A directory: %s\n", parent_abs);
+        return false;
+    }
+
+    bool cleared_any = false;
+    size_t serial_len = strlen(game->serial); // Matches "01-GZLE"
+    struct dirent* entry;
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+
+        // Matches files starting with game->serial (e.g. "01-GZLE")
+        if (strncmp(entry->d_name, game->serial, serial_len) == 0) {
+            char target_file[SAVE_PATH_LEN];
+            snprintf(target_file, sizeof(target_file), "%s/%s", parent_abs, entry->d_name);
+
+            if (remove(target_file) == 0) {
+                printf("Cleared GameCube save file: %s\n", entry->d_name);
+                cleared_any = true;
+            } else {
+                printf("Failed to remove GameCube save file: %s\n", entry->d_name);
             }
         }
+    }
+    closedir(dir);
+
+    if (!cleared_any) {
+        printf("No GameCube save files found matching prefix: %s\n", game->serial);
+    }
+    return cleared_any;
+}
         else if (strcmp(game->console, "Sega Dreamcast") == 0) {
             char rel_path[SAVE_PATH_LEN];
             snprintf(rel_path, sizeof(rel_path), ".var/app/org.flycast.Flycast/data/flycast/%s_vmu_save_A1.bin", game->serial);
@@ -311,23 +379,25 @@ bool Games_ClearData(const game_t* game) {
     return false;
 }
 
+
+/*
 //Initialize arcade games
 static void Games_Arcade_Init() {
-    temp_start_section = games_init_index;
+    temp_start_section = gamesLen;
     //Title, cover, and rom for each game
-    gamesLibrary[games_init_index].title = "Metal Slug 3";
-    gamesLibrary[games_init_index].coverPath = "assets/images/arcade/metal_slug_3.png";
-    gamesLibrary[games_init_index].romPath = "assets/roms/arcade/mslug3.zip";
-    games_init_index += 1;
-    gamesLibrary[games_init_index].title = "Pac-Man";
-    gamesLibrary[games_init_index].coverPath = "assets/images/arcade/pac-man.png";
-    gamesLibrary[games_init_index].romPath = "assets/roms/arcade/pacman.zip";
-    games_init_index += 1;
-    gamesLibrary[games_init_index].title = "Simpsons Arcade Game";
-    gamesLibrary[games_init_index].coverPath = "assets/images/arcade/simpsons_arcade.png";
-    gamesLibrary[games_init_index].romPath = "assets/roms/arcade/simpsons2p.zip";
-    games_init_index += 1;
-    gamesLibrary[games_init_index].title = "Street Fighter Alpha 3";
+    gamesLibrary[gamesLen].title = "Metal Slug 3";
+    gamesLibrary[gamesLen].coverPath = "assets/images/arcade/metal_slug_3.png";
+    gamesLibrary[gamesLen].romPath = "assets/roms/arcade/mslug3.zip";
+    gamesLen += 1;
+    gamesLibrary[gamesLen].title = "Pac-Man";
+    gamesLibrary[gamesLen].coverPath = "assets/images/arcade/pac-man.png";
+    gamesLibrary[gamesLen].romPath = "assets/roms/arcade/pacman.zip";
+    gamesLen += 1;
+    gamesLibrary[gamesLen].title = "Simpsons Arcade Game";
+    gamesLibrary[gamesLen].coverPath = "assets/images/arcade/simpsons_arcade.png";
+    gamesLibrary[gamesLen].romPath = "assets/roms/arcade/simpsons2p.zip";
+    gamesLen += 1;
+    gamesLibrary[gamesLen].title = "Street Fighter Alpha 3";
     gamesLibrary[games_init_index].coverPath = "assets/images/arcade/sf_alpha_3.png";
     gamesLibrary[games_init_index].romPath = "assets/roms/arcade/sfa3.zip";
     games_init_index += 1;
@@ -361,7 +431,7 @@ static void Games_Handheld_Init() {
     gamesLibrary[games_init_index].coverPath = "assets/images/handheld/gta_liberty.png";
     gamesLibrary[games_init_index].console = "Sony PlayStation Portable";
     gamesLibrary[games_init_index].romPath = "assets/roms/psp/GTALibertyCity.iso";
-    gamesLibrary[games_init_index].serial = "ULUS10041S0";
+    gamesLibrary[games_init_index].serial = "ULUS10041";
     games_init_index += 1;
     gamesLibrary[games_init_index].title = "Mario Kart DS";
     gamesLibrary[games_init_index].coverPath = "assets/images/handheld/mario_kart_ds.png";
@@ -767,453 +837,730 @@ static void Games_Playstation_Init() {
         gamesLibrary[i].corePath = PATH_PS1;
     }
 }
+*/
 
 
-static void Games_GetCovers(char* romPath, char* coverPath) {
+#include <dirent.h>
 
+#define SAVE_MAP_PATH_LEN 300
+#define MAX_SNAPSHOT_ENTRIES 256
+#define SNAPSHOT_NAME_LEN 256
+
+static char g_saveSnapshot[MAX_SNAPSHOT_ENTRIES][SNAPSHOT_NAME_LEN];
+static int g_saveSnapshotCount = 0;
+
+//Takes a snapshot of every entry currently in the given directory.
+//Call this immediately BEFORE launching an emulator.
+void Games_SnapshotSaveFolder(const char* dirPath) {
+    g_saveSnapshotCount = 0;
+
+    DIR* dir = opendir(dirPath);
+    if (!dir) {
+        printf("DEBUG: Snapshot failed to open dir: %s\n", dirPath);
+        return;
+    }
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL && g_saveSnapshotCount < MAX_SNAPSHOT_ENTRIES) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+        snprintf(g_saveSnapshot[g_saveSnapshotCount], SNAPSHOT_NAME_LEN, "%s", entry->d_name);
+        g_saveSnapshotCount++;
+    }
+     printf("DEBUG: Snapshot captured %d entries in %s\n", g_saveSnapshotCount, dirPath);
+    closedir(dir);
 }
 
-//Extract title from GBA ROM
-void Games_GetGBATitle(const char* romPath, game_t* game) {
-    FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
+
+//Detects a newly-created Flycast VMU save file after a session ends, and
+//records the game's serial (e.g. "MK-51035") extracted from the filename.
+void Games_DetectNewFlycastSaveFile(game_t* game, const char* saveDir) {
+    if (game->serial[0] != '\0') return;
+
+    DIR* dir = opendir(saveDir);
+    if (!dir) return;
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+
+        //Only interested in files matching the "_vmu_save_A1.bin" pattern
+        char* suffix = strstr(entry->d_name, "_vmu_save_A1.bin");
+        if (!suffix) continue;
+
+        bool wasPresentBefore = false;
+        for (int i = 0; i < g_saveSnapshotCount; i++) {
+            if (strcmp(g_saveSnapshot[i], entry->d_name) == 0) {
+                wasPresentBefore = true;
+                break;
+            }
+        }
+
+        if (!wasPresentBefore) {
+            //Extract just the serial portion (everything before the suffix)
+            size_t serialLen = (size_t)(suffix - entry->d_name);
+            if (serialLen >= sizeof(game->serial)) serialLen = sizeof(game->serial) - 1;
+            memcpy(game->serial, entry->d_name, serialLen);
+            game->serial[serialLen] = '\0';
+
+            printf("Recorded Flycast save ID '%s' for %s\n", game->serial, game->romPath);
+
+            FILE* f = fopen("assets/txt/flycast_save_map.txt", "a");
+            if (f) {
+                fprintf(f, "%s|%s\n", game->romPath, game->serial);
+                fclose(f);
+            }
+            break;
+        }
+    }
+    closedir(dir);
+}
+
+//Reads the persisted Flycast save-ID map and restores game->serial for any
+//matching entries in the already-populated games library.
+static void Games_LoadFlycastSaveMap(void) {
+    FILE* f = fopen("assets/txt/flycast_save_map.txt", "r");
     if (!f) return;
-    //GBA internal title is 12 bytes at offset 0xA0
-    if (fseek(f, GBA_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[GBA_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, GBA_RAW_LEN - 1, f) == GBA_RAW_LEN - 1) {
-            rawTitle[GBA_RAW_LEN - 1] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
-            fclose(f);
-            return;
+
+    char line[600];
+    while (fgets(line, sizeof(line), f)) {
+        char* sep = strchr(line, '|');
+        if (!sep) continue;
+        *sep = '\0';
+        char* romPath = line;
+        char* serial = sep + 1;
+
+        size_t len = strlen(serial);
+        if (len > 0 && serial[len - 1] == '\n') serial[len - 1] = '\0';
+
+        for (int i = 0; i < gamesLen; i++) {
+            if (strcmp(gamesLibrary[i].romPath, romPath) == 0) {
+                snprintf(gamesLibrary[i].serial, sizeof(gamesLibrary[i].serial), "%s", serial);
+                break;
+            }
         }
     }
     fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
 }
 
-//Extract title from SNES ROM
-void Games_GetSNESTitle(const char* romPath, game_t* game) {
-    FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
+
+//Detects a newly-created Ymir savestate folder after a session ends, and
+//records its name as the game's serial.
+void Games_DetectNewYmirSaveFolder(game_t* game, const char* savestatesDir) {
+    if (game->serial[0] != '\0') return;
+
+    DIR* dir = opendir(savestatesDir);
+    if (!dir) return;
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+
+        bool wasPresentBefore = false;
+        for (int i = 0; i < g_saveSnapshotCount; i++) {
+            if (strcmp(g_saveSnapshot[i], entry->d_name) == 0) {
+                wasPresentBefore = true;
+                break;
+            }
+        }
+
+        if (!wasPresentBefore) {
+            snprintf(game->serial, sizeof(game->serial), "%s", entry->d_name);
+            printf("Recorded Ymir save folder '%s' for %s\n", game->serial, game->romPath);
+
+            FILE* f = fopen("assets/txt/ymir_save_map.txt", "a");
+            if (f) {
+                fprintf(f, "%s|%s\n", game->romPath, game->serial);
+                fclose(f);
+            }
+            break;
+        }
+    }
+    closedir(dir);
+}
+
+//Reads the persisted Ymir save-folder map and restores game->serial for any
+//matching entries in the already-populated games library.
+static void Games_LoadYmirSaveMap(void) {
+    FILE* f = fopen("assets/txt/ymir_save_map.txt", "r");
     if (!f) return;
-    //SNES internal title is 21 bytes at offset 0x7FC0
-    if (fseek(f, SNES_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[SNES_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, SNES_RAW_LEN - 1, f) == SNES_RAW_LEN - 1) {
-            rawTitle[SNES_RAW_LEN - 1] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
-            fclose(f);
-            return;
+
+    char line[600];
+    while (fgets(line, sizeof(line), f)) {
+        char* sep = strchr(line, '|');
+        if (!sep) continue;
+        *sep = '\0';
+        char* romPath = line;
+        char* folderName = sep + 1;
+
+        size_t len = strlen(folderName);
+        if (len > 0 && folderName[len - 1] == '\n') folderName[len - 1] = '\0';
+
+        for (int i = 0; i < gamesLen; i++) {
+            if (strcmp(gamesLibrary[i].romPath, romPath) == 0) {
+                snprintf(gamesLibrary[i].serial, sizeof(gamesLibrary[i].serial), "%s", folderName);
+                break;
+            }
         }
     }
     fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
 }
 
-//Extract title from N64 ROM
-void Games_GetN64Title(const char* romPath, game_t* game) {
-    FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
+//Detects a newly-created PS1 .mcd save file after a session ends, and
+//records its base name (e.g. "SCUS-94306_1") as the game's serial.
+void Games_DetectNewPS1SaveFile(game_t* game, const char* savesDir) {
+     printf("DEBUG: Games_DetectNewPS1SaveFile called, serial='%s', dir='%s'\n", game->serial, savesDir);
+    if (game->serial[0] != '\0') return;
+
+    DIR* dir = opendir(savesDir);
+    if (!dir) return;
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+        if (!IsFileExtension(entry->d_name, ".mcd")) continue;
+
+        bool wasPresentBefore = false;
+        for (int i = 0; i < g_saveSnapshotCount; i++) {
+            if (strcmp(g_saveSnapshot[i], entry->d_name) == 0) {
+                wasPresentBefore = true;
+                break;
+            }
+        }
+
+        if (!wasPresentBefore) {
+            snprintf(game->serial, sizeof(game->serial), "%s", GetFileNameWithoutExt(entry->d_name));
+            printf("Recorded PS1 save ID '%s' for %s\n", game->serial, game->romPath);
+
+            FILE* f = fopen("assets/txt/ps1_save_map.txt", "a");
+            if (f) {
+                fprintf(f, "%s|%s\n", game->romPath, game->serial);
+                fclose(f);
+            }
+            break;
+        }
+    }
+    closedir(dir);
+}
+
+//Reads the persisted PS1 save-ID map and restores game->serial for any
+//matching entries in the already-populated games library.
+static void Games_LoadPS1SaveMap(void) {
+    FILE* f = fopen("assets/txt/ps1_save_map.txt", "r");
     if (!f) return;
-    //N64 internal title is 20 bytes at offset 0x20
-    if (fseek(f, N64_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[N64_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, N64_RAW_LEN - 1, f) == N64_RAW_LEN - 1) {
-            rawTitle[N64_RAW_LEN] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
-            fclose(f);
-            return;
+
+    char line[600];
+    while (fgets(line, sizeof(line), f)) {
+        char* sep = strchr(line, '|');
+        if (!sep) continue;
+        *sep = '\0';
+        char* romPath = line;
+        char* serial = sep + 1;
+
+        size_t len = strlen(serial);
+        if (len > 0 && serial[len - 1] == '\n') serial[len - 1] = '\0';
+
+        for (int i = 0; i < gamesLen; i++) {
+            if (strcmp(gamesLibrary[i].romPath, romPath) == 0) {
+                snprintf(gamesLibrary[i].serial, sizeof(gamesLibrary[i].serial), "%s", serial);
+                break;
+            }
         }
     }
     fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
 }
 
-//Extract title from Genesis ROM
-void Games_GetGenesisTitle(const char* romPath, game_t* game) {
-    FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
-    if (!f) return;
-    //Genesis internal title is 48 bytes at offset 0x150
-    if (fseek(f, GENESIS_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[GENESIS_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, GENESIS_RAW_LEN - 1, f) == GENESIS_RAW_LEN - 1) {
-            rawTitle[GENESIS_RAW_LEN - 1] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
+
+
+// GameCube Save ID Extraction (Handles both Raw ISOs and CISOs)
+// Output Format: 01-GALE
+bool GetGameCubeSaveID(const char* filePath, char* outSaveID, size_t maxLen) {
+    FILE* f = fopen(filePath, "rb");
+    if (!f) return false;
+
+    // 1. Check for CISO Header Signature
+    char magic[4] = {0};
+    long headerOffset = 0x00;
+
+    if (fread(magic, 1, 4, f) == 4) {
+        if (memcmp(magic, "CISO", 4) == 0) {
+            // CISO format shifts the GameCube ISO header to 0x8000
+            headerOffset = 0x8000;
+        }
+    }
+
+    // 2. Seek to the actual GameCube header location
+    if (fseek(f, headerOffset, SEEK_SET) != 0) {
+        fclose(f);
+        return false;
+    }
+
+    char gameCode[5] = {0};
+    char makerCode[3] = {0};
+
+    // Read 4-byte Game Code (e.g. GALE)
+    if (fread(gameCode, 1, 4, f) == 4) {
+        // Read 2-byte Maker Code at +0x04 (e.g. 01)
+        if (fread(makerCode, 1, 2, f) == 2) {
+            snprintf(outSaveID, maxLen, "%s-%s", makerCode, gameCode); // Outputs "01-GALE"
             fclose(f);
-            return;
+            return true;
+        }
+    }
+
+    fclose(f);
+    return false;
+}
+
+
+
+
+// 5. PlayStation Portable (Disc ID @ Offset 0x8373)
+// Example Output: ULUS10041
+// ============================================================================
+bool GetPSPSaveID(const char* filePath, char* outSaveID, size_t maxLen) {
+    FILE* f = fopen(filePath, "rb");
+    if (!f) return false;
+
+    if (fseek(f, 0x8373, SEEK_SET) == 0) {
+        char raw[11] = {0};
+        if (fread(raw, 1, 10, f) == 10) {
+            // Strip hyphens if present to form clean standard directory ID
+            char clean[11] = {0};
+            int cIdx = 0;
+            for (int i = 0; i < 10; i++) {
+                if (isalnum((unsigned char)raw[i])) {
+                    clean[cIdx++] = raw[i];
+                }
+            }
+            if (cIdx >= 9) {
+                snprintf(outSaveID, maxLen, "%s", clean);
+                fclose(f);
+                return true;
+            }
         }
     }
     fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+    return false;
 }
 
-//Extract title from Game Boy / Game Boy Color ROM
-void Games_GetGBTitle(const char* romPath, game_t* game) {
-    FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
-    if (!f) return;
-    //Game Boy internal title is 16 bytes at offset 0x0134
-    if (fseek(f, GB_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[GB_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, GB_RAW_LEN - 1, f) == GB_RAW_LEN - 1) {
-            rawTitle[GB_RAW_LEN - 1] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
-            fclose(f);
-            return;
+
+static void Games_SetTypes(save_t saveType, bool libretro, char* category, char* path, char* process) {
+    for (int i = temp_start_section; i < gamesLen; i++) {
+        gamesLibrary[i].save = saveType;
+        gamesLibrary[i].libRetro = libretro;
+        gamesLibrary[i].category = category;
+        gamesLibrary[i].corePath = path;
+        if (!libretro) {
+            gamesLibrary[i].processName = process;
         }
     }
-    fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
 }
 
-//Extract title from Nintendo DS ROM
-void Games_GetDSTitle(const char* romPath, game_t* game) {
-    FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
-    if (!f) return;
-    //NDS internal title is 12 bytes at offset 0x0000
-    if (fseek(f, DS_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[DS_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, DS_RAW_LEN - 1, f) == DS_RAW_LEN - 1) {
-            rawTitle[DS_RAW_LEN - 1] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
-            fclose(f);
-            return;
+//Reads a title string at a given offset, trims trailing whitespace.
+//Returns true if a plausible title was read, false otherwise.
+static bool Games_TryReadTitleAt(FILE* f, long offset, size_t rawLen, char* outTitle, size_t outSize) {
+    if (fseek(f, offset, SEEK_SET) != 0) return false;
+
+    char* rawTitle = malloc(rawLen);
+    if (!rawTitle) return false;
+
+    bool success = false;
+    if (fread(rawTitle, 1, rawLen - 1, f) == rawLen - 1) {
+        
+
+        rawTitle[rawLen - 1] = '\0';
+
+        //Trim trailing whitespace
+        size_t len = strlen(rawTitle);
+        while (len > 0 && isspace((unsigned char)rawTitle[len - 1])) {
+            rawTitle[--len] = '\0';
+        }
+
+        //Only accept it if something non-empty remains
+        if (len > 0) {
+            snprintf(outTitle, outSize, "%s", rawTitle);
+            success = true;
         }
     }
-    fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+    
+
+    free(rawTitle);
+    return success;
 }
 
-//Extract title from PlayStation Portable ROM
-void Games_GetPSPTitle(const char* romPath, game_t* game) {
+//For consoles with one known, reliable header offset
+static void Games_ExtractTitleAtOffset(const char* romPath, game_t* game, long offset, size_t rawLen) {
     FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
     if (!f) return;
-    //PSP ISO internal volume header title is 128 bytes at offset 0x8028
-    if (fseek(f, PSP_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[PSP_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, PSP_RAW_LEN - 1, f) == PSP_RAW_LEN - 1) {
-            rawTitle[PSP_RAW_LEN - 1] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
-            fclose(f);
-            return;
-        }
-    }
+    bool success = Games_TryReadTitleAt(f, offset, rawLen, game->title, TITLE_MAX_LEN);
     fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+
+    if (!success) {
+        snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+    }
 }
 
-//Extract title from PS1 ROM (Filename fallback)
-void Games_GetPS1Title(const char* romPath, game_t* game) {
-    //PS1 games lack a standardized internal ASCII title string.
-    //Use clean filename as default title.
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
-}
+#define CISO_HEADER_SIZE 0x8000  // magic(4) + block_size(4) + bitmap(0x7FF8, i.e. up to 32752 blocks)
 
-//Extract title from GameCube / Wii ISO
 void Games_GetGCTitle(const char* romPath, game_t* game) {
     FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
     if (!f) return;
-    //GameCube game title is stored plain text at offset 0x20 (up to 64/96 bytes)
-    if (fseek(f, GC_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[GC_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, GC_RAW_LEN - 1, f) == GC_RAW_LEN - 1) {
-            rawTitle[GC_RAW_LEN - 1] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
-            fclose(f);
-            return;
+
+    unsigned char magic[4];
+    bool success = false;
+
+    if (fread(magic, 1, 4, f) == 4 && memcmp(magic, "CISO", 4) == 0) {
+        //It's a CISO file — block 0 (containing disc offset 0x20) sits right after
+        //the fixed-size header+bitmap block, as long as block 0 is marked present.
+        unsigned char bitmapByte;
+        fseek(f, 8, SEEK_SET);   //bitmap starts at byte 8
+        if (fread(&bitmapByte, 1, 1, f) == 1 && (bitmapByte & 0x01)) {
+            success = Games_TryReadTitleAt(f, CISO_HEADER_SIZE + GC_OFFSET, GC_RAW_LEN, game->title, TITLE_MAX_LEN);
         }
     }
+    else {
+        //Plain, uncompressed ISO — read directly at the normal offset
+        success = Games_TryReadTitleAt(f, GC_OFFSET, GC_RAW_LEN, game->title, TITLE_MAX_LEN);
+    }
+
     fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+
+    if (!success) {
+        snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+    }
 }
 
-//Extract title from NES ROM
-void Games_GetNESTitle(const char* romPath, game_t* game) {
-    //NES internal title is typically handled via filename, but iNES header starts at 0x0
-    //Skipping 16-byte iNES header, PRG-ROM data starts at offset 0x10. NES headers lack reliable text titles, fallback to filename.
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
-}
-
-//Extract title from Sega Master System / Game Gear ROM
-void Games_GetSMSTitle(const char* romPath, game_t* game) {
+void Games_GetSNESTitle(const char* romPath, game_t* game) {
     FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
     if (!f) return;
-    //SMS/GG header sits at 0x7FFF (32KB), 0x3FFF (16KB), or 0x1FFF (8KB)
-    //Check 0x7FF0 for the 'TMR SEGA' magic string first
-    if (fseek(f, SMS_OFFSET, SEEK_SET) == 0) {
-        char magic[SMS_MAGIC_LEN] = {0};
-        if (fread(magic, 1, SMS_MAGIC_LEN - 1, f) == SMS_MAGIC_LEN - 1 && strncmp(magic, "TMR SEGA", SMS_MAGIC_LEN - 1) == 0) {
-            //SMS headers do not store an ASCII title string, only serial/checksum
-            //Falling back to filename
-            fclose(f);
-            snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
-            return;
-        }
+
+    //Determine file size to detect a 512-byte copier header
+    if (fseek(f, 0, SEEK_END) != 0) {
+        fclose(f);
+        snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+        return;
     }
+    long fileSize = ftell(f);
+    long headerOffset = ((fileSize % 1024) == SNES_COPIER_HEADER_SIZE) ? SNES_COPIER_HEADER_SIZE : 0;
+
+    //Try LoROM location first
+    bool success = Games_TryReadTitleAt(f, headerOffset + SNES_LOROM_OFFSET, SNES_RAW_LEN, game->title, TITLE_MAX_LEN);
+
+    //If that didn't work, try HiROM location
+    if (!success) {
+        success = Games_TryReadTitleAt(f, headerOffset + SNES_HIROM_OFFSET, SNES_RAW_LEN, game->title, TITLE_MAX_LEN);
+    }
+
     fclose(f);
-    //Fallback to filename if header check fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+
+    if (!success) {
+        snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
+    }
 }
 
-//Extract title from Sega CD ROM
-void Games_GetSegaCDTitle(const char* romPath, game_t* game) {
+//Checks whether a given base filename is already covered by a processed M3U playlist
+static bool Games_IsCoveredByM3U(const char* filename) {
+    for (int i = 0; i < m3uSkipCount; i++) {
+        if (strcmp(m3uSkipList[i], filename) == 0) return true;
+    }
+    return false;
+}
+
+static void Games_ScanM3UPlaylists(const char* dirPath, const char* console) {
+    temp_start_section = gamesLen;
+    FilePathList files = LoadDirectoryFiles(dirPath);
+    for (int i = 0; i < files.count; i++) {
+        if (!IsFileExtension(files.paths[i], ".m3u")) continue;
+
+        FILE* f = fopen(files.paths[i], "r");
+        if (!f) continue;
+
+        char line[M3U_LINE_LEN];
+        bool addedEntry = false;
+        
+        while (fgets(line, sizeof(line), f)) {
+            size_t len = strlen(line);
+            while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r')) {
+                line[--len] = '\0';
+            }
+            if (len == 0 || line[0] == '#') continue;   //skip blank lines/comments
+
+            //Record just the base filename so it matches later, regardless of path style
+            const char* base = GetFileName(line);
+            if (m3uSkipCount < MAX_M3U_SKIP_ENTRIES) {
+                snprintf(m3uSkipList[m3uSkipCount], sizeof(m3uSkipList[m3uSkipCount]), "%s", base);
+                m3uSkipCount++;
+            }
+
+            //Launch the M3U itself — the core handles which disc loads first/swapping
+            if (!addedEntry) {
+                snprintf(gamesLibrary[gamesLen].romPath, sizeof(gamesLibrary[gamesLen].romPath),
+                         "%s", files.paths[i]);
+                snprintf(gamesLibrary[gamesLen].console, sizeof(gamesLibrary[gamesLen].console),
+                         "%s", console);
+                snprintf(gamesLibrary[gamesLen].title, TITLE_MAX_LEN, "%s",
+                         GetFileNameWithoutExt(files.paths[i]));
+
+                char coverPath[256];
+                snprintf(coverPath, sizeof(coverPath), "assets/images/%s/%s.png", console, GetFileNameWithoutExt(files.paths[i]));
+                if (FileExists(coverPath)) {
+                    snprintf(gamesLibrary[gamesLen].coverPath, sizeof(gamesLibrary[gamesLen].coverPath), "%s", coverPath);
+                }
+                gamesLen += 1;
+                addedEntry = true;
+            }
+        }
+        fclose(f);
+    }
+    UnloadDirectoryFiles(files);
+    Games_SetTypes(EXTERNAL, true, "PlayStation", PATH_PS1, NULL);
+}
+
+//Reads a 32-bit little-endian value from a buffer at a given offset
+static uint32_t ReadLE32(const unsigned char* buf, size_t offset) {
+    return (uint32_t)buf[offset] |
+           ((uint32_t)buf[offset + 1] << 8) |
+           ((uint32_t)buf[offset + 2] << 16) |
+           ((uint32_t)buf[offset + 3] << 24);
+}
+
+//Reads a 16-bit little-endian value from a buffer at a given offset
+static uint16_t ReadLE16(const unsigned char* buf, size_t offset) {
+    return (uint16_t)buf[offset] | ((uint16_t)buf[offset + 1] << 8);
+}
+
+//Parses a PARAM.SFO buffer already loaded into memory, extracting the TITLE value
+static bool ParseSFOTitle(const unsigned char* sfoData, size_t sfoSize, char* outTitle, size_t outSize) {
+    if (sfoSize < 20) return false;
+
+    //SFO header: magic(4) + version(4) + key_table_offset(4) + data_table_offset(4) + entry_count(4)
+    uint32_t magic = ReadLE32(sfoData, 0);
+    if (magic != 0x00465350) return false;  // "\0PSF" as stored little-endian
+
+    uint32_t keyTableOffset = ReadLE32(sfoData, 8);
+    uint32_t dataTableOffset = ReadLE32(sfoData, 12);
+    uint32_t entryCount = ReadLE32(sfoData, 16);
+
+    //Each index table entry is 16 bytes: key_offset(2) + data_fmt(2) + data_len(4) + data_max_len(4) + data_offset(4)
+    for (uint32_t i = 0; i < entryCount; i++) {
+        size_t entryOffset = 20 + (i * 16);
+        if (entryOffset + 16 > sfoSize) break;
+
+        uint16_t keyOffset = ReadLE16(sfoData, entryOffset);
+        uint32_t dataLen = ReadLE32(sfoData, entryOffset + 4);
+        uint32_t dataOffset = ReadLE32(sfoData, entryOffset + 12);
+
+        size_t keyPos = keyTableOffset + keyOffset;
+        if (keyPos >= sfoSize) continue;
+
+        //Check if this key is "TITLE" (not "GAME_TITLE" or others we don't want)
+        if (strcmp((const char*)(sfoData + keyPos), "TITLE") == 0) {
+            size_t dataPos = dataTableOffset + dataOffset;
+            if (dataPos + dataLen > sfoSize) return false;
+
+            size_t copyLen = (dataLen < outSize) ? dataLen : outSize - 1;
+            memcpy(outTitle, sfoData + dataPos, copyLen);
+            outTitle[copyLen] = '\0';
+
+            //Trim trailing whitespace/nulls
+            size_t len = strlen(outTitle);
+            while (len > 0 && isspace((unsigned char)outTitle[len - 1])) {
+                outTitle[--len] = '\0';
+            }
+            return (len > 0);
+        }
+    }
+    return false;
+}
+
+//Extracts the title from a PSP ISO by locating and parsing PSP_GAME/PARAM.SFO
+static void Games_GetPSPTitle(const char* romPath, game_t* game) {
     FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
     if (!f) return;
-    //Sega CD internal title is 48 bytes at offset 0x0150 (same header layout as Genesis)
-    if (fseek(f, SEGACD_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[SEGACD_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, SEGACD_RAW_LEN - 1, f) == SEGACD_RAW_LEN - 1) {
-            rawTitle[SEGACD_RAW_LEN - 1] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
-            fclose(f);
-            return;
+
+    unsigned char pvd[ISO_SECTOR_SIZE];
+    bool foundSFO = false;
+
+    //Read the Primary Volume Descriptor to find the root directory
+    if (fseek(f, ISO_PVD_OFFSET, SEEK_SET) == 0 &&
+        fread(pvd, 1, ISO_SECTOR_SIZE, f) == ISO_SECTOR_SIZE) {
+
+        //Root directory record starts at byte 156 within the PVD, is 34 bytes
+        uint32_t rootDirLBA = ReadLE32(pvd, 156 + 2);
+        uint32_t rootDirSize = ReadLE32(pvd, 156 + 10);
+
+        //Read the root directory's sector(s) to find "PSP_GAME"
+        unsigned char* rootDir = malloc(rootDirSize);
+        if (rootDir && fseek(f, (long)rootDirLBA * ISO_SECTOR_SIZE, SEEK_SET) == 0 &&
+            fread(rootDir, 1, rootDirSize, f) == rootDirSize) {
+
+            uint32_t pspGameLBA = 0;
+            size_t pos = 0;
+            while (pos < rootDirSize) {
+                unsigned char recordLen = rootDir[pos];
+                if (recordLen == 0) { pos++; continue; }
+                unsigned char nameLen = rootDir[pos + 32];
+                char name[64] = {0};
+                size_t copyLen = (nameLen < 63) ? nameLen : 63;
+                if (rootDir + pos <= rootDirSize) memcpy(name, rootDir + pos + 33, copyLen);
+
+                if (strcmp(name, "PSP_GAME") == 0) {
+                    pspGameLBA = ReadLE32(rootDir, pos + 2);
+                    break;
+                }
+                pos += recordLen;
+            }
+
+            //If found, read PSP_GAME's directory to find PARAM.SFO
+            if (pspGameLBA != 0) {
+                unsigned char dirBuf[ISO_SECTOR_SIZE];
+                if (fseek(f, (long)pspGameLBA * ISO_SECTOR_SIZE, SEEK_SET) == 0 &&
+                    fread(dirBuf, 1, ISO_SECTOR_SIZE, f) == ISO_SECTOR_SIZE) {
+
+                    uint32_t sfoLBA = 0, sfoSize = 0;
+                    size_t dpos = 0;
+                    while (dpos < ISO_SECTOR_SIZE) {
+                        unsigned char recordLen = dirBuf[dpos];
+                        if (recordLen == 0) { dpos++; continue; }
+                        unsigned char nameLen = dirBuf[dpos + 32];
+                        char name[64] = {0};
+                        size_t copyLen = (nameLen < 63) ? nameLen : 63;
+                        memcpy(name, dirBuf + dpos + 33, copyLen);
+
+                        //ISO9660 often appends ";1" (version number) to filenames
+                        char* semicolon = strchr(name, ';');
+                        if (semicolon) *semicolon = '\0';
+
+                        if (strcmp(name, "PARAM.SFO") == 0) {
+                            sfoLBA = ReadLE32(dirBuf, dpos + 2);
+                            sfoSize = ReadLE32(dirBuf, dpos + 10);
+                            break;
+                        }
+                        dpos += recordLen;
+                    }
+
+                    //Read and parse PARAM.SFO itself
+                    if (sfoLBA != 0 && sfoSize > 0 && sfoSize < 65536) {
+                        unsigned char* sfoData = malloc(sfoSize);
+                        if (sfoData && fseek(f, (long)sfoLBA * ISO_SECTOR_SIZE, SEEK_SET) == 0 &&
+                            fread(sfoData, 1, sfoSize, f) == sfoSize) {
+                            foundSFO = ParseSFOTitle(sfoData, sfoSize, game->title, TITLE_MAX_LEN);
+                        }
+                        free(sfoData);
+                    }
+                }
+            }
         }
+        free(rootDir);
     }
-    fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
-}
 
-//Extract title from Sega Saturn ROM
-void Games_GetSaturnTitle(const char* romPath, game_t* game) {
-    FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
-    if (!f) return;
-    //Sega Saturn internal title is 112 bytes at offset 0x0060 (IP.BIN area)
-    if (fseek(f, SATURN_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[SATURN_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, SATURN_RAW_LEN - 1, f) == SATURN_RAW_LEN - 1) {
-            rawTitle[SATURN_RAW_LEN - 1] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
-            fclose(f);
-            return;
-        }
+    fclose(f);
+
+    if (!foundSFO) {
+        snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
     }
-    fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
 }
 
-//Extract title from Sega Dreamcast ROM
-void Games_GetDreamcastTitle(const char* romPath, game_t* game) {
-    FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
-    if (!f) return;
-    //Dreamcast internal title is 128 bytes at offset 0x0080 in IP.BIN
-    if (fseek(f, DREAMCAST_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[DREAMCAST_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, DREAMCAST_RAW_LEN - 1, f) == DREAMCAST_RAW_LEN - 1) {
-            rawTitle[DREAMCAST_RAW_LEN - 1] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
-            fclose(f);
-            return;
-        }
-    }
-    fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
-}
-
-//Extract title from Atari Lynx ROM
-void Games_GetLynxTitle(const char* romPath, game_t* game) {
-    FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
-    if (!f) return;
-    //Atari Lynx header uses 64-byte LNX structure; ASCII title is 32 bytes at offset 0x000A
-    if (fseek(f, LYNX_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[LYNX_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, LYNX_RAW_LEN - 1, f) == LYNX_RAW_LEN - 1) {
-            rawTitle[LYNX_RAW_LEN - 1] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
-            fclose(f);
-            return;
-        }
-    }
-    fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
-}
-
-//Extract title from Neo Geo Pocket / Pocket Color ROM
-void Games_GetNGPCTitle(const char* romPath, game_t* game) {
-    FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
-    if (!f) return;
-    //NGPC internal title is 12 bytes at offset 0x0024
-    if (fseek(f, NGPC_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[NGPC_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, NGPC_RAW_LEN - 1, f) == NGPC_RAW_LEN - 1) {
-            rawTitle[NGPC_RAW_LEN- 1] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
-            fclose(f);
-            return;
-        }
-    }
-    fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
-}
-
-//Extract title from DOOM WAD File
-void Games_GetDoomTitle(const char* romPath, game_t* game) {
-    FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
-    if (!f) return;
-    //Check for IWAD or PWAD magic header bytes (4 bytes)
-    char magic[DOOM_MAGIC_LEN] = {0};
-    if (fread(magic, 1, DOOM_MAGIC_LEN - 1, f) == DOOM_MAGIC_LEN - 1) {
-        if (strcmp(magic, "IWAD") == 0 || strcmp(magic, "PWAD") == 0) {
-            //WAD files store lumps without a single title string header
-            //Fallback directly to WAD filename
-            fclose(f);
-            snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
-            return;
-        }
-    }
-    fclose(f);
-    //Fallback to filename if magic check fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
-}
-
-//Extract title from TurboGrafx-16 / PC Engine ROM
-void Games_GetTG16Title(const char* romPath, game_t* game) {
-    FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
-    if (!f) return;
-    //TG16 HuCard header sits at offset 0x1FFF (8K), 0x3FFF (16K), or 0x7FFF (32K)
-    //Checks 0x7FFF for the 16-byte title area
-    if (fseek(f, TG16_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[TG16_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, TG16_RAW_LEN - 1, f) == TG16_RAW_LEN - 1) {
-            rawTitle[TG16_RAW_LEN - 1] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
-            fclose(f);
-            return;
-        }
-    }
-    fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
-}
-
-//Extract title from TurboGrafx-CD / PCE-CD ROM
-void Games_GetTGCDTitle(const char* romPath, game_t* game) {
-    FILE* f = fopen(romPath, "rb");
-    //Check if error opening file
-    if (!f) return;
-    //TGCD sector 0 / ISO volume label stores descriptor metadata at offset 0x8028
-    if (fseek(f, TGCD_OFFSET, SEEK_SET) == 0) {
-        char rawTitle[TGCD_RAW_LEN] = {0};
-        //Read raw title
-        if (fread(rawTitle, 1, TGCD_RAW_LEN - 1, f) == TGCD_RAW_LEN - 1) {
-            rawTitle[TGCD_RAW_LEN - 1] = '\0';
-            snprintf(game->title, TITLE_MAX_LEN, "%s", rawTitle);
-            fclose(f);
-            return;
-        }
-    }
-    fclose(f);
-    //Fallback to filename if header read fails
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
-}
-
-//Extract title from Arcade (MAME / FinalBurn Neo) ROM zip
-void Games_GetArcadeTitle(const char* romPath, game_t* game) {
-    //Arcade ROMs are .zip archives containing raw board dump ROM chips.
-    //There is no internal ASCII title string in arcade ZIP dumps.
-    //The ZIP base filename (e.g., "tmnt.zip", "mslug.zip") serves as the driver/game ID.
-    //Fallback directly to filename
-    snprintf(game->title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(romPath));
-}
-
-
-static void Games_GetRoms(char* romExtension, char* dirPath) {
+static void Games_GetRoms(char* romExtension, char* dirPath, char* console, save_t saveType, bool libretro, char* category, char* path, char* process) {
+    temp_start_section = gamesLen;
     FilePathList files = LoadDirectoryFiles(dirPath);
     for (int i = 0; i < files.count; i++) {
         if (IsFileExtension(files.paths[i], romExtension)) {
-            snprintf(gamesLibrary[games_init_index].title, sizeof(gamesLibrary[games_init_index].title), "%s", GetFileNameWithoutExt(files.paths[i]));
-            snprintf(gamesLibrary[games_init_index].romPath, sizeof(gamesLibrary[games_init_index].romPath), "%s", files.paths[i]);
-            snprintf(gamesLibrary[games_init_index].console, sizeof(gamesLibrary[games_init_index].console), "%s", consoleName);
-
-            // 2. Check if local cover image exists
-            char coverPath[256];
-            snprintf(coverPath, sizeof(coverPath), "covers/%s/%s.png", consoleName, game.title);
-            
-            if (FileExists(coverPath)) {
-                gamesLibrary[games_init_index].cover = LoadTexture(coverPath);
-                gamesLibrary[games_init_index].hasCover = true;
-            } else {
-                // Mark for background scraper thread
-                gamesLibrary[games_init_index].hasCover = false;
+            if (Games_IsCoveredByM3U(GetFileName(files.paths[i]))) {
+                continue;
             }
-            games_init_index += 1;
+            snprintf(gamesLibrary[gamesLen].romPath, sizeof(gamesLibrary[gamesLen].romPath), "%s", files.paths[i]);
+            snprintf(gamesLibrary[gamesLen].console, sizeof(gamesLibrary[gamesLen].console), "%s", console);
+            if (strcmp(console, "Nintendo Entertainment System") == 0 || strcmp(console, "Sony PlayStation") == 0 || 
+                strcmp(console, "PC") == 0 || strcmp(console, "Arcade") == 0 || strcmp(console, "Sega Master System") == 0 ||
+                strcmp(console, "Sega Game Gear") == 0 || strcmp(console, "Sega Saturn") == 0 || strcmp(console, "Sega CD") == 0 ||
+                strcmp(console, "Sega Dreamcast") == 0 || strcmp(console, "TurboGrafx-16") == 0 || strcmp(console, "TurboGrafx-CD") == 0 ||
+                strcmp(console, "Game Boy") == 0 || strcmp(console, "Game Boy Color") == 0 || strcmp(console, "Game Boy Advance") == 0 ||
+                strcmp(console, "Atari Lynx") == 0) {
+                snprintf(gamesLibrary[gamesLen].title, TITLE_MAX_LEN, "%s", GetFileNameWithoutExt(files.paths[i]));
+            }
+            else if (strcmp(console, "Super Nintendo Entertainment System") == 0) {
+                Games_GetSNESTitle(files.paths[i], &gamesLibrary[gamesLen]);
+            }
+            else if (strcmp(console, "Sony PlayStation Portable") == 0) {
+                Games_GetPSPTitle(files.paths[i], &gamesLibrary[gamesLen]);
+            }
+            else if (strcmp(console, "Neo Geo Pocket Color") == 0) {
+                Games_ExtractTitleAtOffset(files.paths[i], &gamesLibrary[gamesLen], NGPC_OFFSET, NGPC_RAW_LEN);
+            }
+            else if (strcmp(console, "Nintendo 64") == 0) {
+                Games_ExtractTitleAtOffset(files.paths[i], &gamesLibrary[gamesLen], N64_OFFSET, N64_RAW_LEN);
+            }
+            else if (strcmp(console, "Nintendo DS") == 0) {
+                Games_ExtractTitleAtOffset(files.paths[i], &gamesLibrary[gamesLen], DS_OFFSET, DS_RAW_LEN);
+            }
+            else if (strcmp(console, "Nintendo GameCube") == 0) {
+                Games_GetGCTitle(files.paths[i], &gamesLibrary[gamesLen]);
+            }
+            else if (strcmp(console, "Sega Genesis") == 0) {
+                Games_ExtractTitleAtOffset(files.paths[i], &gamesLibrary[gamesLen], GENESIS_OFFSET, GENESIS_RAW_LEN);
+            }
+            //Check if local cover image exists
+            char coverPath[256];
+            snprintf(coverPath, sizeof(coverPath), "assets/images/%s/%s.png", console, GetFileNameWithoutExt(files.paths[i]));
+            if (FileExists(coverPath)) {
+                snprintf(gamesLibrary[gamesLen].coverPath, sizeof(gamesLibrary[gamesLen].coverPath), "%s", coverPath);
+            }
+            gamesLen += 1;
         }
     }
     UnloadDirectoryFiles(files);
+    Games_SetTypes(saveType, libretro, category, path, process);
 }
+
 
 //Initialize game library
 void Games_Init() {
-    games_init_index = 0;
+    gamesLen = 0;
     //Arcade games
-    Games_GetRoms(".zip", "assets/roms/Arcade");
+    Games_GetRoms("zip", "assets/roms/Arcade", "Arcade", NONE, true, "Arcade", PATH_ARCADE, NULL);
     //Handheld games
-    Games_GetRoms(".nds", "assets/roms/Nintendo DS");
-    Games_GetRoms(".gg", "assets/roms/Sega Game Gear");
-    Games_GetRoms(".gba", "assets/roms/Game Boy Advance");
-    Games_GetRoms(".gbc", "assets/roms/Game Boy Color");
-    Games_GetRoms(".gb", "assets/roms/Game Boy");
-    Games_GetRoms(".ngc", "assets/roms/Neo Geo Pocket Color");
-    Games_GetRoms(".iso", "assets/roms/Sony PlayStation Portable");
-    Games_GetRoms(".lyx", "assets/roms/Atari Lynx");
+    Games_GetRoms("nds", "assets/roms/Nintendo DS", "Nintendo DS", EXTERNAL, false, "Handheld Classics", PATH_DS, PROCESS_MELON);
+    Games_GetRoms("gg", "assets/roms/Sega Game Gear", "Sega Game Gear", EXTERNAL, true, "Handheld Classics", PATH_GENESIS, NULL);
+    Games_GetRoms("gba", "assets/roms/Game Boy Advance", "Game Boy Advance", BATTERY, true, "Handheld Classics", PATH_GBA, NULL);
+    Games_GetRoms("gbc", "assets/roms/Game Boy Color", "Game Boy Color", BATTERY, true, "Handheld Classics", PATH_GAMEBOY, NULL);
+    Games_GetRoms("gb", "assets/roms/Game Boy", "Game Boy", BATTERY, true, "Handheld Classics", PATH_GAMEBOY, NULL);
+    Games_GetRoms("ngc", "assets/roms/Neo Geo Pocket Color", "Neo Geo Pocket Color", NONE, true, "Handheld Classics", PATH_NGPC, NULL);
+    Games_GetRoms("iso", "assets/roms/Sony PlayStation Portable", "Sony PlayStation Portable", EXTERNAL, false, "Handheld Classics", PATH_PSP, PROCESS_PPSSPP);
+    for (int i = temp_start_section; i < gamesLen; i++) {
+        GetPSPSaveID(gamesLibrary[i].romPath, gamesLibrary[i].serial, sizeof(gamesLibrary[i].serial));
+    }
+    Games_GetRoms("lyx", "assets/roms/Atari Lynx", "Atari Lynx", NONE, true, "Handheld Classics", PATH_LYNX, NULL);
     //Nintendo 3D games
-    Games_GetRoms(".ciso", "assets/roms/Nintendo GameCube");
-    Games_GetRoms(".z64", "assets/roms/Nintendo 64");
+    Games_GetRoms("ciso", "assets/roms/Nintendo GameCube", "Nintendo GameCube", EXTERNAL, false, "Nintendo 3D", PATH_GAMECUBE, PROCESS_DOLPHIN);
+    for (int i = temp_start_section; i < gamesLen; i++) {
+        GetGameCubeSaveID(gamesLibrary[i].romPath, gamesLibrary[i].serial, sizeof(gamesLibrary[i].serial));
+    }
+    Games_GetRoms("z64", "assets/roms/Nintendo 64", "Nintendo 64", BATTERY, true, "Nintendo 3D", PATH_N64, NULL);
     //Nintendo retro games
-    Games_GetRoms(".nes", "assets/roms/Nintendo Entertainment System");
-    Games_GetRoms(".sfc", "assets/roms/Super Nintendo Entertainment System");
-    Games_GetRoms(".smc", "assets/roms/Super Nintendo Entertainment System");
+    Games_GetRoms("nes", "assets/roms/Nintendo Entertainment System", "Nintendo Entertainment System", BATTERY, true, "Retro Nintendo", PATH_NES, NULL);
+    Games_GetRoms("sfc", "assets/roms/Super Nintendo Entertainment System", "Super Nintendo Entertainment System", BATTERY, true, "Retro Nintendo", PATH_SNES, NULL);
+    Games_GetRoms("smc", "assets/roms/Super Nintendo Entertainment System", "Super Nintendo Entertainment System", BATTERY, true, "Retro Nintendo", PATH_SNES, NULL);
     //PC/Indie/Other games
-    Games_GetRoms(".pce", "assets/roms/TurboGrafx-16");
-    Games_GetRoms(".chd", "assets/roms/TurboGrafx-CD");
-    Games_GetRoms(".WAD", "assets/roms/PC");
+    Games_GetRoms("pce", "assets/roms/TurboGrafx-16", "TurboGrafx-16", BATTERY, true, "TurboGrafx/PC/Other", PATH_TG16, NULL);
+    Games_GetRoms("chd", "assets/roms/TurboGrafx-CD", "TurboGrafx-CD", BATTERY, true, "TurboGrafx/PC/Other", PATH_TG16, NULL);
+    Games_GetRoms("WAD", "assets/roms/PC", "PC", BATTERY, true, "TurboGrafx/PC/Other", PATH_PRBOOM, NULL);
     //Sega games
-    Games_GetRoms(".chd", "assets/roms/Sega CD");
-    Games_GetRoms(".chd", "assets/roms/Sega Dreamcast");
-    Games_GetRoms(".md", "assets/roms/Sega Genesis");
-    Games_GetRoms(".sms", "assets/roms/Sega Master System");
-    Games_GetRoms(".chd", "assets/roms/Sega Saturn");
+    Games_GetRoms("chd", "assets/roms/Sega CD", "Sega CD", EXTERNAL, true, "Sega", PATH_GENESIS, NULL);
+    Games_GetRoms("chd", "assets/roms/Sega Dreamcast", "Sega Dreamcast", EXTERNAL, false, "Sega", PATH_DREAMCAST, PROCESS_FLYCAST);
+    Games_LoadFlycastSaveMap();
+    Games_GetRoms("md", "assets/roms/Sega Genesis", "Sega Genesis", BATTERY, true, "Sega", PATH_GENESIS, NULL);
+    Games_GetRoms("sms", "assets/roms/Sega Master System", "Sega Master System", NONE, true, "Sega", PATH_GENESIS, NULL);
+    Games_GetRoms("chd", "assets/roms/Sega Saturn", "Sega Saturn", EXTERNAL, false, "Sega", PATH_SATURN, PROCESS_YMIR);
+    Games_LoadYmirSaveMap();
     //PS1 games
-    Games_GetRoms();
+    Games_ScanM3UPlaylists("assets/roms/Sony PlayStation", "Sony PlayStation");
+    for (int i = temp_start_section; i < gamesLen; i++) {
+        GetPSPSaveID(gamesLibrary[i].romPath, gamesLibrary[i].serial, sizeof(gamesLibrary[i].serial));
+    }
+    Games_GetRoms("chd", "assets/roms/Sony PlayStation", "Sony PlayStation", EXTERNAL, true, "PlayStation", PATH_PS1, NULL);
+    Games_LoadPS1SaveMap();
+    printf("GAMESSSSSSSSSSSSSSSSSSSSS\n");
     
 
     //Start with the Nintendo 3D games

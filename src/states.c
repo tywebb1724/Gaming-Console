@@ -32,7 +32,7 @@ static float launchTimer;
 static float maxLen;
 
 //All textures start not uploaded yet
-static bool isTextureUploaded[GAMES_LEN] = { false };
+static bool isTextureUploaded[MAX_GAMES] = { false };
 
 
 //Extract a color from the color name
