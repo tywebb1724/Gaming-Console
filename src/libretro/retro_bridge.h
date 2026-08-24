@@ -18,6 +18,7 @@ extern void (*core_run)(void);
 extern void (*core_unload_game)(void);
 extern void (*core_deinit)(void);
 
+
 // --- Core lifecycle ---
 
 // Loads the dynamic library (.so or .dll) for the emulator core and resolves symbols.

@@ -1,40 +1,37 @@
 #!/bin/bash
 set -e
 
-INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APP_DIR="$HOME/.local/share/SP1DER-GAMES"
+BIN_DIR="$HOME/.local/bin"
 
-echo "Checking dependencies..."
+echo "=== Installing SP1DER GAMES ==="
 
-# --- raylib ---
+# --- System & Build Dependencies ---
+echo "Checking system dependencies..."
+sudo apt update
+sudo apt install -y build-essential git cmake pkg-config flatpak \
+    libasound2-dev mesa-common-dev libx11-dev libxrandr-dev libxi-dev \
+    xorg-dev libgl1-mesa-dev libglu1-mesa-dev libwayland-dev libxkbcommon-dev
+
+# --- Raylib ---
 if ! pkg-config --exists raylib 2>/dev/null; then
-    echo "Installing raylib dependencies and building raylib..."
-    sudo apt update
-    sudo apt install -y build-essential git cmake libasound2-dev mesa-common-dev \
-        libx11-dev libxrandr-dev libxi-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev \
-        libwayland-dev libxkbcommon-dev
-
+    echo "Building and installing Raylib..."
     git clone --depth 1 https://github.com/raysan5/raylib.git /tmp/raylib
     cd /tmp/raylib/src
     make PLATFORM=PLATFORM_DESKTOP
     sudo make install
     sudo ldconfig
-    cd "$INSTALL_DIR"
     rm -rf /tmp/raylib
+    cd "$SCRIPT_DIR"
 else
-    echo "raylib already installed."
+    echo "Raylib is already installed."
 fi
 
-# --- Flatpak itself ---
-if ! command -v flatpak &> /dev/null; then
-    echo "Installing Flatpak..."
-    sudo apt update
-    sudo apt install -y flatpak
-    sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-else
-    echo "Flatpak already installed."
-fi
+# --- Flatpak & Emulators ---
+echo "Configuring Flatpak repositories..."
+sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-# --- Flatpak apps ---
 FLATPAK_APPS=(
     "org.DolphinEmu.dolphin-emu"
     "net.kuribo64.melonDS"
@@ -47,19 +44,27 @@ for app in "${FLATPAK_APPS[@]}"; do
     if ! flatpak list | grep -q "$app"; then
         echo "Installing $app..."
         flatpak install -y flathub "$app"
-    else
-        echo "$app already installed."
     fi
 done
 
-# --- Build Frontend ---
-echo "Building SP1DER GAMES executable..."
-cd "$INSTALL_DIR"
-make
+# --- Build Application ---
+echo "Building executable..."
+cd "$SCRIPT_DIR"
+make clean && make
 
-# --- Desktop Shortcut ---
+# --- Deploy Files ---
+echo "Installing application files to $APP_DIR..."
+mkdir -p "$APP_DIR"
+mkdir -p "$BIN_DIR"
+
+# Copy binary and project folders
+cp -r SP1DER-GAMES assets roms saves "$APP_DIR/" 2>/dev/null || cp -r SP1DER-GAMES assets "$APP_DIR/"
+
+# Symlink to ~/.local/bin
+ln -sf "$APP_DIR/SP1DER-GAMES" "$BIN_DIR/SP1DER-GAMES"
+
+# --- Create Desktop Launcher ---
 mkdir -p ~/.local/share/applications
-mkdir -p ~/Desktop
 
 cat > ~/.local/share/applications/SP1DER-GAMES.desktop << EOF
 [Desktop Entry]
@@ -67,18 +72,19 @@ Version=1.0
 Type=Application
 Name=SP1DER GAMES
 Comment=Custom retro gaming console frontend
-Exec=${INSTALL_DIR}/SP1DER-GAMES
-Icon=${INSTALL_DIR}/assets/images/other/logo.png
+Exec=${APP_DIR}/SP1DER-GAMES
+Path=${APP_DIR}
+Icon=${APP_DIR}/assets/images/other/logo.png
 Terminal=false
 Categories=Game;
 EOF
 
-# Copy to Desktop if Desktop folder exists
+chmod +x ~/.local/share/applications/SP1DER-GAMES.desktop
+
 if [ -d "$HOME/Desktop" ]; then
     cp ~/.local/share/applications/SP1DER-GAMES.desktop ~/Desktop/
     chmod +x ~/Desktop/SP1DER-GAMES.desktop
+    gio set ~/Desktop/SP1DER-GAMES.desktop metadata::trusted true 2>/dev/null || true
 fi
 
-chmod +x ~/.local/share/applications/SP1DER-GAMES.desktop
-
-echo "Setup complete! You can run the emulator via ./SP1DER-GAMES or from your application menu."
+echo "=== Installation Complete! ==="

@@ -80,6 +80,7 @@ retro_set_controller_port_device_t core_set_controller_port_device;
 
 static unsigned int hw_framebuffer_id = 0;
 
+
 void SetHWFramebuffer(unsigned int id) {
     hw_framebuffer_id = id;
 }
@@ -226,9 +227,9 @@ void PresentFrame(void) {
 
 static void video_refresh_cb(const void *data, unsigned width, unsigned height, size_t pitch) {
     vrcb_count++;
+    printf("VRCB: width=%u, height=%u, pitch=%zu, data=%p\n", width, height, pitch, data);
 
     if (data == RETRO_HW_FRAME_BUFFER_VALID) {
-        printf("DEBUG: HW framebuffer path, w=%u h=%u\n", width, height);
         latest_w = (int)width;
         latest_h = (int)height;
         frame_ready = true;
@@ -236,11 +237,8 @@ static void video_refresh_cb(const void *data, unsigned width, unsigned height, 
     }
 
     if (data == NULL) {
-        printf("DEBUG: NULL data — dupe frame\n");
         return;
     }
-
-    printf("DEBUG: software path, w=%u h=%u pitch=%zu fmt=%d\n", width, height, pitch, global_pixel_fmt);
 
     // (Re)allocate the persistent buffer only if the size changed
     if (latest_w != (int)width || latest_h != (int)height) {

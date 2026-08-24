@@ -1,8 +1,17 @@
-roms/
+# Ignore subfolder contents
+roms/*/*
+images/*/*
+
+# Keep specific tracked image folder
+!images/other/*
+
+# Build and runtime outputs
 build/
 system/
 saves/
-cores/
 *.o
+SP1DER-GAMES
+test_output_*.cfg
 
+# Misc
 bad_shader_1.txt

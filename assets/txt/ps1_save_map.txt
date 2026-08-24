@@ -15,3 +15,6 @@ assets/roms/Sega Game Gear/Sonic Blast.gg|SCUS-94306_1
 assets/roms/Arcade/punisher.zip|SLUS-00561_1
 assets/roms/Arcade/mslug3.zip|SLUS-00561_1
 assets/roms/Arcade/tmnt22pu.zip|SLUS-00561_1
+assets/roms/Arcade/pacman.zip|SLUS-00561_1
+|SLUS-00561_1
+assets/roms/Arcade/xmen2pa.zip|SLUS-00561_1

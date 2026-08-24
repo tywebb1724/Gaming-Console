@@ -660,8 +660,6 @@ static void Play_Draw(const game_t* game) {
     float rot = -(game_rotation * ROTATION_DEGREES);
     float drawW = swapped ? destHeight : destWidth;
     float drawH = swapped ? destWidth  : destHeight;
-    printf("height: %f\n", drawH);
-    printf("width: %f\n", drawW);
     Rectangle src  = { 0.0f, 0.0f, texW, texH };
     Rectangle dest = { Var_GetMonitorWidth() / 2.0f, Var_GetMonitorHeight() / 2.0f, drawW, drawH };
     Vector2  origin = { drawW / 2.0f, drawH / 2.0f };
@@ -693,8 +691,8 @@ void Play_Init(const game_t* game) {
     //Initialize depending on type of game
     if (Play_IsLibRetro(game)) {
         if (strcmp(game->corePath, PATH_PS1) == 0) {
-    Games_SnapshotSaveFolder("assets/saves");
-}
+            Games_SnapshotSaveFolder("assets/saves");
+        }
         //Reset from last game
         SetGameRotation(0);
         UnloadTexture(emulator_texture);
@@ -709,9 +707,12 @@ void Play_Init(const game_t* game) {
         Play_ApplyMaps(game->corePath);
         //Load the libretro core
         if (LoadRetroCore(game->corePath)) {
+            printf("DEBUG: CORE LOADED\n");
             //Load the game
             if (LoadGame(game->romPath)) {
+                printf("DEBUG: GAME LOADED\n");
                 is_game_running = true;
+                StartRetroAudio();
                 //For hardware rendered games
                 if (hw_target.id == 0) {
                     hw_target = LoadRenderTexture(BLANK_GAME_TEXT_W, BLANK_GAME_TEXT_H);
@@ -723,7 +724,6 @@ void Play_Init(const game_t* game) {
                     LoadBattery(game->romPath);
                 }
                 core_fps = GetCoreTargetFPS();
-                StartRetroAudio();
                 accumulator = 0.0;
                 DisableCursor();
             }
@@ -829,11 +829,11 @@ bool Play_TickExt(const game_t* game) {
         char savestatesDir[CONFIG_PATH_LEN];
     if (Play_BuildConfigPath(savestatesDir, sizeof(savestatesDir),
                               ".var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates")) {
-        Games_DetectNewYmirSaveFolder(game, savestatesDir);
+        Games_DetectNewYmirSaveFolder((game_t*)game, savestatesDir);
     }
     char flycastSaveDir[CONFIG_PATH_LEN];
     if (Play_BuildConfigPath(flycastSaveDir, sizeof(flycastSaveDir), ".var/app/org.flycast.Flycast/data/flycast")) {
-        Games_DetectNewFlycastSaveFile(game, flycastSaveDir);
+        Games_DetectNewFlycastSaveFile((game_t*)game, flycastSaveDir);
     }
         SetWindowFocused();
         Controller_SetWasPressed_Home(true);
@@ -943,7 +943,7 @@ bool Play_TickLib(const game_t* game) {
 
         //Exiting game
         case PLAY_EXIT:
-            Games_DetectNewPS1SaveFile(game, "assets/saves");
+            Games_DetectNewPS1SaveFile((game_t*)game, "assets/saves");
             Play_StopLib(game);
             return false;
     }

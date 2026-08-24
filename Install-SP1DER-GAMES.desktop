@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Install SP1DER GAMES
+Comment=Double-click to build and install SP1DER GAMES
+Exec=bash -c 'cd "$(dirname "%k")" && chmod +x install.sh && ./install.sh; read -p "Press Enter to exit..."'
+Icon=utilities-terminal
+Terminal=true
+Categories=Development;
