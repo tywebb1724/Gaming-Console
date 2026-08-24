@@ -2,8 +2,8 @@
 Version=1.0
 Type=Application
 Name=Install SP1DER GAMES
-Comment=Double-click to build and install SP1DER GAMES
-Exec=bash -c 'DIR="$(dirname "%k")"; cd "$DIR" && chmod +x install.sh && ./install.sh; read -p "Press Enter to exit..."'
+Comment=Build and install SP1DER GAMES
+Exec=bash -c 'DESK_DIR="$(dirname "$(realpath "$1")")"; if [ -f "$DESK_DIR/install.sh" ]; then cd "$DESK_DIR"; elif [ -f "$DESK_DIR/Gaming-Console/install.sh" ]; then cd "$DESK_DIR/Gaming-Console"; elif [ -f "$HOME/Desktop/Gaming-Console/install.sh" ]; then cd "$HOME/Desktop/Gaming-Console"; else echo "Error: Could not locate install.sh in $DESK_DIR or Gaming-Console subfolder."; echo ""; read -p "Press Enter to exit..."; exit 1; fi; chmod +x ./install.sh && ./install.sh; echo ""; read -p "Press Enter to exit..."' dummy %k
 Icon=utilities-terminal
 Terminal=true
 Categories=Development;

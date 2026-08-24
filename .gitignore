@@ -1,14 +1,16 @@
 # Ignore subfolder contents
-roms/*/*
-images/*/*
+assets/roms/*
+!assets/roms/**/.gitkeep
 
 # Keep specific tracked image folder
-!images/other/*
+assets/images/*
+!assets/images/**/.gitkeep
+!assets/images/other/
 
 # Build and runtime outputs
 build/
-system/
-saves/
+system/*
+saves/*
 *.o
 SP1DER-GAMES
 test_output_*.cfg
