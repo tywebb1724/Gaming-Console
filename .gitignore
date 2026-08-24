@@ -2,15 +2,20 @@
 assets/roms/*
 !assets/roms/**/.gitkeep
 
-# Keep specific tracked image folder
+# Image rules
 assets/images/*
 !assets/images/**/.gitkeep
 !assets/images/other/
 
+# Ignore BIOS files and Save files inside assets/
+assets/system/*
+!assets/system/**/.gitkeep
+
+assets/saves/*
+!assets/saves/**/.gitkeep
+
 # Build and runtime outputs
 build/
-system/*
-saves/*
 *.o
 SP1DER-GAMES
 test_output_*.cfg
