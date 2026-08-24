@@ -690,6 +690,7 @@ void Play_Init(const game_t* game) {
     is_game_running = false;
     //Initialize depending on type of game
     if (Play_IsLibRetro(game)) {
+        //If PS1 game, take a snapshot of the saves
         if (strcmp(game->corePath, PATH_PS1) == 0) {
             Games_SnapshotSaveFolder("assets/saves");
         }
@@ -707,10 +708,8 @@ void Play_Init(const game_t* game) {
         Play_ApplyMaps(game->corePath);
         //Load the libretro core
         if (LoadRetroCore(game->corePath)) {
-            printf("DEBUG: CORE LOADED\n");
             //Load the game
             if (LoadGame(game->romPath)) {
-                printf("DEBUG: GAME LOADED\n");
                 is_game_running = true;
                 StartRetroAudio();
                 //For hardware rendered games
@@ -751,11 +750,11 @@ void Play_Init(const game_t* game) {
         }
         else if (strcmp(game->corePath, PATH_SATURN) == 0) {
             char savestatesDir[CONFIG_PATH_LEN];
-    if (Play_BuildConfigPath(savestatesDir, sizeof(savestatesDir),
+            if (Play_BuildConfigPath(savestatesDir, sizeof(savestatesDir),
                               ".var/app/io.github.strikerx3.ymir/data/StrikerX3/Ymir/savestates")) {
-        Games_SnapshotSaveFolder(savestatesDir);
+                Games_SnapshotSaveFolder(savestatesDir);
         
-    }
+            }
             //Update config file
             if (Play_BuildConfigPath(saturnPath, sizeof(saturnPath), PATH_SATURN_DEST)) {
                 Play_CopyConfig(PATH_SATURN_SRC, saturnPath);
@@ -768,9 +767,9 @@ void Play_Init(const game_t* game) {
             }
             Play_ApplyFlycastMappings();
             char flycastSaveDir[CONFIG_PATH_LEN];
-    if (Play_BuildConfigPath(flycastSaveDir, sizeof(flycastSaveDir), ".var/app/org.flycast.Flycast/data/flycast")) {
-        Games_SnapshotSaveFolder(flycastSaveDir);
-    }
+            if (Play_BuildConfigPath(flycastSaveDir, sizeof(flycastSaveDir), ".var/app/org.flycast.Flycast/data/flycast")) {
+                Games_SnapshotSaveFolder(flycastSaveDir);
+            }
         }
         else if (strcmp(game->corePath, PATH_PSP) == 0) {
             //Update ini file
