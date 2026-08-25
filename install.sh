@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Dynamically locate the script directory regardless of folder name or current working directory
+# Dynamically locate the script directory regardless of folder name or user location
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="$HOME/.local/share/SP1DER-GAMES"
 BIN_DIR="$HOME/.local/bin"
@@ -67,28 +67,28 @@ cp -r SP1DER-GAMES assets "$APP_DIR/"
 # Symlink to ~/.local/bin
 ln -sf "$APP_DIR/SP1DER-GAMES" "$BIN_DIR/SP1DER-GAMES"
 
-# --- Create Desktop Launcher ---
-mkdir -p ~/.local/share/applications
+# --- Create Portable Desktop Launcher ---
+mkdir -p "$HOME/.local/share/applications"
 
-cat > ~/.local/share/applications/SP1DER-GAMES.desktop << EOF
+# Quoting 'EOF' preserves literal $HOME inside the generated file
+cat > "$HOME/.local/share/applications/SP1DER-GAMES.desktop" << 'EOF'
 [Desktop Entry]
 Version=1.0
 Type=Application
 Name=SP1DER GAMES
 Comment=Custom retro gaming console frontend
-Exec=${APP_DIR}/SP1DER-GAMES
-Path=${APP_DIR}
-Icon=${APP_DIR}/assets/images/other/logo.png
+Exec=sh -c 'cd "$HOME/.local/share/SP1DER-GAMES" && ./SP1DER-GAMES'
+Icon=gamepad
 Terminal=false
 Categories=Game;
 EOF
 
-chmod +x ~/.local/share/applications/SP1DER-GAMES.desktop
+chmod +x "$HOME/.local/share/applications/SP1DER-GAMES.desktop"
 
 if [ -d "$HOME/Desktop" ]; then
-    cp ~/.local/share/applications/SP1DER-GAMES.desktop ~/Desktop/
-    chmod +x ~/Desktop/SP1DER-GAMES.desktop
-    gio set ~/Desktop/SP1DER-GAMES.desktop metadata::trusted true 2>/dev/null || true
+    cp "$HOME/.local/share/applications/SP1DER-GAMES.desktop" "$HOME/Desktop/"
+    chmod +x "$HOME/Desktop/SP1DER-GAMES.desktop"
+    gio set "$HOME/Desktop/SP1DER-GAMES.desktop" metadata::trusted true 2>/dev/null || true
 fi
 
 echo "=== Installation Complete! ==="

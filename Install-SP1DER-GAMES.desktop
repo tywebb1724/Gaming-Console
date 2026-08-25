@@ -1,9 +1,23 @@
+# --- Create Desktop Launcher ---
+mkdir -p "$HOME/.local/share/applications"
+
+cat > "$HOME/.local/share/applications/SP1DER-GAMES.desktop" << 'EOF'
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=Install SP1DER GAMES
-Comment=Build and install SP1DER GAMES
-Exec=bash -c 'DESK_DIR="$(dirname "$(realpath "$1")")"; TARGET=$(find "$DESK_DIR" "$HOME/Downloads" -maxdepth 2 -name "install.sh" 2>/dev/null | head -n 1); if [ -n "$TARGET" ]; then cd "$(dirname "$TARGET")"; chmod +x ./install.sh && ./install.sh; else echo "Error: Could not locate install.sh in $DESK_DIR or Downloads."; echo ""; read -p "Press Enter to exit..."; exit 1; fi; echo ""; read -p "Press Enter to exit..."' dummy %k
-Icon=utilities-terminal
-Terminal=true
-Categories=Development;
+Name=SP1DER GAMES
+Comment=Custom retro gaming console frontend
+Exec=sh -c 'cd "$HOME/.local/share/SP1DER-GAMES" && ./SP1DER-GAMES'
+Path=
+Icon=gamepad
+Terminal=false
+Categories=Game;
+EOF
+
+chmod +x "$HOME/.local/share/applications/SP1DER-GAMES.desktop"
+
+if [ -d "$HOME/Desktop" ]; then
+    cp "$HOME/.local/share/applications/SP1DER-GAMES.desktop" "$HOME/Desktop/"
+    chmod +x "$HOME/Desktop/SP1DER-GAMES.desktop"
+    gio set "$HOME/Desktop/SP1DER-GAMES.desktop" metadata::trusted true 2>/dev/null || true
+fi
