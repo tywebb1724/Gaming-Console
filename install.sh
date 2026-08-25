@@ -13,21 +13,40 @@ echo "Checking system dependencies..."
 sudo apt update
 sudo apt install -y build-essential git cmake pkg-config flatpak \
     libasound2-dev mesa-common-dev libx11-dev libxrandr-dev libxi-dev \
-    xorg-dev libgl1-mesa-dev libglu1-mesa-dev libwayland-dev libxkbcommon-dev
+    xorg-dev libgl1-mesa-dev libglu1-mesa-dev libwayland-dev libxkbcommon-dev \
+    libsdl2-dev libsdl2-image-dev
 
 # --- Raylib ---
 if ! pkg-config --exists raylib 2>/dev/null; then
     echo "Building and installing Raylib..."
-    git clone --depth 1 https://github.com/raysan5/raylib.git /tmp/raylib
+    git config --global http.postBuffer 524288000 2>/dev/null || true
+
+    # Retry clone up to 3 times in case of network drops
+    for i in {1..3}; do
+        rm -rf /tmp/raylib
+        echo "Attempt $i to clone Raylib..."
+        if git clone --depth 1 https://github.com/raysan5/raylib.git /tmp/raylib; then
+            break
+        fi
+        sleep 2
+    done
+
+    if [ ! -d "/tmp/raylib/src" ]; then
+        echo "ERROR: Failed to clone Raylib repository."
+        exit 1
+    fi
+
     cd /tmp/raylib/src
-    make PLATFORM=PLATFORM_DESKTOP
-    sudo make install
+    make PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED
+    sudo make install RAYLIB_LIBTYPE=SHARED
     sudo ldconfig
     rm -rf /tmp/raylib
     cd "$SCRIPT_DIR"
 else
     echo "Raylib is already installed."
 fi
+
+sudo ldconfig
 
 # --- Flatpak & Emulators ---
 echo "Configuring Flatpak repositories..."
@@ -44,7 +63,7 @@ FLATPAK_APPS=(
 for app in "${FLATPAK_APPS[@]}"; do
     if ! flatpak list | grep -q "$app"; then
         echo "Installing $app..."
-        flatpak install -y flathub "$app"
+        flatpak install -y flathub "$app" || true
     fi
 done
 
@@ -63,9 +82,10 @@ mkdir -p "$APP_DIR/saves"
 
 # Copy binary and asset directories
 cp -f SP1DER-GAMES "$APP_DIR/"
+[ -f "sdl_name_probe" ] && cp -f sdl_name_probe "$APP_DIR/" || true
 [ -d "$SCRIPT_DIR/assets" ] && cp -r "$SCRIPT_DIR/assets" "$APP_DIR/"
 
-# Copy initial ROMs and saves if present in the installer directory
+# Copy initial ROMs and saves if present in installer
 [ -d "$SCRIPT_DIR/roms" ] && cp -r "$SCRIPT_DIR/roms/"* "$APP_DIR/roms/" 2>/dev/null || true
 [ -d "$SCRIPT_DIR/saves" ] && cp -r "$SCRIPT_DIR/saves/"* "$APP_DIR/saves/" 2>/dev/null || true
 
@@ -81,9 +101,9 @@ Version=1.0
 Type=Application
 Name=SP1DER GAMES
 Comment=Custom retro gaming console frontend
-Exec=sh -c 'cd "${APP_DIR}" && ./SP1DER-GAMES'
-Path=${APP_DIR}
-Icon=${APP_DIR}/assets/images/other/logo.png
+Exec=sh -c 'cd "$APP_DIR" && MESA_GL_VERSION_OVERRIDE=2.1 ./SP1DER-GAMES'
+Path=$APP_DIR
+Icon=$APP_DIR/assets/images/other/logo.png
 Terminal=false
 Categories=Game;
 EOF

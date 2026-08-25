@@ -3,7 +3,7 @@ Version=1.0
 Type=Application
 Name=SP1DER GAMES
 Comment=Custom retro gaming console frontend
-Exec=sh -c 'cd "$HOME/.local/share/SP1DER-GAMES" && ./SP1DER-GAMES'
+Exec=sh -c 'cd "$HOME/.local/share/SP1DER-GAMES" && MESA_GL_VERSION_OVERRIDE=2.1 ./SP1DER-GAMES'
 Path=$HOME/.local/share/SP1DER-GAMES
 Icon=$HOME/.local/share/SP1DER-GAMES/assets/images/other/logo.png
 Terminal=false
