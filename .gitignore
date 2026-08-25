@@ -1,11 +1,16 @@
-# Ignore subfolder contents, but allow directory traversal
+# Allow directory traversal, ignore contents EXCEPT .gitkeep
 assets/roms/*
-assets/images/*
-assets/system/*
-assets/saves/*
+!assets/roms/**/.gitkeep
 
-# Re-include all .gitkeep files at any depth
-!/**/.gitkeep
+assets/images/**
+!assets/images/**/
+!assets/images/**/.gitkeep
+
+assets/system/*
+!assets/system/**/.gitkeep
+
+assets/saves/*
+!assets/saves/**/.gitkeep
 
 # Build and runtime outputs
 build/
