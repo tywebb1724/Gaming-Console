@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Dynamically locate the script directory regardless of folder name or user location
+# Dynamically locate the script directory regardless of folder name or launch location
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="$HOME/.local/share/SP1DER-GAMES"
 BIN_DIR="$HOME/.local/bin"
@@ -58,33 +58,39 @@ make
 echo "Installing application files to $APP_DIR..."
 mkdir -p "$APP_DIR"
 mkdir -p "$BIN_DIR"
+mkdir -p "$APP_DIR/roms"
+mkdir -p "$APP_DIR/saves"
 
-# Safe file copy matching exact folder contents
-cp -r SP1DER-GAMES assets "$APP_DIR/"
-[ -d "roms" ] && cp -r roms "$APP_DIR/"
-[ -d "saves" ] && cp -r saves "$APP_DIR/"
+# Copy binary and asset directories
+cp -f SP1DER-GAMES "$APP_DIR/"
+[ -d "$SCRIPT_DIR/assets" ] && cp -r "$SCRIPT_DIR/assets" "$APP_DIR/"
 
-# Symlink to ~/.local/bin
+# Copy initial ROMs and saves if present in the installer directory
+[ -d "$SCRIPT_DIR/roms" ] && cp -r "$SCRIPT_DIR/roms/"* "$APP_DIR/roms/" 2>/dev/null || true
+[ -d "$SCRIPT_DIR/saves" ] && cp -r "$SCRIPT_DIR/saves/"* "$APP_DIR/saves/" 2>/dev/null || true
+
+# Symlink executable to ~/.local/bin
 ln -sf "$APP_DIR/SP1DER-GAMES" "$BIN_DIR/SP1DER-GAMES"
 
 # --- Create Portable Desktop Launcher ---
 mkdir -p "$HOME/.local/share/applications"
 
-# Quoting 'EOF' preserves literal $HOME inside the generated file
-cat > "$HOME/.local/share/applications/SP1DER-GAMES.desktop" << 'EOF'
+cat > "$HOME/.local/share/applications/SP1DER-GAMES.desktop" << EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
 Name=SP1DER GAMES
 Comment=Custom retro gaming console frontend
-Exec=sh -c 'cd "$HOME/.local/share/SP1DER-GAMES" && ./SP1DER-GAMES'
-Icon=gamepad
+Exec=sh -c 'cd "${APP_DIR}" && ./SP1DER-GAMES'
+Path=${APP_DIR}
+Icon=${APP_DIR}/assets/images/other/logo.png
 Terminal=false
 Categories=Game;
 EOF
 
 chmod +x "$HOME/.local/share/applications/SP1DER-GAMES.desktop"
 
+# Copy launcher to Desktop if ~/Desktop exists
 if [ -d "$HOME/Desktop" ]; then
     cp "$HOME/.local/share/applications/SP1DER-GAMES.desktop" "$HOME/Desktop/"
     chmod +x "$HOME/Desktop/SP1DER-GAMES.desktop"
