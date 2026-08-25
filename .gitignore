@@ -19,6 +19,7 @@ build/
 *.o
 SP1DER-GAMES
 test_output_*.cfg
+!Install-SP1DER-GAMES.desktop
 
 # Misc
 bad_shader_1.txt
