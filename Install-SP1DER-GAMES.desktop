@@ -3,7 +3,7 @@ Version=1.0
 Type=Application
 Name=Install SP1DER GAMES
 Comment=Build and install SP1DER GAMES
-Exec=bash -c 'DESK_DIR="$(dirname "$(realpath "$1")")"; if [ -f "$DESK_DIR/install.sh" ]; then cd "$DESK_DIR"; elif [ -f "$DESK_DIR/Gaming-Console/install.sh" ]; then cd "$DESK_DIR/Gaming-Console"; elif [ -f "$HOME/Desktop/Gaming-Console/install.sh" ]; then cd "$HOME/Desktop/Gaming-Console"; else echo "Error: Could not locate install.sh in $DESK_DIR or Gaming-Console subfolder."; echo ""; read -p "Press Enter to exit..."; exit 1; fi; chmod +x ./install.sh && ./install.sh; echo ""; read -p "Press Enter to exit..."' dummy %k
+Exec=bash -c 'DESK_DIR="$(dirname "$(realpath "$1")")"; REL_DIR="SP1DER-GAMES-Console-Emulator-Linux-AArch64-1.0.1"; if [ -f "$DESK_DIR/install.sh" ]; then cd "$DESK_DIR"; elif [ -f "$DESK_DIR/$REL_DIR/install.sh" ]; then cd "$DESK_DIR/$REL_DIR"; elif [ -f "$DESK_DIR/Gaming-Console/install.sh" ]; then cd "$DESK_DIR/Gaming-Console"; elif [ -f "$HOME/Downloads/$REL_DIR/install.sh" ]; then cd "$HOME/Downloads/$REL_DIR"; else echo "Error: Could not locate install.sh in $DESK_DIR or release folder."; echo ""; read -p "Press Enter to exit..."; exit 1; fi; chmod +x ./install.sh && ./install.sh; echo ""; read -p "Press Enter to exit..."' dummy %k
 Icon=utilities-terminal
 Terminal=true
 Categories=Development;

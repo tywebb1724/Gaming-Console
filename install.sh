@@ -1,11 +1,12 @@
 #!/bin/bash
 set -e
 
+# Dynamically locate the script directory regardless of folder name or current working directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="$HOME/.local/share/SP1DER-GAMES"
 BIN_DIR="$HOME/.local/bin"
 
-echo "=== Installing SP1DER GAMES ==="
+echo "=== Installing SP1DER GAMES from $SCRIPT_DIR ==="
 
 # --- System & Build Dependencies ---
 echo "Checking system dependencies..."
@@ -50,15 +51,18 @@ done
 # --- Build Application ---
 echo "Building executable..."
 cd "$SCRIPT_DIR"
-make clean && make
+make clean || true
+make
 
 # --- Deploy Files ---
 echo "Installing application files to $APP_DIR..."
 mkdir -p "$APP_DIR"
 mkdir -p "$BIN_DIR"
 
-# Copy binary and project folders
-cp -r SP1DER-GAMES assets roms saves "$APP_DIR/" 2>/dev/null || cp -r SP1DER-GAMES assets "$APP_DIR/"
+# Safe file copy matching exact folder contents
+cp -r SP1DER-GAMES assets "$APP_DIR/"
+[ -d "roms" ] && cp -r roms "$APP_DIR/"
+[ -d "saves" ] && cp -r saves "$APP_DIR/"
 
 # Symlink to ~/.local/bin
 ln -sf "$APP_DIR/SP1DER-GAMES" "$BIN_DIR/SP1DER-GAMES"
