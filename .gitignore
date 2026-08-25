@@ -1,25 +1,17 @@
-# Ignore subfolder contents
+# Ignore subfolder contents, but allow directory traversal
 assets/roms/*
-!assets/roms/**/.gitkeep
-
-# Image rules
 assets/images/*
-!assets/images/**/.gitkeep
-!assets/images/other/
-
-# Ignore BIOS files and Save files inside assets/
 assets/system/*
-!assets/system/**/.gitkeep
-
 assets/saves/*
-!assets/saves/**/.gitkeep
+
+# Re-include all .gitkeep files at any depth
+!/**/.gitkeep
 
 # Build and runtime outputs
 build/
 *.o
 SP1DER-GAMES
 test_output_*.cfg
-!Install-SP1DER-GAMES.desktop
 
 # Misc
 bad_shader_1.txt
